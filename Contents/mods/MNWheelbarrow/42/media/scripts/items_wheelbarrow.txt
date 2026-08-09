@@ -3,19 +3,23 @@ module MNWheelbarrow
     imports { Base }
 
     /*
-     * FASE A0 - SPIKE.
+     * O carrinho de mao.
      *
-     * Objetivo unico: descobrir se um item container aguenta
-     * RequiresEquippedBothHands. Nenhum container do jogo base faz isso
-     * (51 ocorrencias em weapon.txt, 21 em normal.txt, 1 em moveable.txt,
-     * ZERO em container.txt), entao isto nao tem precedente no vanilla.
+     * Duas mecanicas nao sao definidas aqui, e sim em Lua (WB_Weight.lua),
+     * porque o engine nao consegue expressa-las em script:
+     *
+     *   Capacity      - o script tem teto de 50 menos o peso do item.
+     *                   O valor real vem de SandboxVars via setCapacity().
+     *   WeightReduction - o engine aplica UMA porcentagem sobre o peso total
+     *                   do conteudo. Como o carrinho so deve aliviar itens
+     *                   pesados, a porcentagem equivalente e recalculada a
+     *                   cada mudanca de conteudo via setWeightReduction().
+     *
+     * Os valores abaixo sao so o ponto de partida antes do Lua assumir.
      *
      * Icon, WorldStaticModel e os modelos de mao sao PLACEHOLDERS emprestados
-     * do Toolbox e da Suitcase. Serao trocados quando o modelo 3D existir.
-     *
-     * Capacity tem teto de engine de 50 menos o peso do proprio item
-     * (50 - 8 = 42). O valor real de uso e elevado em runtime por Lua na
-     * Fase C; aqui fica so o suficiente para testar.
+     * do Toolbox e da Suitcase, ate o modelo 3D proprio existir. Trocar esses
+     * campos nao muda o ID do item, entao saves existentes continuam validos.
      */
     item Wheelbarrow
     {
@@ -23,8 +27,13 @@ module MNWheelbarrow
         ItemType = base:container,
         Weight = 8.0,
 
+        /* Modelo de chao proprio (ver models_wheelbarrow.txt).
+           Icone e modelos de mao ainda sao placeholders do Toolbox e da
+           Suitcase: o icone precisa de um render 2D do modelo, e a versao de
+           mao precisa de um mesh com skin preso ao osso, que sao trabalhos
+           separados do modelo estatico. */
         Icon = Toolbox,
-        WorldStaticModel = ToolBox_Ground,
+        WorldStaticModel = Wheelbarrow_Ground,
         ReplaceInPrimaryHand = Bag_Suitcase_RHand holdingbagright,
         ReplaceInSecondHand = Bag_Suitcase_LHand holdingbagleft,
 
@@ -35,10 +44,13 @@ module MNWheelbarrow
         RunSpeedModifier = 0.80,
         RequiresEquippedBothHands = TRUE,
 
+        AcceptItemFunction = MNWheelbarrow.AcceptItem,
+        Tooltip = Tooltip_item_MNWheelbarrow,
+
         OpenSound = OpenBag,
         CloseSound = CloseBag,
         PutInSound = PutItemInBag,
 
-        Tags = MNWheelbarrow:hauler,
+        Tags = MNWheelbarrow:mnwbHauler,
     }
 }

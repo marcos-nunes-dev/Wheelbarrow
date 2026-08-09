@@ -1,0 +1,25 @@
+module MNWheelbarrow
+{
+    imports { Base }
+
+    /*
+     * Modelo do carrinho quando largado no chao.
+     *
+     * O mesh original tinha 4 texturas PBR de 4096x4096 embutidas (21.7 MB).
+     * O PZ nao usa pipeline PBR -- so um mapa difuso -- entao normal, roughness
+     * e metallic foram descartados e o payload embutido foi removido do FBX.
+     * A geometria ficou intacta: 2240 vertices, ~4484 triangulos.
+     *
+     * SCALE: os meshes do jogo base sao autorados numa escala muito maior.
+     * O Log vanilla tem 30.9 unidades no eixo maior e usa scale = 0.4; este
+     * mesh tem 1.9. Para render equivalente:  0.4 * 30.9 / 1.9 ~= 6.5.
+     * Este e um ponto de partida calculado, nao medido em tela -- ajustar
+     * olhando o carrinho no chao ao lado de um personagem.
+     */
+    model Wheelbarrow_Ground
+    {
+        mesh = WorldItems/Wheelbarrow,
+        texture = WorldItems/Wheelbarrow,
+        scale = 6.5,
+    }
+}

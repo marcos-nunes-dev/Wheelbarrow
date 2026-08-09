@@ -1,0 +1,42 @@
+VERSION = 1,
+
+/*
+ * Fonte UNICA de verdade para balanceamento.
+ *
+ * Nenhum destes numeros pode ser repetido em WB_Const.lua ou em qualquer
+ * outro lugar do codigo. Se um valor e ajustavel pelo jogador, ele mora aqui
+ * e so aqui.
+ *
+ * Em multiplayer o servidor e a autoridade: o admin define no servertest.ini
+ * e vale para todos os jogadores.
+ */
+
+option MNWheelbarrow.EnableWorldSpawn
+{type = boolean, default = true, page = MNWheelbarrow, translation = MNWBEnableWorldSpawn,}
+
+option MNWheelbarrow.SpawnChance
+{type = double, min = 0, max = 100, default = 8.0, page = MNWheelbarrow, translation = MNWBSpawnChance,}
+
+option MNWheelbarrow.EnableCrafting
+{type = boolean, default = true, page = MNWheelbarrow, translation = MNWBEnableCrafting,}
+
+option MNWheelbarrow.Capacity
+{type = integer, min = 10, max = 500, default = 100, page = MNWheelbarrow, translation = MNWBCapacity,}
+
+option MNWheelbarrow.HeavyThreshold
+{type = double, min = 0.5, max = 50, default = 8.0, page = MNWheelbarrow, translation = MNWBHeavyThreshold,}
+
+option MNWheelbarrow.HeavyReduction
+{type = integer, min = 0, max = 100, default = 95, page = MNWheelbarrow, translation = MNWBHeavyReduction,}
+
+option MNWheelbarrow.ActionDuration
+{type = integer, min = 10, max = 300, default = 80, page = MNWheelbarrow, translation = MNWBActionDuration,}
+
+option MNWheelbarrow.SpillOnCancel
+{type = boolean, default = true, page = MNWheelbarrow, translation = MNWBSpillOnCancel,}
+
+option MNWheelbarrow.BlockWeapons
+{type = boolean, default = true, page = MNWheelbarrow, translation = MNWBBlockWeapons,}
+
+option MNWheelbarrow.AllowCorpses
+{type = boolean, default = false, page = MNWheelbarrow, translation = MNWBAllowCorpses,}
