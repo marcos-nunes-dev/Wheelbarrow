@@ -1,0 +1,7 @@
+version = 0
+settings
+{
+    packFileName = mnwheelbarrow.pack
+    outputImageSize = 1024,1024
+    scale50 = false
+}
