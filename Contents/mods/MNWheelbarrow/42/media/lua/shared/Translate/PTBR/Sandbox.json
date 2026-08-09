@@ -19,8 +19,6 @@
     "Sandbox_MNWBHeavyReduction": "Redução de peso dos pesados",
     "Sandbox_MNWBHeavyReduction_tooltip": "Quanto peso é tirado dos itens pesados, em porcentagem.<br>Itens leves nunca são reduzidos, independente deste valor.",
 
-    "Sandbox_MNWBHeavyShrink": "Espaço ocupado por itens pesados",
-    "Sandbox_MNWBHeavyShrink_tooltip": "Quanto espaço um item pesado ocupa dentro do carrinho, como fração do peso real dele.<br>O engine limita qualquer container a 50, então é isto que faz dois geradores caberem.<br>Menor significa que cabe mais.",
 
     "Sandbox_MNWBActionDuration": "Tempo para pegar / largar",
     "Sandbox_MNWBActionDuration_tooltip": "Quanto tempo leva para erguer ou pousar o carrinho.<br>Quanto maior, mais real é o risco de cancelar sem querer.",

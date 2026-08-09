@@ -29,8 +29,6 @@ option MNWheelbarrow.HeavyThreshold
 option MNWheelbarrow.HeavyReduction
 {type = integer, min = 0, max = 100, default = 95, page = MNWheelbarrow, translation = MNWBHeavyReduction,}
 
-option MNWheelbarrow.HeavyShrink
-{type = integer, min = 5, max = 100, default = 15, page = MNWheelbarrow, translation = MNWBHeavyShrink,}
 
 option MNWheelbarrow.ActionDuration
 {type = integer, min = 10, max = 300, default = 80, page = MNWheelbarrow, translation = MNWBActionDuration,}

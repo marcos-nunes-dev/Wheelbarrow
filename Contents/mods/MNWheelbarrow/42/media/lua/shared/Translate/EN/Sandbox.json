@@ -19,8 +19,6 @@
     "Sandbox_MNWBHeavyReduction": "Heavy item weight reduction",
     "Sandbox_MNWBHeavyReduction_tooltip": "How much weight is taken off heavy items, in percent.<br>Light items are never reduced, no matter this setting.",
 
-    "Sandbox_MNWBHeavyShrink": "Space taken by heavy items",
-    "Sandbox_MNWBHeavyShrink_tooltip": "How much room a heavy item takes inside the wheelbarrow, as a share of its real weight.<br>The engine caps any container at 50, so this is what lets two generators fit.<br>Lower means more fits in.",
 
     "Sandbox_MNWBActionDuration": "Pick up / put down time",
     "Sandbox_MNWBActionDuration_tooltip": "How long it takes to lift or set down the wheelbarrow.<br>Longer means cancelling it by accident is a real risk.",

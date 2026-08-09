@@ -18,8 +18,11 @@
     So itens pesados-> pct == reducao               (alivio total)
     Misturado       -> proporcional, matematicamente exato
 
-    O mesmo vale para Capacity: o script tem teto de 50 menos o peso do item,
-    o que nao comporta dois geradores (80). setCapacity() em runtime contorna.
+    CAPACIDADE: o teto de 50 do engine e absoluto -- validado no parser de
+    script E em runtime. Nao ha como contornar. O limite real de um carrinho e
+    50 menos o proprio peso, e ponto. Uma versao anterior tentou driblar isso
+    reduzindo o peso real dos itens; a tecnica quebrava o modelo do personagem
+    e foi abandonada (ver WB_Legacy.lua).
 
     POR QUE ESTE ARQUIVO ESTA EM shared/ E NAO EM server/:
     OnEquipPrimary/OnEquipSecondary sao eventos de cliente -- no jogo base so
@@ -30,7 +33,7 @@
 ]]
 
 local WB_Const = require "WB_Const"
-local WB_Shrink = require "WB_Shrink"
+local WB_Legacy = require "WB_Legacy"
 
 local WB_Weight = {}
 
@@ -63,19 +66,15 @@ function WB_Weight.refresh(item)
     local threshold = sv.HeavyThreshold
     local reduction = sv.HeavyReduction / 100.0
 
-    -- Encolhe o peso real dos itens pesados ANTES de contabilizar, para caber
-    -- dentro do teto de capacidade de 50 do engine (ver WB_Shrink.lua).
-    WB_Shrink.reconcile(inv, true, sv.HeavyShrink / 100.0, threshold)
+    -- Desfaz o encolhimento de peso de versoes antigas do mod, se houver.
+    -- Ver WB_Legacy.lua para por que aquela tecnica foi abandonada.
+    WB_Legacy.sweep(inv)
 
     local heavy, light = 0.0, 0.0
     local contents = inv:getItems()
     for i = 0, contents:size() - 1 do
-        local it = contents:get(i)
-        -- Classifica pelo peso ORIGINAL: um tronco encolhido de 9 para 3.6
-        -- cairia abaixo do limite e perderia a reducao justamente por estar
-        -- sendo carregado como carga pesada.
-        local w = it:getActualWeight()
-        if WB_Shrink.originalWeight(it) >= threshold then
+        local w = contents:get(i):getActualWeight()
+        if w >= threshold then
             heavy = heavy + w
         else
             light = light + w
@@ -126,20 +125,14 @@ end
 --- Varre o inventario do jogador. E o caminho que importa: um carrinho no chao
 --- nao pesa em ninguem, so o que esta sendo carregado.
 ---
---- Esta funcao tambem e a rede de seguranca do encolhimento de peso. A varredura
---- comeca com insideHauler = false, entao qualquer item marcado como encolhido
---- que ja nao esteja dentro de um carrinho tem o peso original restaurado aqui.
---- E por isso que um item largado no chao encolhido se conserta sozinho quando
---- alguem o pega: pegar o coloca num inventario, e o inventario e varrido.
+--- Tambem restaura itens que uma versao antiga do mod deixou com o peso
+--- alterado, para saves criados naquela epoca voltarem ao normal.
 function WB_Weight.refreshPlayer(player)
     if player == nil then return end
     local inv = player:getInventory()
     if inv == nil then return end
 
-    local sv = sandbox()
-    if sv ~= nil then
-        WB_Shrink.reconcile(inv, false, sv.HeavyShrink / 100.0, sv.HeavyThreshold)
-    end
+    WB_Legacy.sweep(inv)
 
     WB_Weight.refreshContainer(inv)
 end
@@ -167,9 +160,16 @@ function WB_Weight.refreshNearbyGround(player)
             if sq ~= nil then
                 local objects = sq:getWorldObjects()
                 for i = 0, objects:size() - 1 do
-                    local item = objects:get(i):getItem()
-                    if WB_Weight.isHauler(item) then
-                        WB_Weight.refresh(item)
+                    local obj = objects:get(i)
+                    -- getWorldObjects devolve todo IsoObject da square: piso,
+                    -- parede, movel. Chamar getItem() num deles levanta
+                    -- "No implementation found", entao o teste de tipo nao e
+                    -- defensivo por precaucao -- e obrigatorio.
+                    if instanceof(obj, "IsoWorldInventoryObject") then
+                        local item = obj:getItem()
+                        if WB_Weight.isHauler(item) then
+                            WB_Weight.refresh(item)
+                        end
                     end
                 end
             end
@@ -198,6 +198,11 @@ end)
 -- Conteudo mudou. Ignoramos os argumentos de proposito: a varredura e barata
 -- (dezenas de itens) e nao depende da assinatura exata do evento.
 Events.OnContainerUpdate.Add(refreshLocalPlayers)
+
+-- OnContainerUpdate nem sempre dispara para container que esta no chao. A
+-- janela de loot reconstruindo e o sinal mais confiavel de que o jogador esta
+-- mexendo num carrinho largado.
+Events.OnRefreshInventoryWindowContainers.Add(refreshLocalPlayers)
 
 -- setWeightReduction/setCapacity sao estado de runtime: ao recarregar um save
 -- os valores do script voltam. Sem estes dois, um carrinho salvo cheio
