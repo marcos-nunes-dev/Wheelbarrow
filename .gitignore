@@ -1,0 +1,15 @@
+# Blender
+*.blend1
+*.blend2
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+
+# Saida temporaria de exportacao de modelo
+/assets/tmp/
