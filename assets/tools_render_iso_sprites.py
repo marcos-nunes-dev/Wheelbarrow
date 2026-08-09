@@ -27,13 +27,20 @@ import math
 import struct
 import sys
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 SPRITE_W, SPRITE_H = 128, 256
 # Sprites do jogo base tem luminancia mediana ~79 (medido em 73 celulas de
 # quatro folhas vanilla). A textura deste modelo e escura, entao o render
 # cru saia escuro demais. Este ganho foi calibrado medindo o resultado.
 BRIGHTNESS = 1.45
+
+# SOMBRA: nao existe propriedade de tile para isso -- varri as 568 chaves de
+# TilePropertyKey do engine e nenhuma trata sombra. Objeto do mundo no PZ nao
+# projeta sombra dinamica; quando tem, esta pintada no proprio sprite. Entao a
+# sombra de contato e assada aqui, projetando a malha no plano do chao.
+SHADOW_ALPHA = 105
+SHADOW_BLUR = 2.5
 ANCHOR_X, ANCHOR_Y = 64, 245
 ELEVATION = math.radians(30.0)
 
@@ -100,7 +107,40 @@ def render(mesh, texture, azimuth_deg):
     tw, th_ = texture.size
     tex = texture.load()
 
+    # --- sombra de contato ---------------------------------------------
+    # Projeta cada vertice como se estivesse no chao (y = 0) e rasteriza essa
+    # silhueta. O resultado e a "pegada" real do objeto, nao uma elipse
+    # generica: o carrinho tem uma roda fina na frente e dois pes atras, e a
+    # sombra acompanha isso.
+    gy = [(0.0 * ce + (verts[3 * i] * st + verts[3 * i + 2] * ct) * se) for i in range(n)]
+    gpx = [(sx[i] - cx) * scale + ANCHOR_X for i in range(n)]
+    gpy = [ANCHOR_Y - (gy[i] - miny) * scale for i in range(n)]
+
+    shadow = Image.new("L", (SPRITE_W, SPRITE_H), 0)
+    sh = shadow.load()
+    for (ia, _), (ib, _), (ic, _) in triangles(pvi):
+        x0, y0 = gpx[ia], gpy[ia]
+        x1, y1 = gpx[ib], gpy[ib]
+        x2, y2 = gpx[ic], gpy[ic]
+        ar = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0)
+        if abs(ar) < 1e-9:
+            continue
+        lo_x = max(0, int(min(x0, x1, x2)))
+        hi_x = min(SPRITE_W - 1, int(max(x0, x1, x2)) + 1)
+        lo_y = max(0, int(min(y0, y1, y2)))
+        hi_y = min(SPRITE_H - 1, int(max(y0, y1, y2)) + 1)
+        for yy in range(lo_y, hi_y + 1):
+            for xx in range(lo_x, hi_x + 1):
+                cxp, cyp = xx + 0.5, yy + 0.5
+                w0 = ((x1 - cxp) * (y2 - cyp) - (x2 - cxp) * (y1 - cyp)) / ar
+                w1 = ((x2 - cxp) * (y0 - cyp) - (x0 - cxp) * (y2 - cyp)) / ar
+                if w0 >= 0 and w1 >= 0 and (1.0 - w0 - w1) >= 0:
+                    sh[xx, yy] = 255
+    shadow = shadow.filter(ImageFilter.GaussianBlur(SHADOW_BLUR))
+    shadow = shadow.point(lambda v: int(v * SHADOW_ALPHA / 255))
+
     img = Image.new("RGBA", (SPRITE_W, SPRITE_H), (0, 0, 0, 0))
+    img.putalpha(shadow)
     out = img.load()
     zbuf = [[1e30] * SPRITE_W for _ in range(SPRITE_H)]
 
