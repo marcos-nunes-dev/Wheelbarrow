@@ -37,7 +37,7 @@ local function place(square, spriteName)
     -- um ItemContainer de verdade. Sem esta chamada o objeto e so um desenho.
     object:createContainersFromSpriteProperties()
 
-    square:AddSpecialObject(object)
+    square:AddTileObject(object)
     square:RecalcAllWithNeighbours(true)
 
     local container = object:getContainer()

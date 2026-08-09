@@ -22,14 +22,41 @@ local WB_Const = require "WB_Const"
 
 local WB_Push = {}
 
--- Nomes gerados pelo PackTool a partir da primeira linha da folha. A ordem
--- segue FACINGS em tools_render_iso_sprites.py.
-local SPRITE_BY_FACE = {
-    S = "mnwheelbarrow_01_0",
-    W = "mnwheelbarrow_01_1",
-    N = "mnwheelbarrow_01_2",
-    E = "mnwheelbarrow_01_3",
+-- Sprites na ordem em que o PackTool os nomeou, que e a ordem das colunas na
+-- folha: FACINGS[1..4] em tools_render_iso_sprites.py.
+local SPRITES = {
+    "mnwheelbarrow_01_0",
+    "mnwheelbarrow_01_1",
+    "mnwheelbarrow_01_2",
+    "mnwheelbarrow_01_3",
 }
+
+local FACE_ORDER = { "N", "E", "S", "W" }
+
+--- CALIBRACAO DA DIRECAO.
+---
+--- Eu nao consegui determinar em documentacao nenhuma como o azimute do render
+--- corresponde as direcoes do jogo, e ja errei orientacao duas vezes tentando
+--- deduzir (a camera olhando por baixo, e agora a face apontando errado). Entao
+--- estes dois numeros existem para o jogo responder em vez de eu adivinhar:
+---
+---   ROTATION  desloca qual sprite serve cada direcao (0..3)
+---   MIRRORED  inverte o sentido, para o caso de a malha estar espelhada
+---
+--- Existe uma opcao de debug que percorre as 8 combinacoes e imprime a atual.
+--- Quando a certa for encontrada, os valores viram fixos aqui e a opcao sai.
+local ROTATION = 0
+local MIRRORED = false
+
+local function spriteForFace(face)
+    local i
+    for k, name in ipairs(FACE_ORDER) do
+        if name == face then i = k break end
+    end
+    if i == nil then i = 1 end
+    if MIRRORED then i = 5 - i end
+    return SPRITES[((i - 1 + ROTATION) % 4) + 1]
+end
 
 -- O jogador tem 8 direcoes, o carrinho tem 4 sprites. As diagonais caem para a
 -- cardinal anterior no sentido horario.
@@ -80,8 +107,8 @@ local function moveCart(object, fromSquare, toSquare, face)
     if fromSquare == toSquare then return false end
 
     fromSquare:RemoveTileObject(object)
-    object:setSprite(SPRITE_BY_FACE[face])
-    toSquare:AddSpecialObject(object)
+    object:setSprite(spriteForFace(face))
+    toSquare:AddTileObject(object)
 
     fromSquare:RecalcAllWithNeighbours(true)
     toSquare:RecalcAllWithNeighbours(true)
@@ -130,9 +157,7 @@ local function onPlayerUpdate(player)
 
     if target == current then
         -- Mesma square, mas o jogador pode ter girado: so troca o sprite.
-        if object:getSprite() ~= nil and SPRITE_BY_FACE[face] then
-            object:setSprite(SPRITE_BY_FACE[face])
-        end
+        object:setSprite(spriteForFace(face))
         return
     end
 
@@ -169,5 +194,28 @@ local function onFillWorldObjectContextMenu(playerNum, context, worldobjects, _t
 end
 
 Events.OnFillWorldObjectContextMenu.Add(onFillWorldObjectContextMenu)
+
+--- Calibrador de direcao. So com -debug. Percorre as 8 combinacoes possiveis de
+--- ROTATION x MIRRORED e imprime a atual, para descobrir empiricamente qual
+--- sprite corresponde a qual direcao do jogo. Sai quando os valores estiverem
+--- fixados no topo do arquivo.
+local function onFillDebugMenu(playerNum, context, worldobjects, _test)
+    if not getDebug() then return end
+    if not WB_Push.isPushing(playerNum) then return end
+
+    context:addOption("[SPIKE] Proxima combinacao de face", nil, function()
+        ROTATION = ROTATION + 1
+        if ROTATION > 3 then
+            ROTATION = 0
+            MIRRORED = not MIRRORED
+        end
+        local player = getSpecificPlayer(playerNum)
+        local dir = player and player:getDir() and player:getDir():toString() or "?"
+        print(("[Wheelbarrow] ROTATION=%d MIRRORED=%s | olhando para %s -> sprite %s")
+            :format(ROTATION, tostring(MIRRORED), dir, spriteForFace(faceOf(player))))
+    end)
+end
+
+Events.OnFillWorldObjectContextMenu.Add(onFillDebugMenu)
 
 return WB_Push
