@@ -41,6 +41,11 @@ BRIGHTNESS = 1.45
 # sombra de contato e assada aqui, projetando a malha no plano do chao.
 SHADOW_ALPHA = 105
 SHADOW_BLUR = 2.5
+
+# Margem livre em cada lado. Nao e estetica: o desfoque gaussiano da sombra
+# espalha cerca de 3x o raio, entao reservar so 4px fazia a sombra encostar nas
+# bordas do sprite e ser cortada.
+MARGIN = 12
 ANCHOR_X, ANCHOR_Y = 64, 245
 ELEVATION = math.radians(30.0)
 
@@ -89,16 +94,24 @@ def render(mesh, texture, azimuth_deg):
         # para baixo: ponto mais alto esta mais PERTO de uma camera elevada.
         depth[i] = fwd * ce - y * se
 
+    # Projecao da malha no plano do chao (y = 0), que e a sombra. Precisa ser
+    # calculada ANTES do enquadramento: a sombra da ponta do cabo cai a frente
+    # do ponto mais baixo do objeto, entao ela e quem define o limite inferior.
+    # Enquadrar so pelo objeto fazia a sombra transbordar os 256 pixels e ser
+    # cortada -- em jogo isso aparecia como a frente do carrinho decepada.
+    gsy = [(verts[3 * i] * st + verts[3 * i + 2] * ct) * se for i in range(n)]
+
     minx, maxx = min(sx), max(sx)
-    miny, maxy = min(sy), max(sy)
-    span = max(maxx - minx, (maxy - miny) * 1.0)
-    if span <= 0:
+    miny = min(min(sy), min(gsy))
+    maxy = max(max(sy), max(gsy))
+    if maxx - minx <= 0 or maxy - miny <= 0:
         raise SystemExit("modelo degenerado")
 
-    # Deixa margem de 4px e ancora a base no ponto do losango.
-    scale = (SPRITE_W - 8) / (maxx - minx)
-    if (maxy - miny) * scale > (SPRITE_H - 8):
-        scale = (SPRITE_H - 8) / (maxy - miny)
+    # Enquadra objeto e sombra juntos, com margem de MARGIN pixels de cada lado, e assenta
+    # o conjunto na linha do chao medida nos sprites vanilla.
+    scale = (SPRITE_W - 2 * MARGIN) / (maxx - minx)
+    if (maxy - miny) * scale > (SPRITE_H - 2 * MARGIN):
+        scale = (SPRITE_H - 2 * MARGIN) / (maxy - miny)
     cx = (minx + maxx) / 2.0
 
     px = [(v - cx) * scale + ANCHOR_X for v in sx]
@@ -112,9 +125,8 @@ def render(mesh, texture, azimuth_deg):
     # silhueta. O resultado e a "pegada" real do objeto, nao uma elipse
     # generica: o carrinho tem uma roda fina na frente e dois pes atras, e a
     # sombra acompanha isso.
-    gy = [(0.0 * ce + (verts[3 * i] * st + verts[3 * i + 2] * ct) * se) for i in range(n)]
-    gpx = [(sx[i] - cx) * scale + ANCHOR_X for i in range(n)]
-    gpy = [ANCHOR_Y - (gy[i] - miny) * scale for i in range(n)]
+    gpx = px
+    gpy = [ANCHOR_Y - (gsy[i] - miny) * scale for i in range(n)]
 
     shadow = Image.new("L", (SPRITE_W, SPRITE_H), 0)
     sh = shadow.load()
