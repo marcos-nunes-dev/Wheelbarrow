@@ -30,6 +30,7 @@
 ]]
 
 local WB_Const = require "WB_Const"
+local WB_Shrink = require "WB_Shrink"
 
 local WB_Weight = {}
 
@@ -62,11 +63,19 @@ function WB_Weight.refresh(item)
     local threshold = sv.HeavyThreshold
     local reduction = sv.HeavyReduction / 100.0
 
+    -- Encolhe o peso real dos itens pesados ANTES de contabilizar, para caber
+    -- dentro do teto de capacidade de 50 do engine (ver WB_Shrink.lua).
+    WB_Shrink.reconcile(inv, true, sv.HeavyShrink / 100.0, threshold)
+
     local heavy, light = 0.0, 0.0
     local contents = inv:getItems()
     for i = 0, contents:size() - 1 do
-        local w = contents:get(i):getActualWeight()
-        if w >= threshold then
+        local it = contents:get(i)
+        -- Classifica pelo peso ORIGINAL: um tronco encolhido de 9 para 3.6
+        -- cairia abaixo do limite e perderia a reducao justamente por estar
+        -- sendo carregado como carga pesada.
+        local w = it:getActualWeight()
+        if WB_Shrink.originalWeight(it) >= threshold then
             heavy = heavy + w
         else
             light = light + w
@@ -116,9 +125,23 @@ end
 
 --- Varre o inventario do jogador. E o caminho que importa: um carrinho no chao
 --- nao pesa em ninguem, so o que esta sendo carregado.
+---
+--- Esta funcao tambem e a rede de seguranca do encolhimento de peso. A varredura
+--- comeca com insideHauler = false, entao qualquer item marcado como encolhido
+--- que ja nao esteja dentro de um carrinho tem o peso original restaurado aqui.
+--- E por isso que um item largado no chao encolhido se conserta sozinho quando
+--- alguem o pega: pegar o coloca num inventario, e o inventario e varrido.
 function WB_Weight.refreshPlayer(player)
     if player == nil then return end
-    WB_Weight.refreshContainer(player:getInventory())
+    local inv = player:getInventory()
+    if inv == nil then return end
+
+    local sv = sandbox()
+    if sv ~= nil then
+        WB_Shrink.reconcile(inv, false, sv.HeavyShrink / 100.0, sv.HeavyThreshold)
+    end
+
+    WB_Weight.refreshContainer(inv)
 end
 
 local function refreshLocalPlayers()
