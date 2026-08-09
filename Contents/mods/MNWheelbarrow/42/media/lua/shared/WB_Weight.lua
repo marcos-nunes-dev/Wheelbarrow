@@ -84,11 +84,25 @@ function WB_Weight.refresh(item)
     -- Setados no item e no container: ambos expoem os setters, e qual deles o
     -- engine consulta depende do caminho de codigo. Escrever nos dois e barato
     -- e elimina a duvida.
-    item:setWeightReduction(pct)
-    inv:setWeightReduction(pct)
+    if item:getWeightReduction() ~= pct then
+        item:setWeightReduction(pct)
+        inv:setWeightReduction(pct)
+    end
 
-    item:setCapacity(sv.Capacity)
-    inv:setCapacity(sv.Capacity)
+    -- CAPACIDADE: o teto de 50 do engine NAO e so do parser de script -- e
+    -- validado em runtime tambem. setCapacity acima disso e recusado e cospe
+    -- "Attempting to set capacity ... over maximum capacity" no console a cada
+    -- chamada. O limite real do item e 50 menos o proprio peso.
+    --
+    -- Ou seja: a sandbox option so consegue ABAIXAR a capacidade, nunca subir
+    -- alem do teto. Clampamos para respeitar isso em silencio, e so escrevemos
+    -- quando o valor muda de fato, para nao inundar o log.
+    local ceiling = WB_Const.ENGINE_CAPACITY_CEILING - item:getActualWeight()
+    local target = math.floor(math.min(sv.Capacity, ceiling))
+    if target > 0 and inv:getCapacity() ~= target then
+        item:setCapacity(target)
+        inv:setCapacity(target)
+    end
 end
 
 --- Varre um container e atualiza todo carrinho encontrado nele.

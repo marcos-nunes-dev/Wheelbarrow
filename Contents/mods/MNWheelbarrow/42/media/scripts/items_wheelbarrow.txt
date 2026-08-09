@@ -33,7 +33,7 @@ module MNWheelbarrow
            mao precisa de um mesh com skin preso ao osso, que sao trabalhos
            separados do modelo estatico. */
         Icon = Toolbox,
-        WorldStaticModel = Wheelbarrow_Ground,
+        WorldStaticModel = MNWheelbarrow_Ground,
         ReplaceInPrimaryHand = Bag_Suitcase_RHand holdingbagright,
         ReplaceInSecondHand = Bag_Suitcase_LHand holdingbagleft,
 

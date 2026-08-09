@@ -31,6 +31,12 @@ WB_Const.HAULER_TYPES = {
 --- dos nomes de option em sandbox-options.txt.
 WB_Const.SANDBOX_NS = "MNWheelbarrow"
 
+--- Teto de capacidade imposto pelo engine, verificado em runtime e nao so no
+--- parser de script. O limite efetivo de um item e este valor menos o peso do
+--- proprio item. Nao e ajustavel -- e um fato do jogo, nao uma escolha nossa,
+--- e por isso mora aqui e nao em sandbox-options.txt.
+WB_Const.ENGINE_CAPACITY_CEILING = 50
+
 --- ID completo do item. NUNCA mudar depois de publicado: saves guardam o item
 --- por este nome, e renomear transforma carrinhos existentes em itens orfaos.
 WB_Const.ITEM_FULL_TYPE = "MNWheelbarrow.Wheelbarrow"

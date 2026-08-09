@@ -1,22 +1,25 @@
-module MNWheelbarrow
+module Base
 {
-    imports { Base }
-
     /*
      * Modelo do carrinho quando largado no chao.
      *
-     * O mesh original tinha 4 texturas PBR de 4096x4096 embutidas (21.7 MB).
-     * O PZ nao usa pipeline PBR -- so um mapa difuso -- entao normal, roughness
-     * e metallic foram descartados e o payload embutido foi removido do FBX.
-     * A geometria ficou intacta: 2240 vertices, ~4484 triangulos.
+     * POR QUE module Base E NAO module MNWheelbarrow:
+     * todos os modelos do jogo base vivem em `module Base` -- models_items.txt
+     * inteiro e Base -- e nenhum item vanilla referencia modelo qualificado por
+     * modulo. Definir o modelo num modulo proprio e referencia-lo pelo nome nu
+     * e um caminho sem nenhum precedente no jogo, e o modelo simplesmente nao
+     * aparecia no mundo, sem erro no log. O nome carrega o prefixo MNWheelbarrow
+     * para nao colidir com outro mod dentro do namespace compartilhado.
      *
-     * SCALE: os meshes do jogo base sao autorados numa escala muito maior.
-     * O Log vanilla tem 30.9 unidades no eixo maior e usa scale = 0.4; este
-     * mesh tem 1.9. Para render equivalente:  0.4 * 30.9 / 1.9 ~= 6.5.
-     * Este e um ponto de partida calculado, nao medido em tela -- ajustar
-     * olhando o carrinho no chao ao lado de um personagem.
+     * O mesh original tinha 4 texturas PBR de 4096x4096 embutidas (21.7 MB).
+     * O PZ so usa mapa difuso, entao o payload embutido foi removido; a
+     * geometria ficou identica (2240 vertices, mesmos 393 nos).
+     *
+     * SCALE: os meshes do jogo base sao autorados numa escala bem maior. O Log
+     * vanilla tem 30.9 unidades no eixo maior com scale = 0.4; este tem 1.9.
+     * Equivalente: 0.4 * 30.9 / 1.9 ~= 6.5. E aritmetica, nao medicao em tela.
      */
-    model Wheelbarrow_Ground
+    model MNWheelbarrow_Ground
     {
         mesh = WorldItems/Wheelbarrow,
         texture = WorldItems/Wheelbarrow,
