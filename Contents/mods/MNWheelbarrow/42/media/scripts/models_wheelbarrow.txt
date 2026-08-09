@@ -15,14 +15,28 @@ module Base
      * O PZ so usa mapa difuso, entao o payload embutido foi removido; a
      * geometria ficou identica (2240 vertices, mesmos 393 nos).
      *
-     * SCALE: os meshes do jogo base sao autorados numa escala bem maior. O Log
-     * vanilla tem 30.9 unidades no eixo maior com scale = 0.4; este tem 1.9.
-     * Equivalente: 0.4 * 30.9 / 1.9 ~= 6.5. E aritmetica, nao medicao em tela.
+     * SCALE: comparar so a bounding box do mesh NAO funciona. O tamanho final e
+     *
+     *     bbox do mesh  x  Lcl Scaling do no Model  x  scale deste script
+     *
+     * e o Lcl Scaling difere brutalmente entre os arquivos:
+     *
+     *     Log vanilla   bbox 30.932  x  Lcl 0.02778  x  0.4  =  0.3437
+     *     este mesh     bbox  1.900  x  Lcl 100.0            <- 100x embutido
+     *
+     * O vanilla embute a conversao de unidade no Lcl Scaling (91.44/2.54 = 36,
+     * e 1/36 = 0.02778). Este arquivo veio de uma ferramenta em centimetros com
+     * a unidade nao aplicada, entao carrega 100x. Ignorar isso me fez calcular
+     * scale = 6.5, que renderizou o carrinho 3593x grande demais -- ocupando
+     * varios quarteiroes.
+     *
+     * 0.0025 deixa o carrinho ~40% maior que um tronco vanilla, que e uma
+     * proporcao plausivel. Dobrar o numero dobra o tamanho na tela.
      */
     model MNWheelbarrow_Ground
     {
         mesh = WorldItems/Wheelbarrow,
         texture = WorldItems/Wheelbarrow,
-        scale = 6.5,
+        scale = 0.0025,
     }
 }
