@@ -30,8 +30,9 @@ module Base
      * scale = 6.5, que renderizou o carrinho 3593x grande demais -- ocupando
      * varios quarteiroes.
      *
-     * 0.0075 e o valor calibrado em tela: 0.0025 ficou tres vezes pequeno
-     * demais. Dobrar o numero dobra o tamanho renderizado.
+     * 0.006 e o valor calibrado em tela, em duas passadas: 0.0025 ficou tres
+     * vezes pequeno demais, 0.0075 ficou 20% grande demais. Dobrar o numero
+     * dobra o tamanho renderizado.
      *
      * ALTURA: o mesh foi deslocado 0.380 no eixo Y (ver
      * assets/tools_fbx_shift_y.py) para a base ficar em Y = 0 em vez de a
@@ -45,6 +46,6 @@ module Base
     {
         mesh = WorldItems/Wheelbarrow,
         texture = WorldItems/Wheelbarrow,
-        scale = 0.0075,
+        scale = 0.006,
     }
 }

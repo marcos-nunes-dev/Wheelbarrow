@@ -144,9 +144,46 @@ function WB_Weight.refreshPlayer(player)
     WB_Weight.refreshContainer(inv)
 end
 
+--- Carrinhos largados no chao ao redor do jogador.
+---
+--- Isto nao e um detalhe: carregar o carrinho com ele NO CHAO e o fluxo
+--- principal, nao a excecao. Itens pesados como gerador e cadaver so podem ser
+--- pegos com as maos, e o carrinho ja ocupa as duas -- entao a unica forma de
+--- carrega-lo e larga-lo, pegar o item e depositar. Varrer so o inventario do
+--- jogador deixava exatamente esse caso de fora, e itens colocados num carrinho
+--- no chao nao encolhiam.
+local SEARCH_RADIUS = 2
+
+function WB_Weight.refreshNearbyGround(player)
+    local square = player:getSquare()
+    if square == nil then return end
+    local cell = getCell()
+    if cell == nil then return end
+
+    local px, py, pz = square:getX(), square:getY(), square:getZ()
+    for dx = -SEARCH_RADIUS, SEARCH_RADIUS do
+        for dy = -SEARCH_RADIUS, SEARCH_RADIUS do
+            local sq = cell:getGridSquare(px + dx, py + dy, pz)
+            if sq ~= nil then
+                local objects = sq:getWorldObjects()
+                for i = 0, objects:size() - 1 do
+                    local item = objects:get(i):getItem()
+                    if WB_Weight.isHauler(item) then
+                        WB_Weight.refresh(item)
+                    end
+                end
+            end
+        end
+    end
+end
+
 local function refreshLocalPlayers()
     for i = 0, getNumActivePlayers() - 1 do
-        WB_Weight.refreshPlayer(getSpecificPlayer(i))
+        local player = getSpecificPlayer(i)
+        WB_Weight.refreshPlayer(player)
+        if player ~= nil then
+            WB_Weight.refreshNearbyGround(player)
+        end
     end
 end
 

@@ -25,7 +25,15 @@ module MNWheelbarrow
     {
         DisplayCategory = Container,
         ItemType = base:container,
-        Weight = 8.0,
+
+        /* Weight nao e so realismo: a capacidade maxima e 50 MENOS o peso do
+           proprio item, e a regra do engine ao inserir e
+               conteudo_atual + peso_CHEIO_do_novo <= capacidade
+           ou seja, o item que entra e medido cheio, mesmo que va encolher
+           depois. Com peso 8 (capacidade 42) nem dois geradores vanilla de 40
+           cabiam. Peso 3 da capacidade 47 e, com HeavyShrink em 15%, comporta
+           2 geradores vanilla ou 4 do Valutech. */
+        Weight = 3.0,
 
         /* Modelo de chao proprio (ver models_wheelbarrow.txt).
            Icone e modelos de mao ainda sao placeholders do Toolbox e da
@@ -37,7 +45,7 @@ module MNWheelbarrow
         ReplaceInPrimaryHand = Bag_Suitcase_RHand holdingbagright,
         ReplaceInSecondHand = Bag_Suitcase_LHand holdingbagleft,
 
-        Capacity = 40,
+        Capacity = 47,
         WeightReduction = 0,
         CanHaveHoles = false,
 

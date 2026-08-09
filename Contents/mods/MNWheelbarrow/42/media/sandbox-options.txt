@@ -21,7 +21,7 @@ option MNWheelbarrow.EnableCrafting
 {type = boolean, default = true, page = MNWheelbarrow, translation = MNWBEnableCrafting,}
 
 option MNWheelbarrow.Capacity
-{type = integer, min = 10, max = 500, default = 100, page = MNWheelbarrow, translation = MNWBCapacity,}
+{type = integer, min = 10, max = 50, default = 47, page = MNWheelbarrow, translation = MNWBCapacity,}
 
 option MNWheelbarrow.HeavyThreshold
 {type = double, min = 0.5, max = 50, default = 8.0, page = MNWheelbarrow, translation = MNWBHeavyThreshold,}
@@ -30,7 +30,7 @@ option MNWheelbarrow.HeavyReduction
 {type = integer, min = 0, max = 100, default = 95, page = MNWheelbarrow, translation = MNWBHeavyReduction,}
 
 option MNWheelbarrow.HeavyShrink
-{type = integer, min = 10, max = 100, default = 40, page = MNWheelbarrow, translation = MNWBHeavyShrink,}
+{type = integer, min = 5, max = 100, default = 15, page = MNWheelbarrow, translation = MNWBHeavyShrink,}
 
 option MNWheelbarrow.ActionDuration
 {type = integer, min = 10, max = 300, default = 80, page = MNWheelbarrow, translation = MNWBActionDuration,}
