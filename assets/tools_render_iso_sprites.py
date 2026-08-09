@@ -11,10 +11,16 @@ altura de 1.4142*s*sin(elevacao). A razao largura/altura e portanto
 1/sin(elevacao). O PZ usa losango 2:1, logo sin(elevacao) = 0.5 e a elevacao
 e exatamente 30 graus.
 
-ANCORA:
-no PZ o centro do losango do chao fica na base do sprite. Num sprite 2x de
-128x256 o losango ocupa os 64 pixels de baixo, entao o centro fica em
-(64, 224). O modelo e posicionado com a base nesse ponto.
+ANCORA -- medida, nao deduzida:
+a primeira versao usava (64, 224), calculado supondo que o losango do chao
+ocupasse exatamente os 64 pixels de baixo. Errado: medindo 213 celulas reais
+de cinco folhas vanilla (moveis, eletrodomesticos, armazenamento), a base do
+conteudo tem mediana em y = 245 e o centro horizontal em x = 63. Com 224 o
+sprite flutuava 21 pixels acima do chao.
+
+Para referencia, nessas mesmas amostras a largura do conteudo tem mediana 94
+e maximo 126, e a altura mediana 117. O carrinho e um objeto comprido, entao
+ficar perto do limite de largura e esperado.
 """
 import json
 import math
@@ -24,7 +30,11 @@ import sys
 from PIL import Image
 
 SPRITE_W, SPRITE_H = 128, 256
-ANCHOR_X, ANCHOR_Y = 64, 224
+# Sprites do jogo base tem luminancia mediana ~79 (medido em 73 celulas de
+# quatro folhas vanilla). A textura deste modelo e escura, entao o render
+# cru saia escuro demais. Este ganho foi calibrado medindo o resultado.
+BRIGHTNESS = 1.45
+ANCHOR_X, ANCHOR_Y = 64, 245
 ELEVATION = math.radians(30.0)
 
 # Ordem das faces como o PZ nomeia: a camera olha o objeto de frente em cada uma.
@@ -64,8 +74,13 @@ def render(mesh, texture, azimuth_deg):
         right = x * ct - z * st
         fwd = x * st + z * ct
         sx[i] = right
-        sy[i] = y * ce - fwd * se
-        depth[i] = fwd * ce + y * se
+        # Camera ACIMA olhando para baixo: o que esta mais longe sobe na tela.
+        # Com o sinal invertido aqui, a cena era vista por baixo -- dava para
+        # ver o fundo da cacamba do carrinho em vez de dentro dela.
+        sy[i] = y * ce + fwd * se
+        # Profundidade ao longo da direcao de visao, que aponta para frente e
+        # para baixo: ponto mais alto esta mais PERTO de uma camera elevada.
+        depth[i] = fwd * ce - y * se
 
     minx, maxx = min(sx), max(sx)
     miny, maxy = min(sy), max(sy)
@@ -137,10 +152,11 @@ def render(mesh, texture, azimuth_deg):
                 ty = int((1.0 - v) * (th_ - 1)) % th_
                 r, g, b = tex[tx, ty][:3]
                 zbuf[yy][xx] = zz
+                s = shade * BRIGHTNESS
                 out[xx, yy] = (
-                    min(255, int(r * shade)),
-                    min(255, int(g * shade)),
-                    min(255, int(b * shade)),
+                    min(255, int(r * s)),
+                    min(255, int(g * s)),
+                    min(255, int(b * s)),
                     255,
                 )
     return img
