@@ -30,7 +30,7 @@ function MNWheelbarrow.AcceptItem(container, item)
 
     -- Carrinho dentro de carrinho: recursao no calculo de peso e capacidade.
     -- Este e o unico bloqueio que existe por necessidade tecnica.
-    if item:hasTag(WB_Const.TAG) then
+    if WB_Const.HAULER_TYPES[item:getFullType()] then
         return false
     end
 

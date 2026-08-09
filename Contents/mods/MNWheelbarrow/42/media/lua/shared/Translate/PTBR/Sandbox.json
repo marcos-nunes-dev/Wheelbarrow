@@ -5,7 +5,7 @@
     "Sandbox_MNWBEnableWorldSpawn_tooltip": "Carrinhos podem ser encontrados largados em canteiros de obra, depósitos e lojas de ferramentas.<br>Desligue para que a única forma de conseguir um seja fabricando.",
 
     "Sandbox_MNWBSpawnChance": "Chance de aparecer",
-    "Sandbox_MNWBSpawnChance_tooltip": "Chance (%) de um carrinho aparecer em um lugar elegível.<br>Cada lugar é sorteado uma única vez.",
+    "Sandbox_MNWBSpawnChance_tooltip": "Chance, em porcentagem, de um carrinho aparecer em um lugar elegível.<br>Cada lugar é sorteado uma única vez.",
 
     "Sandbox_MNWBEnableCrafting": "Permitir fabricação",
     "Sandbox_MNWBEnableCrafting_tooltip": "Habilita a receita para construir um carrinho do zero.",
@@ -17,7 +17,7 @@
     "Sandbox_MNWBHeavyThreshold_tooltip": "Itens com esse peso ou mais contam como pesados e recebem a redução.<br>Qualquer coisa mais leve não recebe nada -- o carrinho é inútil de propósito para loot miúdo.",
 
     "Sandbox_MNWBHeavyReduction": "Redução de peso dos pesados",
-    "Sandbox_MNWBHeavyReduction_tooltip": "Quanto peso é tirado dos itens pesados (%).<br>Itens leves nunca são reduzidos, independente deste valor.",
+    "Sandbox_MNWBHeavyReduction_tooltip": "Quanto peso é tirado dos itens pesados, em porcentagem.<br>Itens leves nunca são reduzidos, independente deste valor.",
 
     "Sandbox_MNWBActionDuration": "Tempo para pegar / largar",
     "Sandbox_MNWBActionDuration_tooltip": "Quanto tempo leva para erguer ou pousar o carrinho.<br>Quanto maior, mais real é o risco de cancelar sem querer.",

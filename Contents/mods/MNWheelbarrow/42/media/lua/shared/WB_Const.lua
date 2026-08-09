@@ -9,10 +9,23 @@
 
 local WB_Const = {}
 
---- Tag declarada no script como "MNWheelbarrow:mnwbHauler".
---- O engine remove o prefixo de modulo na consulta, entao hasTag() usa o
---- nome puro. O prefixo "mnwb" evita colisao com tags de outros mods.
-WB_Const.TAG = "mnwbHauler"
+--- Itens que se comportam como carrinho.
+---
+--- NAO usamos hasTag() aqui. Na B42 a assinatura e hasTag(ItemTag), e passar
+--- uma string levanta "No implementation found for function: hasTag(...,
+--- java.lang.String)". O padrao hasTag("nomeDaTag") que se ve em mods antigos
+--- e de B41. Existe ItemTag.register(String), mas depender dele custaria mais
+--- uma rodada de tentativa e erro sem ganho real.
+---
+--- Um registro por fullType entrega o mesmo que a tag entregaria: adicionar um
+--- segundo carrinho (de supermercado, carroca) continua sendo acrescentar uma
+--- linha de dado aqui, sem tocar em logica.
+---
+--- A linha `Tags = MNWheelbarrow:mnwbHauler` continua no script do item de
+--- proposito: nao custa nada e deixa outros mods detectarem o carrinho.
+WB_Const.HAULER_TYPES = {
+    ["MNWheelbarrow.Wheelbarrow"] = true,
+}
 
 --- Namespace das sandbox options. Precisa bater com o "page" e com o prefixo
 --- dos nomes de option em sandbox-options.txt.

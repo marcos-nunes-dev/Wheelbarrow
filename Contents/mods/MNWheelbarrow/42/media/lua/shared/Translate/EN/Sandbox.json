@@ -5,7 +5,7 @@
     "Sandbox_MNWBEnableWorldSpawn_tooltip": "Wheelbarrows can be found lying around construction sites, warehouses and tool stores.<br>Turn off to make crafting the only way to get one.",
 
     "Sandbox_MNWBSpawnChance": "World spawn chance",
-    "Sandbox_MNWBSpawnChance_tooltip": "Chance (%) of a wheelbarrow spawning at an eligible spot.<br>Each spot is only ever rolled once.",
+    "Sandbox_MNWBSpawnChance_tooltip": "Percent chance of a wheelbarrow spawning at an eligible spot.<br>Each spot is only ever rolled once.",
 
     "Sandbox_MNWBEnableCrafting": "Allow crafting",
     "Sandbox_MNWBEnableCrafting_tooltip": "Enables the recipe to build a wheelbarrow from scratch.",
@@ -17,7 +17,7 @@
     "Sandbox_MNWBHeavyThreshold_tooltip": "Items at or above this weight count as heavy and get the weight reduction.<br>Anything lighter gets nothing at all -- the wheelbarrow is deliberately useless for small loot.",
 
     "Sandbox_MNWBHeavyReduction": "Heavy item weight reduction",
-    "Sandbox_MNWBHeavyReduction_tooltip": "How much weight is taken off heavy items (%).<br>Light items are never reduced, no matter this setting.",
+    "Sandbox_MNWBHeavyReduction_tooltip": "How much weight is taken off heavy items, in percent.<br>Light items are never reduced, no matter this setting.",
 
     "Sandbox_MNWBActionDuration": "Pick up / put down time",
     "Sandbox_MNWBActionDuration_tooltip": "How long it takes to lift or set down the wheelbarrow.<br>Longer means cancelling it by accident is a real risk.",

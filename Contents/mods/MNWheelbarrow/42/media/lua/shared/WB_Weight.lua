@@ -44,9 +44,9 @@ end
 
 --- @return boolean se o item e um carrinho (ou qualquer "hauler" futuro)
 function WB_Weight.isHauler(item)
-    return item ~= nil
-        and instanceof(item, "InventoryContainer")
-        and item:hasTag(WB_Const.TAG)
+    if item == nil then return false end
+    if not instanceof(item, "InventoryContainer") then return false end
+    return WB_Const.HAULER_TYPES[item:getFullType()] == true
 end
 
 --- Recalcula reducao de peso e capacidade de UM carrinho.
