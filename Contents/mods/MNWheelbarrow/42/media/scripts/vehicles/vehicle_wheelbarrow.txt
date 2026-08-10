@@ -167,6 +167,20 @@ module Base
             {
                 seat = FrontLeft,
             }
+            /* SEM ISTO A PECA NASCE VAZIA.
+               itemType diz QUAL item a peca aceita; este bloco e que manda
+               CRIAR esse item quando o veiculo aparece. Vehicles.Create.Default
+               chama VehicleUtils.createPartInventoryItem(part), e sem essa
+               chamada getInventoryItem() fica nil, a peca conta como nao
+               instalada e getBestSeat() devolve -1.
+
+               Foi a diferenca que o diagnostico expos entre as duas pecas: a
+               caçamba vem do template Trunk, que ja traz este bloco, e nascia
+               instalada; o assento, declarado a mao, nao. */
+            lua
+            {
+                create = Vehicles.Create.Default,
+            }
         }
 
         /* SEM ISTO NAO DA PARA ENTRAR NO VEICULO. O template Seat cria a peca,
