@@ -50,7 +50,9 @@ module MNWheelbarrow
            o jogo oferece (as outras sao tocha e guarda-chuva). */
         StaticModel = MNWheelbarrow_Hand,
         primaryAnimMask = holdingbagright,
-        secondaryAnimMask = holdingbagleft,
+        /* secondaryAnimMask REMOVIDO. TestCont provou que container +
+           StaticModel + mascara equipa; o item real nao equipava, e este era o
+           unico campo ligado as maos que ele tinha a mais que a variante. */
 
         Capacity = 47,
         WeightReduction = 0,

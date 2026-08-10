@@ -76,24 +76,27 @@ module Base
         scale = 0.0057,
     }
 
-    /* Calibracao de posicao -- descartaveis. Xm90 foi a orientacao correta: o
-       carrinho fica de pe. Falta a altura, que saiu na linha dos ombros. Estas
-       tres variam o deslocamento a partir dessa mesma rotacao. */
-    model MNWheelbarrow_Hand_PosA
+    /* Calibracao de posicao, rodada 2 -- descartaveis.
+       A rodada 1 revelou que os eixos do osso da mao nao sao os do mundo:
+       mexer em Y nao mudou nada (A e B ficaram identicos), e somar Z afundou o
+       carrinho no chao. Logo +Z e PARA BAIXO neste espaco, e Y nao controla
+       altura. Estas usam metade do Z que afundou, e variam X para descobrir o
+       eixo de frente/tras -- o carrinho esta saindo atras do personagem. */
+    model MNWheelbarrow_Hand_P1
     {
-        mesh = WorldItems/Wheelbarrow_Hand_PosA,
+        mesh = WorldItems/Wheelbarrow_Hand_P1,
         texture = WorldItems/Wheelbarrow,
         scale = 0.0057,
     }
-    model MNWheelbarrow_Hand_PosB
+    model MNWheelbarrow_Hand_P2
     {
-        mesh = WorldItems/Wheelbarrow_Hand_PosB,
+        mesh = WorldItems/Wheelbarrow_Hand_P2,
         texture = WorldItems/Wheelbarrow,
         scale = 0.0057,
     }
-    model MNWheelbarrow_Hand_PosC
+    model MNWheelbarrow_Hand_P3
     {
-        mesh = WorldItems/Wheelbarrow_Hand_PosC,
+        mesh = WorldItems/Wheelbarrow_Hand_P3,
         texture = WorldItems/Wheelbarrow,
         scale = 0.0057,
     }

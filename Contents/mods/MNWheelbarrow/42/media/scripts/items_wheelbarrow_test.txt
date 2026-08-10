@@ -3,56 +3,26 @@ module MNWheelbarrow
     imports { Base }
 
     /*
-     * VARIANTES -- descartaveis. Duas perguntas nesta rodada.
+     * CALIBRACAO DE POSICAO, RODADA 2 -- descartaveis.
      *
-     * 1) POSICAO. Xm90 foi a orientacao correta -- o carrinho fica de pe -- mas
-     *    saiu na linha dos ombros. As tres primeiras variam so o deslocamento:
+     * A rodada 1 respondeu duas coisas:
      *
-     *      PosA  desce 1.2
-     *      PosB  desce 1.9
-     *      PosC  desce 1.9 e avanca 1.2, para testar se +Z e a frente
+     *   - TestCont EQUIPOU, entao container + StaticModel + mascara funciona. O
+     *     item real nao equipava por outro campo, e o unico ligado as maos que
+     *     ele tinha a mais era secondaryAnimMask -- removido de la.
      *
-     *    As outras rotacoes ficaram descartadas: X90 deixou o carrinho de cabeca
-     *    para baixo e X180 nas costas, como mochila.
+     *   - os eixos do osso da mao NAO sao os do mundo: mexer em Y nao mudou nada
+     *     (A e B identicos) e somar Z afundou o carrinho no chao. Ou seja, +Z e
+     *     para baixo aqui.
      *
-     * 2) POR QUE O CONTAINER NAO EQUIPA. As variantes anteriores eram
-     *    base:normal e equipavam; o item real e base:container e nao equipa, nem
-     *    depois de remover RequiresEquippedBothHands. TestCont e identico as
-     *    outras, so que container -- isola exatamente essa diferenca.
+     * Estas tres usam metade do Z que afundou e variam X, para achar o eixo de
+     * frente/tras: o carrinho esta aparecendo ATRAS do personagem.
+     *
+     * Agora sao base:container, iguais ao item real -- nao ha mais motivo para
+     * testar com base:normal.
      */
-    item TestPos_A
-    {
-        DisplayCategory = Container,
-        ItemType = base:normal,
-        Weight = 3.0,
-        Icon = Toolbox,
-        WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_PosA,
-        primaryAnimMask = holdingbagright,
-    }
-    item TestPos_B
-    {
-        DisplayCategory = Container,
-        ItemType = base:normal,
-        Weight = 3.0,
-        Icon = Toolbox,
-        WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_PosB,
-        primaryAnimMask = holdingbagright,
-    }
-    item TestPos_C
-    {
-        DisplayCategory = Container,
-        ItemType = base:normal,
-        Weight = 3.0,
-        Icon = Toolbox,
-        WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_PosC,
-        primaryAnimMask = holdingbagright,
-    }
-
-    /* So muda o ItemType em relacao as de cima. */
-    item TestCont
+    /* so altura: Z 0.6, metade do que afundou */
+    item TestPos_P1
     {
         DisplayCategory = Container,
         ItemType = base:container,
@@ -60,7 +30,31 @@ module MNWheelbarrow
         Icon = Toolbox,
         Capacity = 20,
         WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_PosB,
+        StaticModel = MNWheelbarrow_Hand_P1,
+        primaryAnimMask = holdingbagright,
+    }
+    /* altura + X positivo 0.8 */
+    item TestPos_P2
+    {
+        DisplayCategory = Container,
+        ItemType = base:container,
+        Weight = 3.0,
+        Icon = Toolbox,
+        Capacity = 20,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand_P2,
+        primaryAnimMask = holdingbagright,
+    }
+    /* altura + X negativo 0.8 */
+    item TestPos_P3
+    {
+        DisplayCategory = Container,
+        ItemType = base:container,
+        Weight = 3.0,
+        Icon = Toolbox,
+        Capacity = 20,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand_P3,
         primaryAnimMask = holdingbagright,
     }
 }
