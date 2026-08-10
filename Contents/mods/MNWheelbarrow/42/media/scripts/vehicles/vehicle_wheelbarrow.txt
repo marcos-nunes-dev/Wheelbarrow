@@ -1,0 +1,137 @@
+module Base
+{
+    /*
+     * SPIKE -- o carrinho como VEICULO.
+     *
+     * POR QUE VEICULO, depois de duas arquiteturas descartadas:
+     *
+     *   item na mao      movimento suave, teto de capacidade 50
+     *   objeto do mundo  teto 100, mas movimento aos saltos de tile
+     *   animal (cavalo)  movimento suave, mas o alforje e um ITEM -- teto 50
+     *   VEICULO          movimento suave E capacidade ate 1000
+     *
+     * O veiculo e o unico cruzamento das duas exigencias. E, alem disso, e o
+     * unico que da de graca o que o Marcos quer expandir depois: pneu com
+     * condicao, furo, remendo e integracao com a pericia de mecanica. Nas
+     * outras rotas tudo isso teria que ser inventado em Lua.
+     *
+     * O QUE ESTE SPIKE PRECISA RESPONDER, em ordem de risco:
+     *   1. um veiculo customizado minimo carrega e spawna?
+     *   2. a capacidade do porta-malas passa mesmo de 50?
+     *   3. como o personagem aparece na tela "dirigindo" isto?
+     *
+     * A resposta 3 decide se vale investir em animacao customizada -- que e
+     * possivel (o mod de cavalos faz, com AnimSets/player e anims_X proprios) e
+     * e a parte mais pesada daquele mod.
+     *
+     * Numeros de fisica sao copiados do trailer vanilla e ajustados para um
+     * objeto pequeno. Nao sao calibrados: e um spike.
+     */
+    vehicle MNWheelbarrow
+    {
+        mechanicType = 1,
+        engineRepairLevel = 1,
+        playerDamageProtection = 0.0,
+        neverSpawnKey = true,
+
+        model
+        {
+            file = Vehicles_MNWheelbarrow,
+            scale = 1.0,
+            offset = 0.0 0.0 0.0,
+        }
+        skin
+        {
+            texture = Vehicles/wheelbarrow,
+        }
+
+        extents = 0.45 0.30 0.80,
+        mass = 40,
+        physicsChassisShape = 0.45 0.30 0.80,
+        centerOfMassOffset = 0.0 -0.25 0.0,
+        shadowExtents = 0.45 0.80,
+        shadowOffset = 0.0 0.0,
+
+        /* Um carrinho e empurrado por pessoa: forca baixa e velocidade de
+           caminhada, nao de veiculo. */
+        engineForce = 400,
+        engineQuality = 100,
+        engineLoudness = 0,
+        maxSpeed = 8.0,
+        brakingForce = 20,
+        stoppingMovementForce = 3.0,
+        rollInfluence = 1.0,
+        steeringIncrement = 0.08,
+        steeringClamp = 0.6,
+        suspensionStiffness = 60.0,
+        suspensionCompression = 2.83,
+        suspensionDamping = 2.88,
+        maxSuspensionTravelCm = 4.0,
+        suspensionRestLength = 0.1,
+        wheelFriction = 3.0,
+        frontEndHealth = 60,
+        rearEndHealth = 60,
+        seats = 1,
+
+        physics box
+        {
+            offset = 0.0 0.0 0.0,
+            extents = 0.45 0.25 0.80,
+            rotate = 0.0 0.0 0.0,
+        }
+
+        /* Um carrinho tem UMA roda na frente e dois pes atras. Fisica de
+           veiculo costuma precisar de mais de um ponto de apoio, entao os pes
+           entram como rodas minusculas -- se isso se mostrar desnecessario no
+           teste, viram um. */
+        wheel FrontCenter
+        {
+            front = true,
+            offset = 0.0 -0.12 0.34,
+            radius = 0.14,
+            width = 0.06,
+        }
+        wheel RearLeft
+        {
+            front = false,
+            offset = 0.16 -0.12 -0.30,
+            radius = 0.05,
+            width = 0.05,
+        }
+        wheel RearRight
+        {
+            front = false,
+            offset = -0.16 -0.12 -0.30,
+            radius = 0.05,
+            width = 0.05,
+        }
+
+        /* Os nomes TruckBed e SeatFrontLeft nao sao escolha estetica: os
+           templates Trunk e Seat definem pecas com esses nomes exatos, e as
+           areas precisam casar. Inventar nomes proprios quebraria o template. */
+        area TruckBed
+        {
+            xywh = 0.0 0.0 0.8 0.9,
+        }
+        area SeatFrontLeft
+        {
+            xywh = 0.0 -0.6 0.6 0.6,
+        }
+
+        template = Trunk/part/TruckBed,
+        template = Seat/part/SeatFrontLeft,
+
+        /* A caçamba. E aqui que a capacidade passa de 50: container preso a
+           peca de veiculo tem teto de 1000 no engine, contra 50 de container
+           preso a item. Containers de veiculo do jogo base chegam a 160, e o
+           padrao de sobrescrever a capacidade vem de vehicle_stepvan_template. */
+        part TruckBed
+        {
+            itemType = Base.NormalTrunk,
+            container
+            {
+                capacity = 100,
+            }
+        }
+    }
+}

@@ -70,3 +70,37 @@ local function onFillWorldObjectContextMenu(playerNum, context, worldobjects, _t
 end
 
 Events.OnFillWorldObjectContextMenu.Add(onFillWorldObjectContextMenu)
+
+--- SPIKE DO VEICULO.
+---
+--- Spawna o carrinho como veiculo para responder tres coisas que so a tela
+--- responde: se um veiculo customizado minimo carrega, se a capacidade do
+--- porta-malas passa mesmo de 50, e como o personagem aparece "dirigindo".
+---
+--- A terceira decide se vale investir em animacao customizada de empurrar --
+--- possivel, o mod de cavalos faz com AnimSets/player e anims_X proprios, e e a
+--- parte mais pesada daquele mod.
+local function onFillVehicleSpike(playerNum, context, _worldobjects, _test)
+    if not getDebug() then return end
+    local player = getSpecificPlayer(playerNum)
+    if player == nil then return end
+
+    context:addOption("[SPIKE] Spawnar carrinho como VEICULO", nil, function()
+        local vehicle = addVehicle("Base.MNWheelbarrow", player:getX() + 1, player:getY(), player:getZ())
+        if vehicle == nil then
+            print("[Wheelbarrow][VEICULO] addVehicle devolveu nil -- o script nao carregou")
+            return
+        end
+        print("[Wheelbarrow][VEICULO] spawnado: " .. tostring(vehicle:getScript():getName()))
+        for i = 0, vehicle:getPartCount() - 1 do
+            local part = vehicle:getPartByIndex(i)
+            local container = part and part:getItemContainer()
+            if container ~= nil then
+                print(("[Wheelbarrow][VEICULO] peca %s -> CAPACIDADE %d  (item era limitado a 50)")
+                    :format(tostring(part:getId()), container:getCapacity()))
+            end
+        end
+    end)
+end
+
+Events.OnFillWorldObjectContextMenu.Add(onFillVehicleSpike)

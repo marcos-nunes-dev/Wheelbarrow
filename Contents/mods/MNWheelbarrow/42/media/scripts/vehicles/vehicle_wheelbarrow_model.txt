@@ -1,0 +1,28 @@
+module Base
+{
+    /*
+     * Modelo do carrinho como VEICULO.
+     *
+     * Veiculo renderiza modelo 3D, nao sprite -- entao o FBX que ja preparamos
+     * volta a ser usado direto e toda a pipeline de tileset, PackTool e oito
+     * sprites sai de cena.
+     *
+     * ESCALA: o mesh do trailer vanilla tem exatamente a mesma estrutura que o
+     * nosso -- Lcl Scaling 100 embutido, bbox de 1.49 -- e usa scale = 0.01,
+     * renderizando 1.49 unidades para um reboque de uns 2.5 m. O nosso tem bbox
+     * 1.90, e um carrinho de mao tem cerca de 1.4 m. Proporcional:
+     *
+     *     1.49 * (1.4 / 2.5) / 190 = 0.0044
+     *
+     * E ponto de partida calculado, nao medido em tela. Ja errei escala tres
+     * vezes nesta sessao deduzindo -- este numero precisa ser conferido olhando
+     * o carrinho ao lado do personagem.
+     */
+    model Vehicles_MNWheelbarrow
+    {
+        mesh = vehicles/wheelbarrow,
+        shader = vehicle,
+        invertX = false,
+        scale = 0.0044,
+    }
+}
