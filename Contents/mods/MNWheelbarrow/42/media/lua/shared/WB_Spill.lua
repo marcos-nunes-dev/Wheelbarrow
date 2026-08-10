@@ -30,6 +30,7 @@
 ]]
 
 local WB_Spill = {}
+local WB_UI = require "WB_UI"
 
 --- Mesmo teto que ISDropWorldItemAction usa para recusar um item no chao.
 local SQUARE_WEIGHT_BUDGET = 50
@@ -93,6 +94,11 @@ function WB_Spill.dump(cart, origin)
     -- Registro so em debug. Existe porque "nao caiu nada" tem duas causas
     -- indistinguiveis em tela: a acao nao chegou a ser cancelada, ou foi
     -- cancelada e o carrinho estava vazio. O numero separa as duas.
+    if dropped > 0 then
+        -- O conteudo saiu do carrinho e foi para o chao: os dois paineis mudaram.
+        WB_UI.refreshContainers()
+    end
+
     if getDebug() then
         print(string.format("[Wheelbarrow][SPILL] %d itens derramados", dropped))
     end
@@ -123,6 +129,9 @@ function WB_Spill.dropCart(character, cart, square)
 
     square:AddWorldInventoryItem(cart, 0.5, 0.5, 0.0)
     character:resetModelNextFrame()
+    -- O compartimento do carrinho tem de sumir da barra de containers agora, e
+    -- nao no proximo clique do jogador.
+    WB_UI.refreshContainers()
     return true
 end
 

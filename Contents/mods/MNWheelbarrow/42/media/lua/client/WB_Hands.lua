@@ -35,6 +35,7 @@
 
 local WB_Cart = require "WB_Cart"
 local WB_Sandbox = require "WB_Sandbox"
+local WB_UI = require "WB_UI"
 
 local WB_Hands = {}
 
@@ -53,6 +54,7 @@ function WB_Hands.release(character, item)
     -- Sem isto o personagem pode ficar invisivel: o modelo so e reconstruido
     -- quando alguem pede.
     character:resetModelNextFrame()
+    WB_UI.refreshContainers()
 end
 
 --- O carrinho ainda pertence a este jogador?
@@ -107,6 +109,10 @@ function WB_Hands.repair(character)
     character:setSecondaryHandItem(cart)
     repairing = false
     character:resetModelNextFrame()
+    -- Toda saida deste arquivo que muda as maos avisa a UI. Este ramo e o que
+    -- EQUIPA, entao e justamente onde o compartimento do carrinho precisa
+    -- aparecer na barra de containers.
+    WB_UI.refreshContainers()
 end
 
 Events.OnEquipPrimary.Add(function(character, _item) WB_Hands.repair(character) end)

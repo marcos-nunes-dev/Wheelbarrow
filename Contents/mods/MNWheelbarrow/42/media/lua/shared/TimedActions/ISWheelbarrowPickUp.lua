@@ -33,6 +33,7 @@ require "TimedActions/ISBaseTimedAction"
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Spill = require "WB_Spill"
 local WB_Transfer = require "WB_Transfer"
+local WB_UI = require "WB_UI"
 
 ISWheelbarrowPickUp = ISBaseTimedAction:derive("ISWheelbarrowPickUp")
 
@@ -119,6 +120,9 @@ function ISWheelbarrowPickUp:perform()
     self.character:setPrimaryHandItem(self.item)
     self.character:setSecondaryHandItem(self.item)
     self.character:resetModelNextFrame()
+    -- Sem isto o compartimento do carrinho so aparecia na barra de containers
+    -- depois de o jogador clicar em alguma coisa.
+    WB_UI.refreshContainers()
 
     WB_Transfer.finish()
 

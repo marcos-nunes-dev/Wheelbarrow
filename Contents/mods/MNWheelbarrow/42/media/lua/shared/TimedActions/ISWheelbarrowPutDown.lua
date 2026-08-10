@@ -15,6 +15,7 @@ require "TimedActions/ISBaseTimedAction"
 
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Spill = require "WB_Spill"
+local WB_UI = require "WB_UI"
 
 ISWheelbarrowPutDown = ISBaseTimedAction:derive("ISWheelbarrowPutDown")
 
@@ -93,6 +94,7 @@ function ISWheelbarrowPutDown:perform()
     end
 
     character:resetModelNextFrame()
+    WB_UI.refreshContainers()
     ISBaseTimedAction.perform(self)
 end
 
