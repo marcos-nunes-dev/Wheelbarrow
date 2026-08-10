@@ -149,8 +149,25 @@ end
 --- textura solta. Com setSprite o objeto ficava com um sprite sem textura: o
 --- log mostrava ele existindo e se movendo, mas nada era desenhado. O jogo base
 --- usa setSpriteFromName nesses casos (SCampfireGlobalObject, ISPaintAction).
+--- E PRECISO INVALIDAR O CACHE DE RENDER DO CHUNK.
+---
+--- A B42 desenha o mundo em chunks com cache (FBO). Mover um objeto sem avisar
+--- esse cache deixa o chunk exibindo a imagem antiga: o objeto existe, esta na
+--- lista da square e tem sprite valido -- e nao aparece. Foi exatamente o que o
+--- diagnostico mostrou, depois de eu ter culpado o offset duas vezes e o metodo
+--- de sprite uma.
+---
+--- O fluxo de mover mobilia do jogo base (ISMoveableCursor) chama
+--- invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW) toda vez que muda o
+--- que e desenhado. Invalidamos os dois lados: a square de origem, senao fica
+--- um fantasma, e o objeto ja na nova, senao ele nao e desenhado.
 local function moveCart(object, toSquare, face)
     if toSquare == nil then return false end
+
+    local fromSquare = object:getSquare()
+    if fromSquare ~= nil then
+        fromSquare:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
+    end
 
     object:removeFromSquare()
     object:setSpriteFromName(SPRITE_BY_DIR[face])
@@ -158,6 +175,7 @@ local function moveCart(object, toSquare, face)
     object:setSquare(toSquare)
 
     applyPullOffset(object, face)
+    object:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
     toSquare:RecalcAllWithNeighbours(true)
 
     if object:getSquare() ~= toSquare then
@@ -254,6 +272,7 @@ local function onPlayerUpdate(player)
         if target == current then
             object:setSpriteFromName(SPRITE_BY_DIR[face])
             applyPullOffset(object, face)
+            object:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
         end
         return
     end
