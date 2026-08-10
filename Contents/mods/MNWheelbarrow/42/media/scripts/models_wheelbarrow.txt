@@ -48,4 +48,31 @@ module Base
         texture = WorldItems/Wheelbarrow,
         scale = 0.0057,
     }
+
+    /*
+     * Modelo do carrinho SEGURADO NAS MAOS.
+     *
+     * Tecnica aprendida do mod Carry Visible Items: um item aparece nas maos
+     * de duas formas, e a segunda dispensa rigging --
+     *
+     *   ReplaceInPrimaryHand  exige mesh COM SKIN preso ao osso, como as bolsas
+     *                         do jogo base fazem
+     *   StaticModel + AnimMask usa mesh ESTATICO comum, e a pose vem de uma
+     *                         mascara de animacao
+     *
+     * Usamos a segunda. Os modelos de mao do PZ nao tem bloco de offset -- o
+     * deslocamento em relacao ao osso da mao esta assado na malha, e por isso os
+     * arquivos daquele mod tem sufixo _Hand. Geramos o nosso com
+     * assets/tools_fbx_shift.py a partir do MESMO FBX original.
+     *
+     * O deslocamento (0, -0.70, +0.55) e um PONTO DE PARTIDA, nao medicao: nao
+     * sei em que altura fica o osso da mao. Precisa de uma ou duas rodadas de
+     * calibracao visual, e ajustar e reexecutar a ferramenta com outros numeros.
+     */
+    model MNWheelbarrow_Hand
+    {
+        mesh = WorldItems/Wheelbarrow_Hand,
+        texture = WorldItems/Wheelbarrow,
+        scale = 0.0057,
+    }
 }

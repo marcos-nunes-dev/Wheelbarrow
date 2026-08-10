@@ -33,15 +33,24 @@ module MNWheelbarrow
            ou 4 botijoes (40). */
         Weight = 3.0,
 
-        /* Modelo de chao proprio (ver models_wheelbarrow.txt).
-           Icone e modelos de mao ainda sao placeholders do Toolbox e da
-           Suitcase: o icone precisa de um render 2D do modelo, e a versao de
-           mao precisa de um mesh com skin preso ao osso, que sao trabalhos
-           separados do modelo estatico. */
+        /* Modelo de chao e de mao proprios (ver models_wheelbarrow.txt).
+           So o icone segue placeholder: ele precisa de um render 2D do modelo,
+           que e trabalho separado. */
         Icon = Toolbox,
         WorldStaticModel = MNWheelbarrow_Ground,
-        ReplaceInPrimaryHand = Bag_Suitcase_RHand holdingbagright,
-        ReplaceInSecondHand = Bag_Suitcase_LHand holdingbagleft,
+
+        /* Aparece nas maos com mesh ESTATICO, sem rigging.
+           StaticModel + AnimMask e a tecnica que o mod Carry Visible Items usa
+           para o tanque de oxigenio e o extintor. A alternativa,
+           ReplaceInPrimaryHand, exigiria mesh com skin preso ao osso -- que e
+           trabalho de Blender que eu nao consigo produzir.
+
+           holdingbag deixa os bracos para baixo ao lado do corpo, que e a pose
+           mais parecida com segurar os cabos de um carrinho entre as poses que
+           o jogo oferece (as outras sao tocha e guarda-chuva). */
+        StaticModel = MNWheelbarrow_Hand,
+        primaryAnimMask = holdingbagright,
+        secondaryAnimMask = holdingbagleft,
 
         Capacity = 47,
         WeightReduction = 0,
