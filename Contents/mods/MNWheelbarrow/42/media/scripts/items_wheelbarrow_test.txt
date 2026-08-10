@@ -3,25 +3,21 @@ module MNWheelbarrow
     imports { Base }
 
     /*
-     * CALIBRACAO DE POSICAO, RODADA 2 -- descartaveis.
+     * CALIBRACAO DE POSICAO, RODADA 4 -- descartaveis.
      *
-     * A rodada 1 respondeu duas coisas:
+     * A rotacao esta resolvida e nao e mais variavel: 180 em X, previsto pela
+     * relacao aparencia-em-jogo = mundo(180 + T) e validado contra quatro
+     * observacoes de tela. As tres variantes abaixo compartilham essa pose.
      *
-     *   - TestCont EQUIPOU, entao container + StaticModel + mascara funciona. O
-     *     item real nao equipava por outro campo, e o unico ligado as maos que
-     *     ele tinha a mais era secondaryAnimMask -- removido de la.
+     * Sobrou uma incognita: qual eixo e frente/tras. O lateral e o X (medido na
+     * rodada 2: +0.8 mandou o carrinho para a mao esquerda, -0.8 para longe a
+     * direita) e fica em ZERO nas tres, senao o resultado fica ambiguo.
      *
-     *   - os eixos do osso da mao NAO sao os do mundo: mexer em Y nao mudou nada
-     *     (A e B identicos) e somar Z afundou o carrinho no chao. Ou seja, +Z e
-     *     para baixo aqui.
-     *
-     * Estas tres usam metade do Z que afundou e variam X, para achar o eixo de
-     * frente/tras: o carrinho esta aparecendo ATRAS do personagem.
-     *
-     * Agora sao base:container, iguais ao item real -- nao ha mais motivo para
-     * testar com base:normal.
+     * ATENCAO ao comparar com o item real: ele agora usa a mesma pose da P1.
+     * Se ele se comportar diferente das variantes, a causa esta nos campos que
+     * so ele tem -- e nao no modelo.
      */
-    /* so altura: Z 0.6, metade do que afundou */
+    /* so a altura */
     item TestPos_P1
     {
         DisplayCategory = Container,
@@ -33,7 +29,7 @@ module MNWheelbarrow
         StaticModel = MNWheelbarrow_Hand_P1,
         primaryAnimMask = holdingbagright,
     }
-    /* altura + X positivo 0.8 */
+    /* altura + Z negativo 0.7 */
     item TestPos_P2
     {
         DisplayCategory = Container,
@@ -45,7 +41,7 @@ module MNWheelbarrow
         StaticModel = MNWheelbarrow_Hand_P2,
         primaryAnimMask = holdingbagright,
     }
-    /* altura + X negativo 0.8 */
+    /* altura + Z positivo 0.7 */
     item TestPos_P3
     {
         DisplayCategory = Container,
