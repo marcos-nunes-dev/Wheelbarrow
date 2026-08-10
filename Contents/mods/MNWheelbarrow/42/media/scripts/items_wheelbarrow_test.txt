@@ -1,0 +1,33 @@
+module MNWheelbarrow
+{
+    imports { Base }
+
+    /*
+     * TESTE CONTROLADO DE TEXTURA -- descartavel.
+     *
+     * Quatro carrinhos identicos ao real em tudo que importa: mesma malha de
+     * mao, mesma mascara, duas maos. So a TEXTURA difere. Ver
+     * models_wheelbarrow_test.txt para o desenho e para o que cada resultado
+     * significa.
+     *
+     * Estao em WB_Const.HAULER_TYPES de proposito. Sem isso o WB_Weight nao os
+     * atualizaria, e e justamente esse recalculo que dispara
+     * resetModelNextFrame ao por um item dentro -- ou seja, o gatilho do defeito.
+     * Fora da lista, o teste nao reproduziria a condicao que se quer medir.
+     */
+    item TestTexA { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 50, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_TexA,
+        primaryAnimMask = holdingbagright, RequiresEquippedBothHands = TRUE, }
+
+    item TestTexB { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 50, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_TexB,
+        primaryAnimMask = holdingbagright, RequiresEquippedBothHands = TRUE, }
+
+    item TestTexC { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 50, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_TexC,
+        primaryAnimMask = holdingbagright, RequiresEquippedBothHands = TRUE, }
+
+    item TestTexD { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 50, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_TexD,
+        primaryAnimMask = holdingbagright, RequiresEquippedBothHands = TRUE, }
+}

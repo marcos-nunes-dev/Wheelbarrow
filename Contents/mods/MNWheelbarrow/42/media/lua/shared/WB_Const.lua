@@ -27,6 +27,15 @@ local WB_Const = {}
 --- proposito: nao custa nada e deixa outros mods detectarem o carrinho.
 WB_Const.HAULER_TYPES = {
     ["MNWheelbarrow.Wheelbarrow"] = true,
+
+    -- DESCARTAVEIS: teste controlado de textura, saem com
+    -- items_wheelbarrow_test.txt. Precisam estar aqui para o WB_Weight atualiza-
+    -- los -- e e esse recalculo que dispara resetModelNextFrame ao por um item
+    -- dentro, que e o gatilho do defeito sendo medido.
+    ["MNWheelbarrow.TestTexA"] = true,
+    ["MNWheelbarrow.TestTexB"] = true,
+    ["MNWheelbarrow.TestTexC"] = true,
+    ["MNWheelbarrow.TestTexD"] = true,
 }
 
 --- Namespace das sandbox options. Precisa bater com o "page" e com o prefixo

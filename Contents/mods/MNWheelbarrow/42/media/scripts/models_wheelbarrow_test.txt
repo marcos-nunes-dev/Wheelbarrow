@@ -1,0 +1,27 @@
+module Base
+{
+    /*
+     * TESTE CONTROLADO -- descartavel, sai antes de publicar.
+     *
+     * Pergunta: por que uma textura no modelo de MAO faz o personagem e os
+     * veiculos sumirem da tela? Aconteceu tres vezes, sempre com textura de
+     * alpha -- mas "com alpha" mudou tres coisas de uma vez: o canal existir, a
+     * transparencia ser real, e o tamanho passar de 512x512 para 1024x512.
+     *
+     * Os quatro modelos usam a MESMA malha, Wheelbarrow_Hand. A unica diferenca
+     * entre eles e o arquivo de textura, e e isso que torna o resultado legivel.
+     *
+     *   A  512x512   RGBA opaco       o canal existe, nada e translucido
+     *   B  512x512   RGBA translucido transparencia de verdade
+     *   C  1024x512  RGB              so o tamanho muda
+     *   D  1024x512  RGBA translucido a combinacao que quebrou
+     *
+     * O controle negativo e o carrinho de verdade: 512x512 RGB, confirmado
+     * funcionando. Ver o cabecalho de assets/tools_gen_texture_test.py para o
+     * que cada padrao de resultado significa.
+     */
+    model MNWB_TexA { mesh = WorldItems/Wheelbarrow_Hand, texture = WorldItems/MNWB_TexA, scale = 0.0057, }
+    model MNWB_TexB { mesh = WorldItems/Wheelbarrow_Hand, texture = WorldItems/MNWB_TexB, scale = 0.0057, }
+    model MNWB_TexC { mesh = WorldItems/Wheelbarrow_Hand, texture = WorldItems/MNWB_TexC, scale = 0.0057, }
+    model MNWB_TexD { mesh = WorldItems/Wheelbarrow_Hand, texture = WorldItems/MNWB_TexD, scale = 0.0057, }
+}
