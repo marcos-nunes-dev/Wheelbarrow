@@ -141,18 +141,28 @@ module Base
 
         template = Trunk/part/TruckBed,
 
-        /* O template Seat NAO e usado de proposito.
-           Ele traz uma regra coringa "part Seat*" que declara
-           itemType = Base.NormalCarSeat e uma tabela de instalacao. Ou seja:
-           assento so vale se houver um banco de carro instalado. Sem isso
-           getBestSeat() devolve -1, e sem assento valido nao existe entrada nem
-           prompt da tecla E -- que era exatamente o sintoma.
-           Um carrinho de mao nao tem banco. A peca e declarada aqui a mao, sem
-           itemType e sem tabela de instalacao, para existir sempre. */
+        /* O template Seat NAO e usado, mas o itemType E necessario.
+           
+           O template traz uma regra coringa "part Seat*" com tabela de
+           instalacao que exige um banco de carro em inventario -- exigencia sem
+           sentido para um carrinho. Ao remove-la, porem, eu tirei junto o
+           itemType, e o diagnostico mostrou o custo disso:
+
+               peca TruckBed        instalada=true   (tem itemType)
+               peca SeatFrontLeft   instalada=false  (sem itemType)
+               getBestSeat = -1
+
+           Uma peca so conta como instalada quando tem um item associado. Sem
+           itemType nao existe o que instalar, e o assento nunca fica pronto --
+           dai "nao tem assento instalado" e o E sem efeito.
+
+           Com o itemType e sem a tabela de instalacao, a peca nasce instalada
+           como a caçamba, sem exigir que o jogador ache um banco. */
         part SeatFrontLeft
         {
             category = seat,
             area = SeatFrontLeft,
+            itemType = Base.NormalCarSeat,
             container
             {
                 seat = FrontLeft,
