@@ -91,7 +91,18 @@ local function onFillVehicleSpike(playerNum, context, _worldobjects, _test)
             print("[Wheelbarrow][VEICULO] addVehicle devolveu nil -- o script nao carregou")
             return
         end
-        print("[Wheelbarrow][VEICULO] spawnado: " .. tostring(vehicle:getScript():getName()))
+        local script = vehicle:getScript()
+        print("[Wheelbarrow][VEICULO] spawnado: " .. tostring(script:getName()))
+
+        -- E este numero que libera a opcao de entrar. ISVehicleMenu so mostra
+        -- "Entrar no veiculo" se getPassengerCount() > 0, e essa contagem vem
+        -- dos blocos passenger do script. Zero aqui significa que o bloco nao
+        -- foi lido; maior que zero significa que o problema e outro -- por
+        -- exemplo estar procurando a opcao no lugar errado, ja que ela fica no
+        -- menu radial (tecla V), nao no clique direito.
+        print(("[Wheelbarrow][VEICULO] passageiros no script: %d   (precisa ser > 0 para entrar)")
+            :format(script:getPassengerCount()))
+        print(("[Wheelbarrow][VEICULO] assentos: %d"):format(vehicle:getMaxPassengers()))
         for i = 0, vehicle:getPartCount() - 1 do
             local part = vehicle:getPartByIndex(i)
             local container = part and part:getItemContainer()
