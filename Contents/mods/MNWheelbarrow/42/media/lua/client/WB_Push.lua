@@ -131,11 +131,26 @@ end
 --- em vez de um palpite meu, e conferimos o resultado. Se o objeto nao acabar
 --- onde deveria, paramos de empurrar em vez de tentar de novo: um loop que
 --- duplica e pior do que um carrinho que nao se move.
+--- Trocar o sprite usa setSpriteFromName, NAO setSprite.
+---
+--- Os dois aceitam string e fazem coisas diferentes, o que me custou uma rodada
+--- inteira com o carrinho invisivel:
+---
+---   setSprite(String)         -> IsoSprite.CreateSprite + LoadSingleTexture,
+---                                cria um sprite novo e procura uma textura
+---                                SOLTA com aquele nome
+---   setSpriteFromName(String) -> IsoSpriteManager.getSprite, busca o sprite ja
+---                                registrado pelo tileset
+---
+--- Os nossos sprites vivem dentro do .pack, sob o tileset -- nao existem como
+--- textura solta. Com setSprite o objeto ficava com um sprite sem textura: o
+--- log mostrava ele existindo e se movendo, mas nada era desenhado. O jogo base
+--- usa setSpriteFromName nesses casos (SCampfireGlobalObject, ISPaintAction).
 local function moveCart(object, toSquare, face)
     if toSquare == nil then return false end
 
     object:removeFromSquare()
-    object:setSprite(SPRITE_BY_DIR[face])
+    object:setSpriteFromName(SPRITE_BY_DIR[face])
     toSquare:AddTileObject(object)
     object:setSquare(toSquare)
 
@@ -216,7 +231,7 @@ local function onPlayerUpdate(player)
 
     if reason ~= "MOVENDO" then
         if target == current then
-            object:setSprite(SPRITE_BY_DIR[face])
+            object:setSpriteFromName(SPRITE_BY_DIR[face])
             applyPullOffset(object, face)
         end
         return
