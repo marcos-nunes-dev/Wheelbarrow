@@ -3,48 +3,64 @@ module MNWheelbarrow
     imports { Base }
 
     /*
-     * VARIANTES DE ORIENTACAO -- descartaveis.
+     * VARIANTES -- descartaveis. Duas perguntas nesta rodada.
      *
-     * A rodada anterior respondeu duas coisas:
-     *   - a MASCARA DE ANIMACAO e o que faz o StaticModel renderizar. Sem ela
-     *     o modelo nao aparece (testes A e C nao mostraram nada).
-     *   - RequiresEquippedBothHands nao impede equipar (A equipou).
+     * 1) POSICAO. Xm90 foi a orientacao correta -- o carrinho fica de pe -- mas
+     *    saiu na linha dos ombros. As tres primeiras variam so o deslocamento:
      *
-     * Sobrou o modelo nascer apontando para baixo, enfiado no chao: o osso da
-     * mao tem orientacao propria, diferente da do mundo. Estas variantes usam a
-     * configuracao que comprovadamente renderiza -- a do teste B -- e mudam so
-     * o giro do mesh.
+     *      PosA  desce 1.2
+     *      PosB  desce 1.9
+     *      PosC  desce 1.9 e avanca 1.2, para testar se +Z e a frente
      *
-     * Equipe as tres e diga qual fica de pe.
+     *    As outras rotacoes ficaram descartadas: X90 deixou o carrinho de cabeca
+     *    para baixo e X180 nas costas, como mochila.
+     *
+     * 2) POR QUE O CONTAINER NAO EQUIPA. As variantes anteriores eram
+     *    base:normal e equipavam; o item real e base:container e nao equipa, nem
+     *    depois de remover RequiresEquippedBothHands. TestCont e identico as
+     *    outras, so que container -- isola exatamente essa diferenca.
      */
-    item TestRot_X90
+    item TestPos_A
     {
         DisplayCategory = Container,
         ItemType = base:normal,
         Weight = 3.0,
         Icon = Toolbox,
         WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_X90,
+        StaticModel = MNWheelbarrow_Hand_PosA,
         primaryAnimMask = holdingbagright,
     }
-    item TestRot_Xm90
+    item TestPos_B
     {
         DisplayCategory = Container,
         ItemType = base:normal,
         Weight = 3.0,
         Icon = Toolbox,
         WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_Xm90,
+        StaticModel = MNWheelbarrow_Hand_PosB,
         primaryAnimMask = holdingbagright,
     }
-    item TestRot_X180
+    item TestPos_C
     {
         DisplayCategory = Container,
         ItemType = base:normal,
         Weight = 3.0,
         Icon = Toolbox,
         WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_X180,
+        StaticModel = MNWheelbarrow_Hand_PosC,
+        primaryAnimMask = holdingbagright,
+    }
+
+    /* So muda o ItemType em relacao as de cima. */
+    item TestCont
+    {
+        DisplayCategory = Container,
+        ItemType = base:container,
+        Weight = 3.0,
+        Icon = Toolbox,
+        Capacity = 20,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand_PosB,
         primaryAnimMask = holdingbagright,
     }
 }

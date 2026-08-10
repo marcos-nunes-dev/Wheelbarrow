@@ -76,24 +76,24 @@ module Base
         scale = 0.0057,
     }
 
-    /* Variantes de orientacao -- descartaveis. O modelo de mao nasceu apontando
-       para baixo, enfiado no chao: o osso da mao tem orientacao propria. Estas
-       tres giram o mesh em X para descobrir qual deixa o carrinho de pe. */
-    model MNWheelbarrow_Hand_X90
+    /* Calibracao de posicao -- descartaveis. Xm90 foi a orientacao correta: o
+       carrinho fica de pe. Falta a altura, que saiu na linha dos ombros. Estas
+       tres variam o deslocamento a partir dessa mesma rotacao. */
+    model MNWheelbarrow_Hand_PosA
     {
-        mesh = WorldItems/Wheelbarrow_Hand_X90,
+        mesh = WorldItems/Wheelbarrow_Hand_PosA,
         texture = WorldItems/Wheelbarrow,
         scale = 0.0057,
     }
-    model MNWheelbarrow_Hand_Xm90
+    model MNWheelbarrow_Hand_PosB
     {
-        mesh = WorldItems/Wheelbarrow_Hand_Xm90,
+        mesh = WorldItems/Wheelbarrow_Hand_PosB,
         texture = WorldItems/Wheelbarrow,
         scale = 0.0057,
     }
-    model MNWheelbarrow_Hand_X180
+    model MNWheelbarrow_Hand_PosC
     {
-        mesh = WorldItems/Wheelbarrow_Hand_X180,
+        mesh = WorldItems/Wheelbarrow_Hand_PosC,
         texture = WorldItems/Wheelbarrow,
         scale = 0.0057,
     }
