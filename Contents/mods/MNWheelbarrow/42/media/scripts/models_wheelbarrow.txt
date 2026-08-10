@@ -76,13 +76,25 @@ module Base
      *   giro 270 0 0   duas poses do grid diferiam so no sinal de Z: uma ficou
      *                  de pe e a outra de cabeca para baixo. O eixo de cima da
      *                  malha aponta para -Z, logo 270 e o giro que o poe em pe.
-     *   Z = 0.64       +Z e para BAIXO. A pose que pendurava 0.76 abaixo da mao
-     *                  encostava no chao, o que mede a altura da mao; 0.64 e o
+     *   Z = 0.56       +Z e para BAIXO. A pose que pendurava 0.76 abaixo da mao
+     *                  encostava no chao, o que mede a altura da mao; 0.56 e o
      *                  refino em tela a partir dai.
-     *   Y = 0.80       frente/tras, o eixo do comprimento nesta rotacao. Tira o
+     *   Y = 0.90       frente/tras, o eixo do comprimento nesta rotacao. Tira o
      *                  carrinho de dentro do personagem.
-     *   X = 0.37       lateral. 0.00 deixava o carrinho longe demais a direita e
+     *   X = 0.31       lateral. 0.00 deixava o carrinho longe demais a direita e
      *                  0.40 passava um pouco.
+     *
+     * A TRINCA CONVERGIU, e nao e so o melhor de uma amostra. Cada valor foi o
+     * melhor em DUAS passadas com intervalos de lados opostos:
+     *
+     *     Y = 0.90   melhor em [0.70 .. 0.90] e tambem em [0.90 .. 1.35]
+     *     Z = 0.56   melhor em [0.56 .. 0.72] e tambem em [0.32 .. 0.56]
+     *     X = 0.31   interior numa varredura de doze valores, 0.23 a 0.45
+     *
+     * Ganhar nos dois sentidos e o que distingue otimo de fim de intervalo -- as
+     * duas passadas anteriores pararam em borda, o que nao prova nada. O erro
+     * residual esta limitado ao passo de cada eixo: 0.15 em Y, 0.08 em Z, 0.02
+     * em X.
      */
     model MNWheelbarrow_Hand
     {

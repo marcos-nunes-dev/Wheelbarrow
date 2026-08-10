@@ -49,10 +49,26 @@ module MNWheelbarrow
            mais parecida com segurar os cabos de um carrinho entre as poses que
            o jogo oferece (as outras sao tocha e guarda-chuva). */
         StaticModel = MNWheelbarrow_Hand,
+
+        /* As duas mascaras, uma por braco. Nao existe mascara de duas maos: as
+           nove que o jogo base usa sao todas pares por lado (bag, torch,
+           umbrella, angletorch), entao a unica forma de por os dois bracos na
+           pose e declarar as duas.
+
+           ESTE CAMPO JA FOI REMOVIDO DAQUI, POR DIAGNOSTICO ERRADO MEU. Eu
+           concluira que secondaryAnimMask impedia equipar, comparando o item real
+           (nao equipava) com uma variante de teste (equipava). Mas havia DUAS
+           diferencas entre os dois, nao uma: a mascara, e o WB_Hands, cuja
+           invariante estava quebrada e desequipava o carrinho no mesmo frame. A
+           variante escapava por nao estar em HAULER_TYPES, entao o WB_Hands nunca
+           a tocava. Consertar o WB_Hands e o que resolveu equipar -- a mascara era
+           inocente, e eu credite o resultado a variavel errada.
+
+           O jogo base sustenta isso: 12 itens usam StaticModel com as duas
+           mascaras (as lanternas Hurricane). Nenhum e container, mas a combinacao
+           de campos em si esta longe de ser inedita. */
         primaryAnimMask = holdingbagright,
-        /* secondaryAnimMask REMOVIDO. TestCont provou que container +
-           StaticModel + mascara equipa; o item real nao equipava, e este era o
-           unico campo ligado as maos que ele tinha a mais que a variante. */
+        secondaryAnimMask = holdingbagleft,
 
         Capacity = 47,
         WeightReduction = 0,
