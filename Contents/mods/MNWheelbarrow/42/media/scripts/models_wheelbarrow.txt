@@ -70,10 +70,14 @@ module Base
     /*
      * Modelo do carrinho SEGURADO NAS MAOS.
      *
-     * A transformacao esta ASSADA NA MALHA, gerada por
+     * A transformacao esta ASSADA NA MALHA. Os dois modelos sao gerados por
      *
-     *     python tools_fbx_shift.py Wheelbarrow.fbx Wheelbarrow_Hand.fbx \
-     *            0.31 0.90 0.56  270 0 0
+     *     python assets/tools_build_models.py
+     *
+     * a partir de assets/source/, que e a fonte imutavel. Antes disso o modelo de
+     * mao era derivado do de CHAO e o de chao era editado no lugar: cada geracao
+     * partia do resultado da anterior, entao rodar a mesma ferramenta duas vezes
+     * produzia coisas diferentes.
      *
      * POR QUE ASSADA, E NAO NO BLOCO attachment:
      * o jogo tem um mecanismo declarativo -- `attachment Bip01_Prop2 { offset,
@@ -85,9 +89,11 @@ module Base
      * assa tudo na malha e da aos arquivos o sufixo _Hand.
      *
      * Consequencia pratica, para quem for mexer: mudar a pose exige regerar o
-     * .fbx e reiniciar o jogo. Nao ha ajuste em runtime. A ferramenta de
-     * calibracao -- grid de poses pre-assadas navegavel por tecla, em
-     * assets/tools_gen_pose_grid.py e WB_PoseLab.lua -- existe por causa disso.
+     * .fbx e reiniciar o jogo. Nao ha ajuste em runtime, e foi por isso que a
+     * calibracao usou um grid de poses pre-assadas navegavel por tecla em jogo --
+     * assets/tools_gen_pose_grid.py ainda gera esse grid, e o WB_PoseLab.lua que
+     * o percorria foi removido junto com as 90 malhas descartaveis quando a pose
+     * convergiu. Recriar e um comando.
      *
      * DE ONDE VEM CADA NUMERO. Nenhum foi chutado:
      *

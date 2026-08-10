@@ -32,7 +32,7 @@ local DEFAULTS = {
     SpillOnCancel = true,
     BlockWeapons = true,
     BlockRunning = true,
-    AllowCorpses = false,
+    AllowCorpses = true,
 }
 
 --- @param name string nome da option, sem o prefixo do modulo

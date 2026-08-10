@@ -1,37 +1,25 @@
 {
     "Sandbox_MNWheelbarrow": "Carrinho de Mão",
-
     "Sandbox_MNWBEnableWorldSpawn": "Aparecer pelo mundo",
     "Sandbox_MNWBEnableWorldSpawn_tooltip": "Carrinhos podem ser encontrados largados em canteiros de obra, depósitos e lojas de ferramentas.<br>Desligue para que a única forma de conseguir um seja fabricando.",
-
     "Sandbox_MNWBSpawnChance": "Chance de aparecer",
     "Sandbox_MNWBSpawnChance_tooltip": "Chance, em porcentagem, de um carrinho aparecer em um lugar elegível.<br>Cada lugar é sorteado uma única vez.",
-
     "Sandbox_MNWBEnableCrafting": "Permitir fabricação",
     "Sandbox_MNWBEnableCrafting_tooltip": "Habilita a receita para construir um carrinho do zero.",
-
     "Sandbox_MNWBCapacity": "Capacidade",
     "Sandbox_MNWBCapacity_tooltip": "Quanto o carrinho comporta.<br>Para referência: um gerador é 40, um tronco é 9.<br>O padrão de 100 cabe dois geradores.",
-
     "Sandbox_MNWBHeavyThreshold": "Limite de item pesado",
     "Sandbox_MNWBHeavyThreshold_tooltip": "Itens com esse peso ou mais contam como pesados e recebem a redução.<br>Qualquer coisa mais leve não recebe nada -- o carrinho é inútil de propósito para loot miúdo.",
-
     "Sandbox_MNWBHeavyReduction": "Redução de peso dos pesados",
     "Sandbox_MNWBHeavyReduction_tooltip": "Quanto peso é tirado dos itens pesados, em porcentagem.<br>Itens leves nunca são reduzidos, independente deste valor.",
-
-
     "Sandbox_MNWBActionDuration": "Tempo para pegar / largar",
     "Sandbox_MNWBActionDuration_tooltip": "Quanto tempo leva para erguer ou pousar o carrinho.<br>Quanto maior, mais real é o risco de cancelar sem querer.",
-
     "Sandbox_MNWBSpillOnCancel": "Tombar ao ser interrompido",
     "Sandbox_MNWBSpillOnCancel_tooltip": "Cancelar a animação de pegar ou largar faz o carrinho tombar e derrubar o conteúdo no chão.<br>Desligue para um jogo mais tolerante.",
-
     "Sandbox_MNWBBlockWeapons": "Bloquear armas em uso",
     "Sandbox_MNWBBlockWeapons_tooltip": "O carrinho ocupa as duas mãos, então nenhuma arma pode ser equipada enquanto ele estiver em uso.",
-
     "Sandbox_MNWBBlockRunning": "Impedir corrida em uso",
     "Sandbox_MNWBBlockRunning_tooltip": "Empurrar um carrinho carregado e caminhada, nao corrida.<br>Desligue para continuar podendo correr, na velocidade reduzida.",
-
     "Sandbox_MNWBAllowCorpses": "Permitir cadáveres",
-    "Sandbox_MNWBAllowCorpses_tooltip": "Permite carregar corpos no carrinho.<br>Desligado por padrão, porque facilita muito limpar uma casa."
+    "Sandbox_MNWBAllowCorpses_tooltip": "Permite carregar corpos no carrinho.<br>Desligue se transportar cadáveres deixar limpar uma casa fácil demais para o seu gosto."
 }
