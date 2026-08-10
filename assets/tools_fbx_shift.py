@@ -1,4 +1,4 @@
-"""Desloca a geometria de um FBX binario 7.x nos tres eixos.
+"""Desloca e gira a geometria de um FBX binario 7.x.
 
 Por que isto existe: os modelos do PZ tem a origem no centro do mesh -- medi e
 confirmei que o Log e o ToolBox_Ground vanilla tem a origem a 50% da altura --
@@ -16,9 +16,14 @@ modelos de mao do PZ nao tem bloco de offset -- o deslocamento em relacao ao
 osso da mao esta assado na malha. Foi assim que o mod Carry Visible Items fez,
 e e por isso que os arquivos dele tem sufixo _Hand.
 
+A rotacao existe porque o modelo de mao nasceu apontando para baixo: o osso da
+mao tem orientacao propria, diferente da do mundo, e o mesh precisa ser girado
+para ficar de pe em relacao a ela.
+
 Uso:
-    python tools_fbx_shift.py entrada.fbx saida.fbx dx dy dz
+    python tools_fbx_shift.py entrada.fbx saida.fbx dx dy dz [rotX] [rotY] [rotZ]
 """
+import math
 import struct
 import sys
 import zlib
@@ -26,7 +31,7 @@ import zlib
 from tools_fbx_strip_embedded import parse, size_of, write
 
 
-def shift(src, dst, dx, dy, dz):
+def shift(src, dst, dx, dy, dz, rx=0.0, ry=0.0, rz=0.0):
     data = open(src, 'rb').read()
     ver, roots, tail = parse(data)
     moved = [0]
@@ -43,10 +48,23 @@ def shift(src, dst, dx, dy, dz):
                     fmt = "<%d%s" % (alen, ptype)
                     vals = list(struct.unpack(fmt, raw))
                     # Vertices vem como triplas planas x,y,z.
+                    # Gira primeiro, em torno da origem, depois translada --
+                    # inverter a ordem faria a rotacao arrastar o deslocamento.
+                    ax, ay, az = (math.radians(v) for v in (rx, ry, rz))
                     for i in range(0, len(vals) - 2, 3):
-                        vals[i] += dx
-                        vals[i + 1] += dy
-                        vals[i + 2] += dz
+                        x, y, z = vals[i], vals[i + 1], vals[i + 2]
+                        if ax:
+                            c, s = math.cos(ax), math.sin(ax)
+                            y, z = y * c - z * s, y * s + z * c
+                        if ay:
+                            c, s = math.cos(ay), math.sin(ay)
+                            x, z = x * c + z * s, -x * s + z * c
+                        if az:
+                            c, s = math.cos(az), math.sin(az)
+                            x, y = x * c - y * s, x * s + y * c
+                        vals[i] = x + dx
+                        vals[i + 1] = y + dy
+                        vals[i + 2] = z + dz
                     packed = struct.pack(fmt, *vals)
                     # Regravado sem compressao (enc=0). O serializer recalcula
                     # todos os EndOffset a partir dos tamanhos reais, entao
@@ -75,5 +93,7 @@ def shift(src, dst, dx, dy, dz):
 
 if __name__ == "__main__":
     dx, dy, dz = (float(v) for v in sys.argv[3:6])
-    count = shift(sys.argv[1], sys.argv[2], dx, dy, dz)
-    print("%d vertices deslocados por (%.3f, %.3f, %.3f)" % (count, dx, dy, dz))
+    rot = [float(v) for v in sys.argv[6:9]] + [0.0, 0.0, 0.0]
+    count = shift(sys.argv[1], sys.argv[2], dx, dy, dz, rot[0], rot[1], rot[2])
+    print("%d vertices: giro (%.0f, %.0f, %.0f) e deslocamento (%.2f, %.2f, %.2f)"
+          % (count, rot[0], rot[1], rot[2], dx, dy, dz))

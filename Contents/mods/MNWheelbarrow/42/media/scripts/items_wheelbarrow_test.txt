@@ -3,55 +3,48 @@ module MNWheelbarrow
     imports { Base }
 
     /*
-     * VARIANTES DE TESTE -- descartaveis.
+     * VARIANTES DE ORIENTACAO -- descartaveis.
      *
-     * O carrinho parou de equipar quando troquei ReplaceInPrimaryHand por
-     * StaticModel + animMask. Tres elementos mudaram de uma vez, e nenhum
-     * container do jogo base combina os tres:
+     * A rodada anterior respondeu duas coisas:
+     *   - a MASCARA DE ANIMACAO e o que faz o StaticModel renderizar. Sem ela
+     *     o modelo nao aparece (testes A e C nao mostraram nada).
+     *   - RequiresEquippedBothHands nao impede equipar (A equipou).
      *
-     *   - livro oco: container + StaticModel, SEM RequiresEquippedBothHands
-     *   - lanterna:  animMask, mas e drainable, nao container
-     *   - 207 containers: usam ReplaceInPrimaryHand, nao StaticModel
+     * Sobrou o modelo nascer apontando para baixo, enfiado no chao: o osso da
+     * mao tem orientacao propria, diferente da do mundo. Estas variantes usam a
+     * configuracao que comprovadamente renderiza -- a do teste B -- e mudam so
+     * o giro do mesh.
      *
-     * Em vez de testar um fator por rodada, estas variantes isolam cada um.
-     * Equipe as tres e veja quais funcionam -- a resposta sai de uma partida so.
-     *
-     * Nenhuma tem container de proposito: aqui so interessa se EQUIPA e se
-     * APARECE nas maos.
+     * Equipe as tres e diga qual fica de pe.
      */
-
-    /* A: como o carrinho de verdade, menos as mascaras de animacao. */
-    item TestA_SemMascara
+    item TestRot_X90
     {
         DisplayCategory = Container,
         ItemType = base:normal,
         Weight = 3.0,
         Icon = Toolbox,
         WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand,
-        RequiresEquippedBothHands = TRUE,
-    }
-
-    /* B: com mascaras, mas de uma mao so -- sem exigir as duas. */
-    item TestB_UmaMao
-    {
-        DisplayCategory = Container,
-        ItemType = base:normal,
-        Weight = 3.0,
-        Icon = Toolbox,
-        WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand,
+        StaticModel = MNWheelbarrow_Hand_X90,
         primaryAnimMask = holdingbagright,
     }
-
-    /* C: o minimo -- so o modelo, como o livro oco faz. */
-    item TestC_Minimo
+    item TestRot_Xm90
     {
         DisplayCategory = Container,
         ItemType = base:normal,
         Weight = 3.0,
         Icon = Toolbox,
         WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand,
+        StaticModel = MNWheelbarrow_Hand_Xm90,
+        primaryAnimMask = holdingbagright,
+    }
+    item TestRot_X180
+    {
+        DisplayCategory = Container,
+        ItemType = base:normal,
+        Weight = 3.0,
+        Icon = Toolbox,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand_X180,
+        primaryAnimMask = holdingbagright,
     }
 }

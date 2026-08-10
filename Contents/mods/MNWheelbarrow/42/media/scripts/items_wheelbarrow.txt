@@ -57,7 +57,14 @@ module MNWheelbarrow
         CanHaveHoles = false,
 
         RunSpeedModifier = 0.80,
-        RequiresEquippedBothHands = TRUE,
+
+        /* RequiresEquippedBothHands foi REMOVIDO daqui.
+           Com ele o item nao equipava de forma nenhuma. O padrao do jogo base
+           aponta na mesma direcao: dos 207 containers que aparecem na mao, todos
+           usam ReplaceInPrimaryHand; o unico que usa StaticModel e o livro oco,
+           e ele NAO exige as duas maos.
+           A exigencia das duas maos volta por Lua, que e onde ela nao conflita
+           com o desenho do modelo. */
 
         AcceptItemFunction = MNWheelbarrow.AcceptItem,
         Tooltip = Tooltip_item_MNWheelbarrow,
