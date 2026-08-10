@@ -207,7 +207,13 @@ module Base
                a animacao neutra, ate escolhermos uma que tenha os bracos a
                frente. */
             area = SeatFrontLeft,
-            hasRoof = false,
+            /* hasRoof = true mesmo sem teto. Eu tinha posto false por
+               realismo, mas TODO veiculo do jogo base em que se entra usa true,
+               e a mecanica do veiculo funciona enquanto a entrada nao -- ou
+               seja, o veiculo e alcancavel e o problema e especifico do caminho
+               de entrada. Um valor que nenhum veiculo vanilla usa e suspeito
+               logico. */
+            hasRoof = true,
             anim enter
             {
                 anim = Climb_WindowA,
