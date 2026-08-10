@@ -59,6 +59,28 @@ local OFFSET = {
     W  = { -1,  0 },  NW = { -1, -1 },
 }
 
+--- Puxa o carrinho visualmente na direcao do jogador.
+---
+--- Em diagonal o problema e maior: o deslocamento {1,-1} coloca o carrinho a
+--- 1.41 tiles de distancia, contra 1.0 nas cardinais -- por isso ele parece
+--- mais longe em umas direcoes que em outras.
+---
+--- SUPOSICAO NAO VERIFICADA: setOffsetX/setOffsetY nao aparecem em nenhum
+--- arquivo Lua do jogo base, entao nao consegui confirmar a unidade. Assumo
+--- pixels na escala 1x, onde um tile e 64 de largura por 32 de altura e a tela
+--- e sx=(x-y)*32, sy=(x+y)*16. Se o carrinho pular longe demais ou nem se
+--- mexer, o erro esta aqui e a correcao e um multiplicador.
+local PULL_TILES = 0.35
+
+local function applyPullOffset(object, face)
+    local off = OFFSET[face]
+    if off == nil then return end
+    local dx = -PULL_TILES * off[1]
+    local dy = -PULL_TILES * off[2]
+    object:setOffsetX((dx - dy) * 32.0)
+    object:setOffsetY((dx + dy) * 16.0)
+end
+
 --- Estado por jogador. Chaveado pelo indice, nao pelo objeto, porque em
 --- splitscreen cada jogador pode estar empurrando um carrinho diferente.
 local pushing = {}
@@ -110,6 +132,7 @@ local function moveCart(object, toSquare, face)
     toSquare:AddTileObject(object)
     object:setSquare(toSquare)
 
+    applyPullOffset(object, face)
     toSquare:RecalcAllWithNeighbours(true)
 
     if object:getSquare() ~= toSquare then
@@ -187,6 +210,7 @@ local function onPlayerUpdate(player)
     if reason ~= "MOVENDO" then
         if target == current then
             object:setSprite(SPRITE_BY_DIR[face])
+            applyPullOffset(object, face)
         end
         return
     end

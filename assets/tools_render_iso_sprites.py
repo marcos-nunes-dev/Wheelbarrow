@@ -88,12 +88,11 @@ def triangles(pvi):
             poly.append((idx, k))
 
 
-def render(mesh, texture, azimuth_deg):
+def project(mesh, azimuth_deg):
+    """Projeta a malha para um azimute e devolve as coordenadas de tela mais os
+    limites. Separado do desenho porque o enquadramento precisa de uma passada
+    previa por TODOS os azimutes -- ver common_scale()."""
     verts = mesh["V"]
-    pvi = mesh["PVI"]
-    uvs = mesh["UV"]
-    uvi = mesh["UVI"]
-
     th = math.radians(azimuth_deg)
     ct, st = math.cos(th), math.sin(th)
     ce, se = math.cos(ELEVATION), math.sin(ELEVATION)
@@ -108,31 +107,50 @@ def render(mesh, texture, azimuth_deg):
         fwd = x * st + z * ct
         sx[i] = right
         # Camera ACIMA olhando para baixo: o que esta mais longe sobe na tela.
-        # Com o sinal invertido aqui, a cena era vista por baixo -- dava para
-        # ver o fundo da cacamba do carrinho em vez de dentro dela.
         sy[i] = y * ce + fwd * se
-        # Profundidade ao longo da direcao de visao, que aponta para frente e
-        # para baixo: ponto mais alto esta mais PERTO de uma camera elevada.
+        # Ponto mais alto esta mais PERTO de uma camera elevada.
         depth[i] = fwd * ce - y * se
 
-    # Projecao da malha no plano do chao (y = 0), que e a sombra. Precisa ser
-    # calculada ANTES do enquadramento: a sombra da ponta do cabo cai a frente
-    # do ponto mais baixo do objeto, entao ela e quem define o limite inferior.
-    # Enquadrar so pelo objeto fazia a sombra transbordar os 256 pixels e ser
-    # cortada -- em jogo isso aparecia como a frente do carrinho decepada.
+    # Projecao no plano do chao (y = 0), que e a sombra. Entra nos limites
+    # porque a sombra da ponta do cabo cai a frente do ponto mais baixo do
+    # objeto e define o limite inferior do enquadramento.
     gsy = [(verts[3 * i] * st + verts[3 * i + 2] * ct) * se for i in range(n)]
 
     minx, maxx = min(sx), max(sx)
     miny = min(min(sy), min(gsy))
     maxy = max(max(sy), max(gsy))
-    if maxx - minx <= 0 or maxy - miny <= 0:
-        raise SystemExit("modelo degenerado")
+    return sx, sy, gsy, depth, minx, maxx, miny, maxy
 
-    # Enquadra objeto e sombra juntos, com margem de MARGIN pixels de cada lado, e assenta
-    # o conjunto na linha do chao medida nos sprites vanilla.
-    scale = (SPRITE_W - 2 * MARGIN) / (maxx - minx)
-    if (maxy - miny) * scale > (SPRITE_H - 2 * MARGIN):
-        scale = (SPRITE_H - 2 * MARGIN) / (maxy - miny)
+
+def common_scale(mesh):
+    """Uma escala unica para todas as faces.
+
+    Escalar cada sprite para preencher o quadro individualmente parece razoavel
+    e esta errado: visto de topo o carrinho e estreito e curto, entao era
+    ampliado ate ocupar o quadro -- 188 pixels de altura contra 61 na face
+    diagonal. Em jogo o carrinho mudava de tamanho ao girar.
+
+    A escala e a mais restritiva entre todos os azimutes, para nenhuma face
+    estourar o sprite."""
+    scale = None
+    for _name, az in FACINGS:
+        _sx, _sy, _g, _d, minx, maxx, miny, maxy = project(mesh, az)
+        fit_w = (SPRITE_W - 2 * MARGIN) / (maxx - minx)
+        fit_h = (SPRITE_H - 2 * MARGIN) / (maxy - miny)
+        candidate = min(fit_w, fit_h)
+        if scale is None or candidate < scale:
+            scale = candidate
+    return scale
+
+
+def render(mesh, texture, azimuth_deg, scale):
+    verts = mesh["V"]
+    pvi = mesh["PVI"]
+    uvs = mesh["UV"]
+    uvi = mesh["UVI"]
+    n = len(verts) // 3
+
+    sx, sy, gsy, depth, minx, maxx, miny, maxy = project(mesh, azimuth_deg)
     cx = (minx + maxx) / 2.0
 
     px = [(v - cx) * scale + ANCHOR_X for v in sx]
@@ -246,9 +264,11 @@ def render(mesh, texture, azimuth_deg):
 if __name__ == "__main__":
     mesh = json.load(open(sys.argv[1]))
     texture = Image.open(sys.argv[2]).convert("RGB")
+    scale = common_scale(mesh)
+    print("escala comum as %d faces: %.2f" % (len(FACINGS), scale))
     sheet = Image.new("RGBA", (1024, 2048), (0, 0, 0, 0))
     for col, (name, az) in enumerate(FACINGS):
-        img = render(mesh, texture, az)
+        img = render(mesh, texture, az, scale)
         img.save("sprite_%s.png" % name.lower())
         sheet.paste(img, (col * 128, 0))
         print("face %s (azimute %5.1f) -> sprite_%s.png" % (name, az, name.lower()))
