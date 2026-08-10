@@ -100,12 +100,27 @@ function ISWheelbarrowPickUp:perform()
     WB_Transfer.begin()
 
     if self.worldItem ~= nil then
+        --[[ A SEQUENCIA E COPIADA DE ISGrabItemAction:transferItem, e nao
+             inventada -- a minha tinha tres passos a menos e o que faltava era
+             justamente o ultimo:
+
+                 setWorldItem(nil)
+
+             Sem ele o item continua APONTANDO para o objeto de mundo que acabou
+             de sair da square. getWorldItem() segue devolvendo algo, e tres
+             lugares leem isso como "ja esta no chao": WB_Player desequipa por
+             quadro, WB_Hands desequipa ao equipar, e WB_Spill.dropCart nao faz
+             nada. O sintoma foi o carrinho cair no inventario desequipado e
+             recusar qualquer tentativa de equipar. Uma referencia pendurada,
+             tres defeitos. ]]
         local square = self.worldItem:getSquare()
         if square ~= nil then
             square:transmitRemoveItemFromSquare(self.worldItem)
-            square:getWorldObjects():remove(self.worldItem)
-            square:RemoveTileObject(self.worldItem)
         end
+        self.worldItem:removeFromWorld()
+        self.worldItem:removeFromSquare()
+        self.worldItem:setSquare(nil)
+        self.item:setWorldItem(nil)
     end
 
     -- AddItem em vez do fluxo normal de transferencia de proposito: o carrinho

@@ -127,15 +127,45 @@ Events.OnEquipSecondary.Add(function(character, _item) WB_Placement.enforce(char
     fazem muda.
 ]]
 Events.OnGameStart.Add(function()
-    if ISGrabItemAction == nil then return end
-
-    local original = ISGrabItemAction.new
-    ISGrabItemAction.new = function(self, character, worldItem, time)
-        if worldItem ~= nil and instanceof(worldItem, "IsoWorldInventoryObject")
-            and WB_Cart.is(worldItem:getItem()) then
-            return ISWheelbarrowPickUp:new(character, worldItem)
+    if ISGrabItemAction ~= nil then
+        local original = ISGrabItemAction.new
+        ISGrabItemAction.new = function(self, character, worldItem, time)
+            if worldItem ~= nil and instanceof(worldItem, "IsoWorldInventoryObject")
+                and WB_Cart.is(worldItem:getItem()) then
+                return ISWheelbarrowPickUp:new(character, worldItem)
+            end
+            return original(self, character, worldItem, time)
         end
-        return original(self, character, worldItem, time)
+    end
+
+    --[[ SEGUNDO caminho, e foi por ele que o "Pegar" continuou funcionando: o
+         painel de CHAO do inventario nao usa ISGrabItemAction. Ele chama
+         onGrabItems, que enfileira uma transferencia comum. Dois menus com o
+         mesmo rotulo e implementacoes diferentes -- razao a mais para o desvio
+         ser por acao e nao por nome de opcao.
+
+         Aqui a lista e PARTIDA: carrinhos vao para a nossa acao e o resto segue
+         pelo caminho do jogo. Desviar a lista inteira faria pegar um carrinho
+         junto com outros itens deixar os outros para tras. ]]
+    if ISInventoryPaneContextMenu ~= nil and ISInventoryPaneContextMenu.onGrabItems then
+        local original = ISInventoryPaneContextMenu.onGrabItems
+        ISInventoryPaneContextMenu.onGrabItems = function(items, player)
+            local character = getSpecificPlayer(player)
+            local actual = ISInventoryPane.getActualItems(items)
+            local rest = {}
+
+            for _, item in ipairs(actual or {}) do
+                local worldItem = WB_Cart.is(item) and item:getWorldItem() or nil
+                if character ~= nil and worldItem ~= nil then
+                    ISTimedActionQueue.add(
+                        ISWheelbarrowPickUp:new(character, worldItem))
+                else
+                    rest[#rest + 1] = item
+                end
+            end
+
+            if #rest > 0 then return original(rest, player) end
+        end
     end
 end)
 

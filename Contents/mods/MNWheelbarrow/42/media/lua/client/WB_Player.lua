@@ -21,6 +21,7 @@
 local WB_Cart = require "WB_Cart"
 local WB_Hands = require "WB_Hands"
 local WB_Sandbox = require "WB_Sandbox"
+local WB_Transfer = require "WB_Transfer"
 
 local WB_Player = {}
 
@@ -44,6 +45,13 @@ end
 
 Events.OnPlayerUpdate.Add(function(character)
     if character == nil then return end
+
+    -- Enquanto uma acao do mod move o carrinho, a checagem de fantasma nao vale:
+    -- durante a transicao o item legitimamente aparece nos dois lugares. Sem esta
+    -- guarda, a rede desfaz a propria acao -- o mesmo defeito que WB_Placement
+    -- teve, e que aqui apareceria de forma ainda mais dificil de ver, por rodar
+    -- em silencio a cada quadro.
+    if WB_Transfer.active() then return end
 
     local ghost = ghostInHand(character)
     if ghost ~= nil then
