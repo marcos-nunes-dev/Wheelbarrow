@@ -103,14 +103,21 @@ local function onFillVehicleSpike(playerNum, context, _worldobjects, _test)
         print(("[Wheelbarrow][VEICULO] passageiros no script: %d   (precisa ser > 0 para entrar)")
             :format(script:getPassengerCount()))
         print(("[Wheelbarrow][VEICULO] assentos: %d"):format(vehicle:getMaxPassengers()))
+        -- Lista TODAS as pecas e se cada uma esta instalada. Uma peca sem item
+        -- instalado nao conta: assento sem banco faz getBestSeat() devolver -1,
+        -- e ai nao ha entrada nem prompt da tecla E.
         for i = 0, vehicle:getPartCount() - 1 do
             local part = vehicle:getPartByIndex(i)
-            local container = part and part:getItemContainer()
-            if container ~= nil then
-                print(("[Wheelbarrow][VEICULO] peca %s -> CAPACIDADE %d  (item era limitado a 50)")
-                    :format(tostring(part:getId()), container:getCapacity()))
+            if part ~= nil then
+                local container = part:getItemContainer()
+                print(("[Wheelbarrow][VEICULO] peca %-16s instalada=%s  capacidade=%s")
+                    :format(tostring(part:getId()),
+                        tostring(part:getInventoryItem() ~= nil),
+                        container and tostring(container:getCapacity()) or "-"))
             end
         end
+        print(("[Wheelbarrow][VEICULO] getBestSeat = %d   (-1 significa nenhum assento utilizavel)")
+            :format(vehicle:getBestSeat(player)))
     end)
 end
 

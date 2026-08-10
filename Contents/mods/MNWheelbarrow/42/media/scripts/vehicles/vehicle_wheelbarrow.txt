@@ -140,7 +140,24 @@ module Base
         }
 
         template = Trunk/part/TruckBed,
-        template = Seat/part/SeatFrontLeft,
+
+        /* O template Seat NAO e usado de proposito.
+           Ele traz uma regra coringa "part Seat*" que declara
+           itemType = Base.NormalCarSeat e uma tabela de instalacao. Ou seja:
+           assento so vale se houver um banco de carro instalado. Sem isso
+           getBestSeat() devolve -1, e sem assento valido nao existe entrada nem
+           prompt da tecla E -- que era exatamente o sintoma.
+           Um carrinho de mao nao tem banco. A peca e declarada aqui a mao, sem
+           itemType e sem tabela de instalacao, para existir sempre. */
+        part SeatFrontLeft
+        {
+            category = seat,
+            area = SeatFrontLeft,
+            container
+            {
+                seat = FrontLeft,
+            }
+        }
 
         /* SEM ISTO NAO DA PARA ENTRAR NO VEICULO. O template Seat cria a peca,
            mas quem define onde o jogador fica e por onde ele entra e o bloco
