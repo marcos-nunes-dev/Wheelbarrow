@@ -49,8 +49,16 @@ module Base
      * orientacao em toda convencao, enquanto V pode estar invertido entre o FBX e
      * o carregador; errar em V viraria a textura inteira de cabeca para baixo.
      *
-     * O modelo de MAO nao recebe o quad: ele acompanharia o carrinho no ar,
-     * virando uma placa escura flutuando ao lado do personagem.
+     * TEXTURA SEPARADA, e isso nao e organizacao -- e isolamento, aprendido a
+     * duras penas. Na primeira versao os dois modelos dividiam a textura com
+     * alpha, e em jogo o PERSONAGEM E OS VEICULOS sumiram da tela. Os dois sao
+     * desenhados pelo mesmo passe de modelo 3D, e o modelo de mao faz parte do
+     * personagem: uma textura que aquele passe nao digere derruba o passe
+     * inteiro, nao so o carrinho. O cenario, que e sprite, continuava aparecendo
+     * -- foi esse recorte que apontou a causa. A alpha agora existe SO aqui.
+     *
+     * O modelo de MAO tambem nao recebe o quad: ele acompanharia o carrinho no
+     * ar, virando uma placa escura flutuando ao lado do personagem.
      *
      * ALTURA: o mesh foi deslocado 0.380 no eixo Y (ver
      * assets/tools_fbx_shift.py) para a base ficar em Y = 0 em vez de a origem
@@ -63,7 +71,7 @@ module Base
     model MNWheelbarrow_Ground
     {
         mesh = WorldItems/Wheelbarrow,
-        texture = WorldItems/Wheelbarrow,
+        texture = WorldItems/Wheelbarrow_Ground,
         scale = 0.0057,
     }
 

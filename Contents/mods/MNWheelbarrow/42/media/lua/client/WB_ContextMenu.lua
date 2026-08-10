@@ -26,6 +26,42 @@ local function startPickUp(_, player, worldItem)
     ISTimedActionQueue.add(ISWheelbarrowPickUp:new(character, worldItem))
 end
 
+--[[
+    Equipar pelo menu do jogo passa a usar a acao cronometrada.
+
+    O primeiro corte deixou a acao so nas opcoes proprias, e o resultado foi o
+    esperado em retrospecto: o jogador usou "Equip Two Hands", que e a opcao
+    obvia e continua instantanea, e cancelar nao derramou nada. A punicao existia
+    num caminho que ninguem percorria.
+
+    Em vez de esconder a opcao do jogo -- que e a boa, e que o proprio Marcos
+    preferiu por ser mais intuitiva -- trocamos o que ela FAZ quando o item e um
+    carrinho. Assim so ha um jeito de por o carrinho nas maos, e ele leva tempo.
+
+    O envelope preserva o comportamento original para todo o resto: qualquer
+    outro item continua no caminho do jogo, e outros mods que tambem envolvam
+    esta funcao continuam encadeados.
+]]
+Events.OnGameStart.Add(function()
+    if ISInventoryPaneContextMenu == nil then return end
+
+    local original = ISInventoryPaneContextMenu.OnTwoHandsEquip
+    ISInventoryPaneContextMenu.OnTwoHandsEquip = function(items, player)
+        local character = getSpecificPlayer(player)
+        -- getActualItems desempacota os grupos empilhados da lista do menu; sem
+        -- isso o primeiro elemento pode ser a tabela do grupo, e nao um item.
+        local actual = ISInventoryPane.getActualItems(items)
+        local first = actual and actual[1]
+
+        if character ~= nil and WB_Cart.is(first) then
+            ISTimedActionQueue.add(
+                ISWheelbarrowPickUp:new(character, nil, first))
+            return
+        end
+        return original(items, player)
+    end
+end)
+
 local function startPutDown(_, player, item)
     local character = getSpecificPlayer(player)
     if character == nil then return end

@@ -1,5 +1,14 @@
 --[[
-    Pegar o carrinho do chao, com animacao -- e derramando a carga se cancelar.
+    Tomar o carrinho nas maos, com animacao -- derramando a carga se cancelar.
+
+    Serve aos DOIS caminhos, e por isso o worldItem e opcional:
+
+        do chao        worldItem preenchido, o objeto sai da square
+        do inventario  worldItem nil, so as maos mudam
+
+    Um caminho so, porque a regra e a mesma nos dois: erguer o carrinho leva
+    tempo e desistir no meio derruba a carga. Duas classes quase iguais era o
+    convite para uma delas esquecer o derrame.
 
     POR QUE UMA ACAO PROPRIA E NAO O "pegar" do jogo: o pegar padrao e
     instantaneo para item de inventario e nao tem como falhar no meio. O custo de
@@ -27,15 +36,20 @@ local WB_Spill = require "WB_Spill"
 ISWheelbarrowPickUp = ISBaseTimedAction:derive("ISWheelbarrowPickUp")
 
 function ISWheelbarrowPickUp:isValid()
-    -- O objeto de mundo pode ter sumido no meio da acao: outro jogador pegou, o
-    -- chunk descarregou, um zumbi empurrou. getSquare vira nil nesse caso.
-    return self.worldItem ~= nil
-        and self.worldItem:getSquare() ~= nil
-        and self.item ~= nil
+    if self.item == nil then return false end
+    if self.worldItem == nil then
+        -- Vindo do inventario: basta o item continuar sendo do jogador.
+        return self.character:getInventory():contains(self.item)
+    end
+    -- Vindo do chao: o objeto pode ter sumido no meio da acao -- outro jogador
+    -- pegou, o chunk descarregou, um zumbi empurrou. getSquare vira nil.
+    return self.worldItem:getSquare() ~= nil
 end
 
 function ISWheelbarrowPickUp:update()
-    self.character:faceThisObject(self.worldItem)
+    if self.worldItem ~= nil then
+        self.character:faceThisObject(self.worldItem)
+    end
     self.item:setJobDelta(self:getJobDelta())
 end
 
@@ -67,11 +81,13 @@ end
 function ISWheelbarrowPickUp:perform()
     self.item:setJobDelta(0.0)
 
-    local square = self.worldItem:getSquare()
-    if square ~= nil then
-        square:transmitRemoveItemFromSquare(self.worldItem)
-        square:getWorldObjects():remove(self.worldItem)
-        square:RemoveTileObject(self.worldItem)
+    if self.worldItem ~= nil then
+        local square = self.worldItem:getSquare()
+        if square ~= nil then
+            square:transmitRemoveItemFromSquare(self.worldItem)
+            square:getWorldObjects():remove(self.worldItem)
+            square:RemoveTileObject(self.worldItem)
+        end
     end
 
     -- AddItem em vez do fluxo normal de transferencia de proposito: o carrinho
@@ -90,10 +106,12 @@ function ISWheelbarrowPickUp:perform()
     ISBaseTimedAction.perform(self)
 end
 
-function ISWheelbarrowPickUp:new(character, worldItem)
+--- @param worldItem IsoWorldInventoryObject|nil nil quando vem do inventario
+--- @param item InventoryItem obrigatorio quando worldItem e nil
+function ISWheelbarrowPickUp:new(character, worldItem, item)
     local o = ISBaseTimedAction.new(self, character)
     o.worldItem = worldItem
-    o.item = worldItem and worldItem:getItem()
+    o.item = item or (worldItem and worldItem:getItem())
     o.stopOnWalk = true
     o.stopOnRun = true
     o.maxTime = WB_Sandbox.get("ActionDuration")

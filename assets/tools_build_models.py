@@ -49,7 +49,19 @@ from tools_fbx_strip_embedded import parse, size_of, write
 SOURCE = "source/Wheelbarrow_raw.fbx"
 SOURCE_TEXTURE = "source/Wheelbarrow_raw.png"
 OUT_MODELS = "../Contents/mods/MNWheelbarrow/common/media/models_X/WorldItems"
-OUT_TEXTURE = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems/Wheelbarrow.png"
+# DUAS texturas, e a separacao nao e organizacao -- e isolamento.
+#
+# Na primeira versao os dois modelos dividiam uma textura com canal alpha, e o
+# resultado em jogo foi personagem E VEICULOS sumindo da tela. Os dois sao
+# desenhados pelo mesmo passe de modelo 3D, e o modelo de MAO faz parte do
+# personagem: uma textura que aquele passe nao digira derruba o passe inteiro,
+# nao so o carrinho. O cenario, que e sprite, continuava aparecendo -- e foi
+# esse recorte que apontou a causa.
+#
+# Agora a alpha existe SO na textura do modelo de chao. O personagem volta a
+# usar a textura original, sem alpha, exatamente como antes da sombra.
+OUT_TEXTURE_HAND = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems/Wheelbarrow.png"
+OUT_TEXTURE_GROUND = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems/Wheelbarrow_Ground.png"
 
 # Pose da mao, medida em jogo. Ver o cabecalho de models_wheelbarrow.txt.
 HAND_ROTATION = (270, 0, 0)
@@ -172,22 +184,29 @@ def halve_u_and_add_shadow(src, dst, add_shadow):
     for x, y, z in quad:
         verts.extend([x, y, z])
 
-    # Poligono: os tres primeiros indices normais, o ULTIMO negado com ~i. E
-    # assim que o FBX marca o fim de um poligono.
+    # DOIS poligonos sobre os mesmos quatro cantos, com sentidos de giro
+    # OPOSTOS. Um quad so tem uma face; se o sentido nao casar com a convencao de
+    # descarte do renderizador, ele e invisivel justamente de cima -- que e de
+    # onde a camera olha. Nao da para testar isso aqui, e o custo de acertar por
+    # forca bruta e quatro vertices. Foi assim que a primeira versao ficou sem
+    # sombra nenhuma.
     pvi.extend([base, base + 1, base + 2, ~(base + 3)])
+    pvi.extend([base + 3, base + 2, base + 1, ~base])
 
-    # Normais sao ByVertice/IndexToDirect: uma normal por vertice novo, apontando
-    # para cima, mais uma entrada de indice para cada.
+    # Normais sao ByVertice/IndexToDirect: uma por vertice novo, apontando para
+    # cima, e uma entrada de indice para cada.
     for _ in range(4):
         normals.extend([0.0, 1.0, 0.0])
     start_normal = len(normals) // 3 - 4
     nidx.extend([start_normal + i for i in range(4)])
 
     # UVs sao ByPolygonVertex/IndexToDirect: os quatro cantos caem na metade
-    # DIREITA da textura, que e onde a mancha de sombra foi pintada.
+    # DIREITA da textura, que e onde a mancha de sombra foi pintada. Os oito
+    # indices cobrem os dois poligonos.
     uv_base = len(uv) // 2
     uv.extend([0.5, 0.0, 1.0, 0.0, 1.0, 1.0, 0.5, 1.0])
     uvidx.extend([uv_base + i for i in range(4)])
+    uvidx.extend([uv_base + 3, uv_base + 2, uv_base + 1, uv_base])
 
     _set(target, b"Vertices", verts, v_type)
     _set(target, b"PolygonVertexIndex", pvi, pvi_type)
@@ -226,14 +245,19 @@ def build_texture():
             # sem aresta visivel.
             fade = (1.0 - d) ** 2
             px[x, y] = (0, 0, 0, int(150 * fade))
-    out.save(OUT_TEXTURE)
+    out.save(OUT_TEXTURE_GROUND)
+
+    # A textura do modelo de MAO e a original, sem alpha e sem a metade extra.
+    original.convert("RGB").save(OUT_TEXTURE_HAND)
     return out.size
 
 
 def main():
-    os.makedirs(os.path.dirname(OUT_TEXTURE), exist_ok=True)
+    os.makedirs(os.path.dirname(OUT_TEXTURE_HAND), exist_ok=True)
 
-    print("textura %dx%d -> %s" % (build_texture() + (OUT_TEXTURE,)))
+    print("textura de chao %dx%d (com alpha) -> %s"
+          % (build_texture() + (OUT_TEXTURE_GROUND,)))
+    print("textura de mao   original, sem alpha -> %s" % OUT_TEXTURE_HAND)
 
     ground = os.path.join(OUT_MODELS, "Wheelbarrow.fbx")
     added = halve_u_and_add_shadow(SOURCE, ground, add_shadow=True)

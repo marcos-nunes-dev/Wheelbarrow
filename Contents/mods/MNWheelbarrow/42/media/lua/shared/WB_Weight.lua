@@ -87,11 +87,12 @@ local GROUND_SCAN_INTERVAL_MS = 250
 local lastGroundScan = 0
 
 --- Recalcula reducao de peso e capacidade de UM carrinho.
+--- @return boolean se algum valor mudou de fato
 function WB_Weight.refresh(item)
-    if not WB_Cart.is(item) then return end
+    if not WB_Cart.is(item) then return false end
 
     local inv = item:getInventory()
-    if inv == nil then return end
+    if inv == nil then return false end
 
     local threshold = WB_Sandbox.get("HeavyThreshold")
     local reduction = WB_Sandbox.get("HeavyReduction") / 100.0
@@ -117,22 +118,44 @@ function WB_Weight.refresh(item)
 
     -- Escrever so quando muda importa: cada setCapacity acima de 50 imprime um
     -- aviso de debug no console, e escrever a cada evento inundaria o log.
+    local changed = false
     if item:getWeightReduction() ~= pct then
         item:setWeightReduction(pct)
         inv:setWeightReduction(pct)
+        changed = true
     end
 
     local capacity = math.floor(WB_Sandbox.get("Capacity"))
     if capacity > 0 and inv:getCapacity() ~= capacity then
         item:setCapacity(capacity)
         inv:setCapacity(capacity)
+        changed = true
     end
+
+    return changed
 end
 
 --- Carrinhos no inventario do jogador.
+---
+--- Se o carrinho que mudou estiver NAS MAOS, pede a reconstrucao do modelo do
+--- personagem. O motivo e um sintoma observado: por o conteudo no carrinho fez o
+--- personagem E os veiculos ao redor sumirem da tela, sem erro nenhum no log.
+--- Mudar peso de item equipado ja tinha deixado o personagem invisivel neste
+--- projeto antes -- o modelo fica com estado velho e nada pede para refaze-lo.
+---
+--- So quando algo mudou de fato, e so com o carrinho na mao: e raro, entao nao
+--- ha custo por evento.
 function WB_Weight.refreshPlayer(player)
     if player == nil then return end
-    WB_Cart.forEachIn(player:getInventory(), WB_Weight.refresh)
+
+    local touched = false
+    WB_Cart.forEachIn(player:getInventory(), function(item)
+        if WB_Weight.refresh(item) then touched = true end
+    end)
+
+    if touched and WB_Cart.inHands(player) then
+        player:resetModelNextFrame()
+    end
 end
 
 --- Carrinhos largados no chao ao redor do jogador, no maximo a cada
