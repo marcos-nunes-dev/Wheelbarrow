@@ -3,54 +3,40 @@ module MNWheelbarrow
     imports { Base }
 
     /*
-     * CALIBRACAO DE POSICAO, RODADA 4 -- descartaveis.
+     * VARREDURA DE BASE DA ROTACAO DA MAO -- descartaveis.
      *
-     * A rotacao esta resolvida e nao e mais variavel: 180 em X, previsto pela
-     * relacao aparencia-em-jogo = mundo(180 + T) e validado contra quatro
-     * observacoes de tela. As tres variantes abaixo compartilham essa pose.
+     * Oito itens identicos entre si em tudo, menos no modelo de mao: A e a
+     * identidade, B ate G sao as seis rotacoes de 90 graus nos eixos, H e 180
+     * em X. Ver models_wheelbarrow_test.txt para o porque de a varredura ser
+     * feita de uma vez em vez de por bisseccao.
      *
-     * Sobrou uma incognita: qual eixo e frente/tras. O lateral e o X (medido na
-     * rodada 2: +0.8 mandou o carrinho para a mao esquerda, -0.8 para longe a
-     * direita) e fica em ZERO nas tres, senao o resultado fica ambiguo.
+     * Sao base:container e usam a mesma mascara do item real, para que o unico
+     * campo diferente entre eles e o carrinho de verdade seja o modelo.
      *
-     * ATENCAO ao comparar com o item real: ele agora usa a mesma pose da P1.
-     * Se ele se comportar diferente das variantes, a causa esta nos campos que
-     * so ele tem -- e nao no modelo.
+     * Nomes sao TestRot_<letra> justamente para ordenarem juntos na busca do
+     * menu de debug -- digitar "TestRot" traz os oito.
      */
-    /* so a altura */
-    item TestPos_P1
-    {
-        DisplayCategory = Container,
-        ItemType = base:container,
-        Weight = 3.0,
-        Icon = Toolbox,
-        Capacity = 20,
-        WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_P1,
-        primaryAnimMask = holdingbagright,
-    }
-    /* altura + Z negativo 0.7 */
-    item TestPos_P2
-    {
-        DisplayCategory = Container,
-        ItemType = base:container,
-        Weight = 3.0,
-        Icon = Toolbox,
-        Capacity = 20,
-        WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_P2,
-        primaryAnimMask = holdingbagright,
-    }
-    /* altura + Z positivo 0.7 */
-    item TestPos_P3
-    {
-        DisplayCategory = Container,
-        ItemType = base:container,
-        Weight = 3.0,
-        Icon = Toolbox,
-        Capacity = 20,
-        WorldStaticModel = MNWheelbarrow_Ground,
-        StaticModel = MNWheelbarrow_Hand_P3,
-        primaryAnimMask = holdingbagright,
-    }
+    item TestRot_A { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_RotA, primaryAnimMask = holdingbagright, }
+
+    item TestRot_B { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_RotB, primaryAnimMask = holdingbagright, }
+
+    item TestRot_C { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_RotC, primaryAnimMask = holdingbagright, }
+
+    item TestRot_D { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_RotD, primaryAnimMask = holdingbagright, }
+
+    item TestRot_E { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_RotE, primaryAnimMask = holdingbagright, }
+
+    item TestRot_F { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_RotF, primaryAnimMask = holdingbagright, }
+
+    item TestRot_G { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_RotG, primaryAnimMask = holdingbagright, }
+
+    item TestRot_H { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox,
+        Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = MNWB_RotH, primaryAnimMask = holdingbagright, }
 }
