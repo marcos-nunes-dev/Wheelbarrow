@@ -15,10 +15,12 @@
     Entao todas as poses vem assadas e este arquivo navega entre elas: o custo do
     restart deixa de multiplicar pelo numero de tentativas.
 
-    ESTADO: rotacao resolvida em (270, 0, 0), e da translacao ja sairam Y = 0.80
-    e Z = 0.64. Falta so o LATERAL, que caiu entre duas amostras da passada
-    grossa -- por isso X tem doze valores aqui e os outros dois so tres, para
-    confirmacao. Ver o cabecalho de tools_gen_pose_grid.py para a derivacao.
+    ESTADO: rotacao resolvida em (270, 0, 0). A translacao esta na terceira
+    passada: a anterior parou em Y e Z na BORDA do grid, o que e fim de amostra e
+    nao otimo, entao esta se estende nas direcoes em que a busca empurrou. Os
+    tres eixos continuam abertos de proposito -- na projecao isometrica um eixo
+    do mundo mexe o sprite na horizontal e na vertical ao mesmo tempo, entao
+    refinar um desloca o otimo aparente dos outros.
 
     TRES EIXOS INDEPENDENTES, um par de teclas cada. Isso importa mais do que
     parece: a primeira versao desta calibracao percorria uma lista linear, o que
@@ -58,13 +60,13 @@ local function indexOf(values, wanted)
     return 1
 end
 
--- Ponto de partida: o melhor ponto da passada anterior, e nao um canto do grid.
--- Y = 0.80 e Z = 0.64 ja acertaram la; X = 0.37 e a estimativa entre as duas
--- amostras vizinhas que bracketaram o encaixe. Comecar aqui deixa o refino ser
--- so um passo para cada lado.
-local ix = indexOf(GRID.x, 0.37)
-local iy = indexOf(GRID.y, 0.80)
-local iz = indexOf(GRID.z, 0.64)
+-- Ponto de partida: o melhor da passada anterior. Ele fica num CANTO deste grid,
+-- e isso e proposital -- foi para ele que a busca empurrou, e o grid se estende
+-- justamente para o lado de fora. Comecar aqui torna visivel se o ponto continua
+-- correndo na mesma direcao.
+local ix = indexOf(GRID.x, 0.31)
+local iy = indexOf(GRID.y, 0.90)
+local iz = indexOf(GRID.z, 0.56)
 local started = false
 
 --- O indice linear tem de casar com a ordem em que tools_gen_pose_grid.py assou

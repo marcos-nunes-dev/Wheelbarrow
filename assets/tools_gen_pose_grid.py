@@ -66,25 +66,29 @@ ROTATION = (270, 0, 0)
 
 # Os tres eixos do grid, cada um com um par de teclas proprio.
 #
-# SEGUNDA PASSADA -- refino, com o orcamento concentrado onde falta resolucao.
+# TERCEIRA PASSADA -- desentortar uma busca que estava TRUNCADA, nao convergida.
 #
-# A passada grossa fechou Y = 0.80 e Z = 0.64 de primeira. O lateral nao: caiu
-# ENTRE duas amostras vizinhas -- 0.00 deixava o carrinho longe demais a direita,
-# 0.40 passava um pouco -- e nenhuma das duas era o encaixe.
+# A passada anterior deu X = 0.31, Y = 0.90, Z = 0.56 como melhor. Mas 0.90 era o
+# MAIOR valor do eixo Y e 0.56 o MENOR do eixo Z: os dois pararam na borda do
+# grid. Otimo em borda nao e otimo, e sim o fim da amostra -- o ponto real esta
+# fora dela.
 #
-# Entao X ganha doze amostras em passo de 0.02 e Y e Z ficam com tres cada. Nao e
-# arbitrario: o passo grosso de X era 0.40, e a diferenca que o Marcos percebeu
-# entre 0.40 e o ideal foi da ordem de 7% disso, ou seja ~0.03. Passo de 0.02 fica
-# logo abaixo do que se distingue em tela, que e o criterio util -- passo menor
-# gera malha a mais sem gerar informacao a mais.
+# Isso derruba o que eu tinha concluido na passada grossa, que Y e Z ja estavam
+# resolvidos. Eram apenas os melhores daquela amostra larga, e assim que X saiu de
+# 0.00/0.40 para perto do certo, ambos correram para fora do intervalo.
 #
-# Y e Z seguem com um passo para cada lado so para CONFIRMAR: os valores grossos
-# vieram de passos largos (0.40 em Y, 0.12 em Z), entao acertar ali significa
-# "melhor daquele passo", nao "melhor".
-AXIS_Z = [0.56, 0.64, 0.72]
-AXIS_Y = [0.70, 0.80, 0.90]
-AXIS_X = [0.23, 0.25, 0.27, 0.29, 0.31, 0.33,
-          0.35, 0.37, 0.39, 0.41, 0.43, 0.45]
+# Ha uma razao para os tres se moverem juntos mesmo sendo translacoes
+# independentes em 3D: na projecao isometrica, andar em QUALQUER eixo do mundo
+# desloca o sprite na horizontal E na vertical da tela ao mesmo tempo. Entao "esta
+# centralizado" e um julgamento acoplado, e refinar um eixo desloca o otimo
+# aparente dos outros. Por isso cada passada tem de reabrir os tres, e nao so o
+# que ainda nao acertou.
+#
+# Agora o grid se estende exatamente nas direcoes em que a busca empurrou: Y para
+# cima de 0.90 e Z para baixo de 0.56, com X cercando 0.31.
+AXIS_Z = [0.32, 0.40, 0.48, 0.56]
+AXIS_Y = [0.90, 1.05, 1.20, 1.35]
+AXIS_X = [0.25, 0.28, 0.31, 0.34, 0.37]
 
 HEADER = (
     "/*\n"
