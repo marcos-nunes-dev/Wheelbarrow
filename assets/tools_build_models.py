@@ -11,7 +11,8 @@ dois modelos sao derivados dela toda vez.
 O QUE CADA UM RECEBE:
 
     chao   sombra de contato assada na malha, e nada mais
-    mao    giro 270 0 0 e deslocamento (0.31, 0.90, 0.56), sem sombra
+    mao    giro 270 0 0 e deslocamento (0.31, 0.90, 0.56), SEM sombra -- ver
+           build_hand para por que a sombra na mao foi tentada e revertida
 
 A sombra so entra no de chao porque ela e um quad deitado no plano do chao. No
 modelo de mao ele acompanharia o carrinho no ar, virando uma placa escura
@@ -225,33 +226,31 @@ def build_ground(src, dst):
 
 
 def build_hand(src, dst):
-    """Modelo de mao: o giro e o deslocamento da pose, mais o quad de sombra.
+    """Modelo de mao: SO o giro e o deslocamento da pose. Sem sombra.
 
-    O PLANO DO CHAO AQUI E OUTRO. Depois da pose, a malha esta no espaco do osso
-    da mao, e nesse espaco +Z aponta para BAIXO -- medido em jogo comparando duas
-    poses que diferiam so no sinal de Z: uma flutuava na altura do ombro e a
-    outra encostava no chao. Entao o chao e um plano de Z constante, e o quad
-    varia em X e Y, ao contrario do modelo de chao.
+    A SOMBRA NA MAO FOI TENTADA E REVERTIDA, e o motivo esta medido:
+
+    Ela exige uma textura com canal alpha, e o modelo de mao faz parte do
+    PERSONAGEM. Toda vez que essa textura entrou no passe de modelo do
+    personagem, personagem e veiculos sumiram da tela -- e so eles: o cenario, que
+    e sprite, continuava. Tres ocorrencias, todas com alpha presente, nenhuma sem.
+
+    A ultima fechou o caso porque o gatilho ficou claro: o personagem ficava bem
+    ate algo forcar a RECONSTRUCAO do modelo (transferir itens para o carrinho
+    chama resetModelNextFrame). Com o modelo em cache, nada acontecia; ao
+    reconstruir, sumia. Enquanto o modelo de mao ficou sem alpha, o Marcos
+    reportou tudo funcionando.
+
+    Nao vale insistir por tentativa: a proxima ideia precisa vir de descobrir POR
+    QUE o passe de modelo rejeita essa textura -- se e o canal alpha, o tamanho
+    1024x512, ou nao ser potencia de dois nos dois lados.
+
+    A sombra no chao continua, porque aquele modelo nao e desenhado junto com o
+    personagem.
     """
-    tmp = "source/_hand_posed.fbx"
-    shift(src, tmp, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
+    shift(src, dst, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
           HAND_ROTATION[0], HAND_ROTATION[1], HAND_ROTATION[2])
-
-    data, roots, tail, target = _open_geometry(tmp)
-    _halve_u(target)
-
-    verts, _ = _get(target, b"Vertices")
-    xs, ys, zs = verts[0::3], verts[1::3], verts[2::3]
-    x0, x1 = min(xs) - SHADOW_MARGIN, max(xs) + SHADOW_MARGIN
-    y0, y1 = min(ys) - SHADOW_MARGIN, max(ys) + SHADOW_MARGIN
-    # O ponto mais BAIXO e o maior Z, porque +Z desce. E onde a roda toca o chao.
-    ground = max(zs) - SHADOW_LIFT
-
-    _add_quad(target, [(x0, y0, ground), (x1, y0, ground),
-                       (x1, y1, ground), (x0, y1, ground)])
-    _save(data, roots, tail, dst)
-    os.remove(tmp)
-    return 4
+    return 0
 
 
 def build_texture():
@@ -292,14 +291,17 @@ def build_texture():
     out.save(OUT_TEXTURE_GROUND)
 
     # A textura do modelo de MAO e a original, sem alpha e sem a metade extra.
-    out.save(OUT_TEXTURE_HAND)
+    # A do modelo de mao e a original: RGB, sem alpha, sem a metade extra. Ver
+    # build_hand para por que isso nao e escolha estetica.
+    original.convert("RGB").save(OUT_TEXTURE_HAND)
     return out.size
 
 
 def main():
     os.makedirs(os.path.dirname(OUT_TEXTURE_HAND), exist_ok=True)
 
-    print("texturas %dx%d com alpha -> chao e mao" % build_texture())
+    print("textura de chao %dx%d com alpha; a de mao segue original sem alpha"
+          % build_texture())
 
     ground = os.path.join(OUT_MODELS, "Wheelbarrow.fbx")
     added = build_ground(SOURCE, ground)
@@ -308,7 +310,8 @@ def main():
     # O de mao sai da MESMA fonte, e nao do de chao: senao herdaria o quad do
     # chao, que no espaco da mao ficaria de pe ao lado do personagem.
     hand = os.path.join(OUT_MODELS, "Wheelbarrow_Hand.fbx")
-    print("mao: %d vertices de sombra -> %s" % (build_hand(SOURCE, hand), hand))
+    build_hand(SOURCE, hand)
+    print("mao: pose %s %s, sem sombra -> %s" % (HAND_ROTATION, HAND_OFFSET, hand))
 
 
 

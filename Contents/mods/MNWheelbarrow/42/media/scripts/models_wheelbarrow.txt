@@ -57,18 +57,20 @@ module Base
      * inteiro, nao so o carrinho. O cenario, que e sprite, continuava aparecendo
      * -- foi esse recorte que apontou a causa. A alpha agora existe SO aqui.
      *
-     * O modelo de MAO tem um quad proprio, num plano DIFERENTE. Depois da pose a
-     * malha esta no espaco do osso da mao, onde +Z aponta para baixo -- entao la
-     * o chao e um plano de Z constante e o quad varia em X e Y, enquanto aqui a
-     * vertical e Y. Copiar o quad de um para o outro o deixaria de pe ao lado do
-     * personagem.
+     * O modelo de MAO NAO tem sombra, e isso esta decidido por medicao, nao por
+     * preferencia. A sombra la exigiria uma textura com alpha, e o modelo de mao
+     * faz parte do PERSONAGEM: as tres vezes em que uma textura com alpha entrou
+     * no passe de modelo do personagem, personagem e veiculos sumiram da tela --
+     * e so eles; o cenario, que e sprite, continuava. Nenhuma ocorrencia sem
+     * alpha.
      *
-     * RISCO CONHECIDO: isso devolve uma textura com alpha ao passe de modelo do
-     * PERSONAGEM, que e onde ja aconteceu de o personagem e os veiculos sumirem
-     * da tela. Aquele episodio tinha DUAS causas possiveis e foi corrigido com
-     * duas mudancas ao mesmo tempo, entao nunca soube qual era. Se o
-     * desaparecimento voltar, este e o primeiro suspeito, e reverter e apontar o
-     * modelo de mao de volta para WorldItems/Wheelbarrow e regerar sem o quad.
+     * A ultima fechou o caso porque mostrou o gatilho: o personagem ficava bem
+     * ate algo forcar a RECONSTRUCAO do modelo -- transferir itens para o
+     * carrinho chama resetModelNextFrame. Com o modelo em cache nada acontecia;
+     * ao reconstruir, sumia.
+     *
+     * Ver o cabecalho de build_hand em assets/tools_build_models.py para o que
+     * uma proxima tentativa precisaria descobrir antes de tentar de novo.
      *
      * ALTURA: o mesh foi deslocado 0.380 no eixo Y (ver
      * assets/tools_fbx_shift.py) para a base ficar em Y = 0 em vez de a origem
