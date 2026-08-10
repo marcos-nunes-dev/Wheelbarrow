@@ -116,9 +116,49 @@ local function onFillVehicleSpike(playerNum, context, _worldobjects, _test)
                         container and tostring(container:getCapacity()) or "-"))
             end
         end
-        print(("[Wheelbarrow][VEICULO] getBestSeat = %d   (-1 significa nenhum assento utilizavel)")
-            :format(vehicle:getBestSeat(player)))
+        -- getBestSeat devolve -1 mesmo com a peca instalada, entao o bloqueio
+        -- esta em outra condicao. Estas tres sao as candidatas diretas, e a
+        -- ultima linha tenta entrar SEM passar pelo menu -- se funcionar, o
+        -- problema e so o caminho ate o assento, nao o assento em si.
+        print(("[Wheelbarrow][VEICULO] getBestSeat      = %d"):format(vehicle:getBestSeat(player)))
+        print(("[Wheelbarrow][VEICULO] isSeatInstalled  = %s"):format(tostring(vehicle:isSeatInstalled(0))))
+        print(("[Wheelbarrow][VEICULO] isSeatOccupied   = %s"):format(tostring(vehicle:isSeatOccupied(0))))
+        print(("[Wheelbarrow][VEICULO] isEnterBlocked   = %s   <- se for true, e este o bloqueio")
+            :format(tostring(vehicle:isEnterBlocked(player, 0))))
     end)
 end
 
 Events.OnFillWorldObjectContextMenu.Add(onFillVehicleSpike)
+
+--- Entrada FORCADA, sem menu e sem pathfinding.
+---
+--- O menu radial mostra o assento e clicar nao faz nada, o que aponta para a
+--- ação de caminhar ate a posicao externa falhando em silencio. Chamar
+--- vehicle:enter direto separa as duas coisas: se o personagem entrar por aqui,
+--- o assento esta bom e o problema e so a posicao externa/pathfinding; se nem
+--- assim entrar, o bloqueio e no proprio assento.
+local function onFillForceEnter(playerNum, context, _worldobjects, _test)
+    if not getDebug() then return end
+    local player = getSpecificPlayer(playerNum)
+    if player == nil then return end
+
+    context:addOption("[SPIKE] Forcar entrar no carrinho", nil, function()
+        local nearest, bestDist = nil, 9999
+        for v = 0, getCell():getVehicles():size() - 1 do
+            local veh = getCell():getVehicles():get(v)
+            if veh:getScript() and veh:getScript():getName() == "MNWheelbarrow" then
+                local d = math.abs(veh:getX() - player:getX()) + math.abs(veh:getY() - player:getY())
+                if d < bestDist then nearest, bestDist = veh, d end
+            end
+        end
+        if nearest == nil then
+            print("[Wheelbarrow][VEICULO] nenhum carrinho por perto")
+            return
+        end
+        local ok = nearest:enter(0, player)
+        print(("[Wheelbarrow][VEICULO] enter(0) devolveu %s | jogador esta em veiculo: %s")
+            :format(tostring(ok), tostring(player:getVehicle() ~= nil)))
+    end)
+end
+
+Events.OnFillWorldObjectContextMenu.Add(onFillForceEnter)
