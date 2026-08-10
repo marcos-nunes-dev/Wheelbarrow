@@ -1,0 +1,62 @@
+module Base
+{
+/*
+ * GRID DE POSES -- gerado por assets/tools_gen_pose_grid.py, DESCARTAVEL.
+ *
+ * Uma malha por orientacao alinhada aos eixos (as 24 rotacoes proprias do
+ * cubo). Existe porque a pose da mao e assada na malha e script so recarrega
+ * no boot: sem o grid, cada tentativa custa um restart. Com ele, a varredura
+ * inteira e uma tecla -- ver WB_PoseLab.lua.
+ *
+ * NAO EDITAR A MAO: regerar pelo script. E NAO PUBLICAR: sai junto com
+ * WB_PoseLab.lua e items_wheelbarrow_test.txt antes do upload.
+ */
+    /*   0,   0,   0 */
+    model WB_Pose01 { mesh = WorldItems/WB_Pose01, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0,   0,  90 */
+    model WB_Pose02 { mesh = WorldItems/WB_Pose02, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0,   0, 180 */
+    model WB_Pose03 { mesh = WorldItems/WB_Pose03, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0,   0, 270 */
+    model WB_Pose04 { mesh = WorldItems/WB_Pose04, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0,  90,   0 */
+    model WB_Pose05 { mesh = WorldItems/WB_Pose05, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0,  90,  90 */
+    model WB_Pose06 { mesh = WorldItems/WB_Pose06, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0,  90, 180 */
+    model WB_Pose07 { mesh = WorldItems/WB_Pose07, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0,  90, 270 */
+    model WB_Pose08 { mesh = WorldItems/WB_Pose08, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0, 180,   0 */
+    model WB_Pose09 { mesh = WorldItems/WB_Pose09, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0, 180,  90 */
+    model WB_Pose10 { mesh = WorldItems/WB_Pose10, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0, 180, 180 */
+    model WB_Pose11 { mesh = WorldItems/WB_Pose11, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0, 180, 270 */
+    model WB_Pose12 { mesh = WorldItems/WB_Pose12, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0, 270,   0 */
+    model WB_Pose13 { mesh = WorldItems/WB_Pose13, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0, 270,  90 */
+    model WB_Pose14 { mesh = WorldItems/WB_Pose14, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0, 270, 180 */
+    model WB_Pose15 { mesh = WorldItems/WB_Pose15, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*   0, 270, 270 */
+    model WB_Pose16 { mesh = WorldItems/WB_Pose16, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90,   0,   0 */
+    model WB_Pose17 { mesh = WorldItems/WB_Pose17, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90,   0,  90 */
+    model WB_Pose18 { mesh = WorldItems/WB_Pose18, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90,   0, 180 */
+    model WB_Pose19 { mesh = WorldItems/WB_Pose19, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90,   0, 270 */
+    model WB_Pose20 { mesh = WorldItems/WB_Pose20, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90, 180,   0 */
+    model WB_Pose21 { mesh = WorldItems/WB_Pose21, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90, 180,  90 */
+    model WB_Pose22 { mesh = WorldItems/WB_Pose22, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90, 180, 180 */
+    model WB_Pose23 { mesh = WorldItems/WB_Pose23, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90, 180, 270 */
+    model WB_Pose24 { mesh = WorldItems/WB_Pose24, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+}

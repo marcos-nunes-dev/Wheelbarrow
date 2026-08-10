@@ -1,0 +1,63 @@
+module MNWheelbarrow
+{
+    imports { Base }
+/*
+ * GRID DE POSES -- gerado por assets/tools_gen_pose_grid.py, DESCARTAVEL.
+ *
+ * Uma malha por orientacao alinhada aos eixos (as 24 rotacoes proprias do
+ * cubo). Existe porque a pose da mao e assada na malha e script so recarrega
+ * no boot: sem o grid, cada tentativa custa um restart. Com ele, a varredura
+ * inteira e uma tecla -- ver WB_PoseLab.lua.
+ *
+ * NAO EDITAR A MAO: regerar pelo script. E NAO PUBLICAR: sai junto com
+ * WB_PoseLab.lua e items_wheelbarrow_test.txt antes do upload.
+ */
+    /*   0,   0,   0 */
+    item Pose01 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose01, primaryAnimMask = holdingbagright, }
+    /*   0,   0,  90 */
+    item Pose02 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose02, primaryAnimMask = holdingbagright, }
+    /*   0,   0, 180 */
+    item Pose03 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose03, primaryAnimMask = holdingbagright, }
+    /*   0,   0, 270 */
+    item Pose04 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose04, primaryAnimMask = holdingbagright, }
+    /*   0,  90,   0 */
+    item Pose05 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose05, primaryAnimMask = holdingbagright, }
+    /*   0,  90,  90 */
+    item Pose06 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose06, primaryAnimMask = holdingbagright, }
+    /*   0,  90, 180 */
+    item Pose07 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose07, primaryAnimMask = holdingbagright, }
+    /*   0,  90, 270 */
+    item Pose08 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose08, primaryAnimMask = holdingbagright, }
+    /*   0, 180,   0 */
+    item Pose09 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose09, primaryAnimMask = holdingbagright, }
+    /*   0, 180,  90 */
+    item Pose10 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose10, primaryAnimMask = holdingbagright, }
+    /*   0, 180, 180 */
+    item Pose11 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose11, primaryAnimMask = holdingbagright, }
+    /*   0, 180, 270 */
+    item Pose12 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose12, primaryAnimMask = holdingbagright, }
+    /*   0, 270,   0 */
+    item Pose13 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose13, primaryAnimMask = holdingbagright, }
+    /*   0, 270,  90 */
+    item Pose14 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose14, primaryAnimMask = holdingbagright, }
+    /*   0, 270, 180 */
+    item Pose15 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose15, primaryAnimMask = holdingbagright, }
+    /*   0, 270, 270 */
+    item Pose16 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose16, primaryAnimMask = holdingbagright, }
+    /*  90,   0,   0 */
+    item Pose17 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose17, primaryAnimMask = holdingbagright, }
+    /*  90,   0,  90 */
+    item Pose18 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose18, primaryAnimMask = holdingbagright, }
+    /*  90,   0, 180 */
+    item Pose19 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose19, primaryAnimMask = holdingbagright, }
+    /*  90,   0, 270 */
+    item Pose20 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose20, primaryAnimMask = holdingbagright, }
+    /*  90, 180,   0 */
+    item Pose21 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose21, primaryAnimMask = holdingbagright, }
+    /*  90, 180,  90 */
+    item Pose22 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose22, primaryAnimMask = holdingbagright, }
+    /*  90, 180, 180 */
+    item Pose23 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose23, primaryAnimMask = holdingbagright, }
+    /*  90, 180, 270 */
+    item Pose24 { DisplayCategory = Container, ItemType = base:container, Weight = 3.0, Icon = Toolbox, Capacity = 20, WorldStaticModel = MNWheelbarrow_Ground, StaticModel = WB_Pose24, primaryAnimMask = holdingbagright, }
+}
