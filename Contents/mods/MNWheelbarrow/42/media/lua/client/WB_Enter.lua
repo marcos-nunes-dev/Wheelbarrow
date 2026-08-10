@@ -83,7 +83,27 @@ Events.OnEnterVehicle.Add(function(player)
     local vehicle = player and player:getVehicle()
     if not isWheelbarrow(vehicle) then return end
     if vehicle:isEngineRunning() then return end
-    ISVehicleMenu.onStartEngine(player)
+
+    -- Partida FORCADA, e nao ISVehicleMenu.onStartEngine.
+    --
+    -- A partida normal enfileira uma acao que passa pelas checagens de carro:
+    -- bateria, combustivel e estado do motor. O carrinho nao tem peca de
+    -- bateria nem de tanque -- e nem deveria ter -- e existe ate um estado de
+    -- falha chamado engineDoStartingFailedNoPower. Era o candidato mais
+    -- provavel para ele nao andar.
+    --
+    -- engineDoStartingSuccess poe o motor em funcionamento sem essas
+    -- checagens, o que e coerente: o "motor" aqui e ficcao para representar a
+    -- pessoa empurrando, e pessoa nao precisa de bateria.
+    vehicle:engineDoStartingSuccess()
+
+    if getDebug() then
+        print(("[Wheelbarrow][MOTOR] running=%s started=%s working=%s hotwired=%s")
+            :format(tostring(vehicle:isEngineRunning()),
+                tostring(vehicle:isEngineStarted()),
+                tostring(vehicle:isEngineWorking()),
+                tostring(vehicle:isHotwired())))
+    end
 end)
 
 return WB_Enter
