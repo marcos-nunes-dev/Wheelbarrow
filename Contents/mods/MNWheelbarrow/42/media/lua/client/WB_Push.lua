@@ -45,8 +45,24 @@ local FACE_ORDER = { "N", "E", "S", "W" }
 ---
 --- Existe uma opcao de debug que percorre as 8 combinacoes e imprime a atual.
 --- Quando a certa for encontrada, os valores viram fixos aqui e a opcao sai.
+--- Valores derivados, e nao encontrados por tentativa:
+---
+--- 1. A frente do modelo e o eixo +Z. Medido na malha: o extremo +Z tem
+---    |x| medio 0.097 e encosta em y=0 -- e a roda, estreita e no chao. O
+---    extremo -Z tem |x| medio 0.387 e nunca desce de y=0.588 -- sao os dois
+---    cabos, afastados e suspensos.
+---
+--- 2. No render, +Z projeta para cima-esquerda em 45 graus, baixo-esquerda em
+---    135, baixo-direita em 225 e cima-direita em 315.
+---
+--- 3. No PZ a tela e sx=(x-y), sy=(x+y), entao N vai para cima-direita, E para
+---    baixo-direita, S para baixo-esquerda e W para cima-esquerda.
+---
+--- Cruzando 2 e 3: sprite 0 serve W, 1 serve S, 2 serve E, 3 serve N. Contra a
+--- ordem N,E,S,W isso e a sequencia INVERTIDA, nao deslocada -- por isso
+--- MIRRORED e nenhuma rotacao.
 local ROTATION = 0
-local MIRRORED = false
+local MIRRORED = true
 
 local function spriteForFace(face)
     local i
@@ -153,18 +169,39 @@ local function onPlayerUpdate(player)
 
     local face = faceOf(player)
     local target = targetSquare(player, face)
-    if target == nil then return end
 
-    if target == current then
-        -- Mesma square, mas o jogador pode ter girado: so troca o sprite.
-        object:setSprite(spriteForFace(face))
-        return
+    -- Diagnostico: imprime so quando a decisao MUDA, para nao inundar o console
+    -- a 60 quadros por segundo. Existe porque o carrinho nao estava seguindo o
+    -- jogador e nenhum erro aparecia no log -- sem ver qual guarda barra o
+    -- movimento, so da para adivinhar, e adivinhar ja custou caro nesta sessao.
+    local reason
+    if target == nil then
+        reason = "square alvo nao existe"
+    elseif target == current then
+        reason = "carrinho ja esta no alvo (so gira)"
+    elseif not target:isFree(false) then
+        reason = "alvo nao esta livre (isFree=false)"
+    elseif current:isBlockedTo(target) then
+        reason = "passagem bloqueada (isBlockedTo=true)"
+    else
+        reason = "MOVENDO"
     end
 
-    -- Colisao grossa por enquanto: so nao entra em square bloqueada. Parede,
-    -- cerca e diagonal ficam para a proxima parte.
-    if not target:isFree(false) then return end
-    if current:isBlockedTo(target) then return end
+    if getDebug() and reason ~= entry.lastReason then
+        entry.lastReason = reason
+        print(("[Wheelbarrow] %s | face=%s jogador=(%d,%d) carrinho=(%d,%d) alvo=%s")
+            :format(reason, face,
+                player:getSquare():getX(), player:getSquare():getY(),
+                current:getX(), current:getY(),
+                target and (target:getX() .. "," .. target:getY()) or "nil"))
+    end
+
+    if reason ~= "MOVENDO" then
+        if target == current then
+            object:setSprite(spriteForFace(face))
+        end
+        return
+    end
 
     moveCart(object, current, target, face)
 end

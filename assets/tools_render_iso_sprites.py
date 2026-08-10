@@ -39,8 +39,15 @@ BRIGHTNESS = 1.45
 # TilePropertyKey do engine e nenhuma trata sombra. Objeto do mundo no PZ nao
 # projeta sombra dinamica; quando tem, esta pintada no proprio sprite. Entao a
 # sombra de contato e assada aqui, projetando a malha no plano do chao.
-SHADOW_ALPHA = 105
-SHADOW_BLUR = 2.5
+SHADOW_ALPHA = 95
+SHADOW_BLUR = 4.0
+
+# A primeira versao projetava a malha INTEIRA no chao. Geometricamente correto,
+# visualmente errado: a cacamba e uma caixa grande e alta, entao a projecao dela
+# virava uma laje de bordas retas que parecia um recorte, nao uma sombra. Agora
+# a contribuicao cai com a altura -- so o que esta perto do chao (roda, pes)
+# escurece de verdade. Acima desta fracao da altura total, nada contribui.
+SHADOW_FALLOFF = 0.55
 
 # Margem livre em cada lado. Nao e estetica: o desfoque gaussiano da sombra
 # espalha cerca de 3x o raio, entao reservar so 4px fazia a sombra encostar nas
@@ -128,9 +135,16 @@ def render(mesh, texture, azimuth_deg):
     gpx = px
     gpy = [ANCHOR_Y - (gsy[i] - miny) * scale for i in range(n)]
 
+    model_height = max(verts[1::3]) or 1.0
     shadow = Image.new("L", (SPRITE_W, SPRITE_H), 0)
     sh = shadow.load()
     for (ia, _), (ib, _), (ic, _) in triangles(pvi):
+        # Peso pela altura media do triangulo: contato forte, topo nulo.
+        avg_y = (verts[3 * ia + 1] + verts[3 * ib + 1] + verts[3 * ic + 1]) / 3.0
+        weight = 1.0 - avg_y / (model_height * SHADOW_FALLOFF)
+        if weight <= 0.0:
+            continue
+        value = int(255 * weight)
         x0, y0 = gpx[ia], gpy[ia]
         x1, y1 = gpx[ib], gpy[ib]
         x2, y2 = gpx[ic], gpy[ic]
@@ -147,7 +161,8 @@ def render(mesh, texture, azimuth_deg):
                 w0 = ((x1 - cxp) * (y2 - cyp) - (x2 - cxp) * (y1 - cyp)) / ar
                 w1 = ((x2 - cxp) * (y0 - cyp) - (x0 - cxp) * (y2 - cyp)) / ar
                 if w0 >= 0 and w1 >= 0 and (1.0 - w0 - w1) >= 0:
-                    sh[xx, yy] = 255
+                    if value > sh[xx, yy]:
+                        sh[xx, yy] = value
     shadow = shadow.filter(ImageFilter.GaussianBlur(SHADOW_BLUR))
     shadow = shadow.point(lambda v: int(v * SHADOW_ALPHA / 255))
 
