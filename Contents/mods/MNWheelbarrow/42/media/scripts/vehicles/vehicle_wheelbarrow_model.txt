@@ -14,9 +14,13 @@ module Base
      *
      *     1.49 * (1.4 / 2.5) / 190 = 0.0044
      *
-     * E ponto de partida calculado, nao medido em tela. Ja errei escala tres
-     * vezes nesta sessao deduzindo -- este numero precisa ser conferido olhando
-     * o carrinho ao lado do personagem.
+     * E ponto de partida calculado, nao medido em tela.
+     *
+     * ALTURA: o mesh usado aqui NAO e o mesmo do objeto de chao. Aquele foi
+     * deslocado 0.380 para cima, para a base assentar em Y=0 -- o que num
+     * veiculo faz o corpo flutuar acima das rodas. O de veiculo e centrado,
+     * como os meshes de veiculo do jogo base. Os dois saem do mesmo FBX
+     * original via assets/tools_fbx_shift_y.py.
      */
     model Vehicles_MNWheelbarrow
     {

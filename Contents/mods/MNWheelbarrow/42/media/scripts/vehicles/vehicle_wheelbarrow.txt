@@ -45,6 +45,21 @@ module Base
             texture = Vehicles/wheelbarrow,
         }
 
+        /* O modelo saiu BRANCO no primeiro teste. O shader "vehicle" nao usa so
+           a textura difusa: ele espera um conjunto de mapas, e o trailer vanilla
+           declara sete. Sem a mascara o shader nao tem o que multiplicar.
+
+           A nossa mascara e totalmente transparente de proposito -- ela marca
+           zonas de dano e ferrugem por cor, e um carrinho nao precisa dessa
+           divisao. As demais apontam para as texturas compartilhadas do jogo,
+           que e o que o proprio trailer faz. */
+        textureMask = Vehicles/wheelbarrow_mask,
+        textureDamage1Overlay = Vehicles/Veh_Blood_Mask,
+        textureDamage2Overlay = Vehicles/Veh_Blood_Hvy,
+        textureDamage1Shell = Vehicles/Veh_Damage1,
+        textureDamage2Shell = Vehicles/Veh_Damage2,
+        textureRust = Vehicles/Veh_Rust,
+
         extents = 0.45 0.30 0.80,
         mass = 40,
         physicsChassisShape = 0.45 0.30 0.80,
