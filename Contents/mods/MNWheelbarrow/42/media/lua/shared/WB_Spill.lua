@@ -90,6 +90,13 @@ function WB_Spill.dump(cart, origin)
         dropped = dropped + 1
     end
 
+    -- Registro so em debug. Existe porque "nao caiu nada" tem duas causas
+    -- indistinguiveis em tela: a acao nao chegou a ser cancelada, ou foi
+    -- cancelada e o carrinho estava vazio. O numero separa as duas.
+    if getDebug() then
+        print(string.format("[Wheelbarrow][SPILL] %d itens derramados", dropped))
+    end
+
     return dropped
 end
 

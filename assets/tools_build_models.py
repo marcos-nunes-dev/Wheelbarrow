@@ -72,6 +72,9 @@ SHADOW_MARGIN = 0.12
 # Altura acima de y=0. Zero exato briga com o piso pelo mesmo pixel de
 # profundidade e produz cintilacao; um valor pequeno resolve sem ser visivel.
 SHADOW_LIFT = 0.004
+# Fracao do raio que fica com alpha cheio antes de a borda comecar a desmanchar.
+SHADOW_CORE = 0.55
+SHADOW_ALPHA = 170
 
 
 # --------------------------------------------------------------------------
@@ -139,12 +142,18 @@ def _save(src_bytes, roots, tail, dst):
 # --------------------------------------------------------------------------
 
 
-def halve_u_and_add_shadow(src, dst, add_shadow):
-    """Comprime os UVs para a metade esquerda e, se pedido, junta o quad.
+def build_ground(src, dst):
+    """Comprime os UVs para a metade esquerda e junta o quad de sombra.
 
-    Os dois modelos precisam da compressao de U, porque compartilham a textura.
-    So o de chao recebe o quad.
+    SO O MODELO DE CHAO passa por aqui, e a razao e a que me escapou na primeira
+    versao: a compressao de U existe porque a textura DELE dobrou de largura. O
+    modelo de mao continua com a textura original de 512, entao comprimir os UVs
+    dele o fazia amostrar metade de uma textura inteira -- o carrinho na mao
+    aparecia com a textura errada.
+
+    A regra: a compressao acompanha a textura, nao o modelo.
     """
+    add_shadow = True
     data = open(src, "rb").read()
     _ver, roots, tail = parse(data)
     root = roots[0] if len(roots) == 1 else None
@@ -161,11 +170,6 @@ def halve_u_and_add_shadow(src, dst, add_shadow):
     uv, uv_type = _get(target, b"UV")
     for i in range(0, len(uv), 2):
         uv[i] = uv[i] * 0.5
-
-    if not add_shadow:
-        _set(target, b"UV", uv, uv_type)
-        _save(data, roots, tail, dst)
-        return 0
 
     verts, v_type = _get(target, b"Vertices")
     pvi, pvi_type = _get(target, b"PolygonVertexIndex")
@@ -243,8 +247,17 @@ def build_texture():
                 continue
             # Queda suave (smoothstep ao quadrado): centro cheio, borda em zero,
             # sem aresta visivel.
-            fade = (1.0 - d) ** 2
-            px[x, y] = (0, 0, 0, int(150 * fade))
+            # Nucleo CHEIO ate SHADOW_CORE e so entao a queda. A primeira versao
+            # usava (1-d)^2 desde o centro, o que fazia a mancha valer 25% do
+            # alpha ja na metade do raio -- em tela ela parecia bem menor que o
+            # carrinho, que foi exatamente o que apareceu no teste. Sombra de
+            # contato e quase chapada, com a borda desmanchando.
+            if d <= SHADOW_CORE:
+                fade = 1.0
+            else:
+                fade = 1.0 - (d - SHADOW_CORE) / (1.0 - SHADOW_CORE)
+                fade = fade * fade * (3.0 - 2.0 * fade)
+            px[x, y] = (0, 0, 0, int(SHADOW_ALPHA * fade))
     out.save(OUT_TEXTURE_GROUND)
 
     # A textura do modelo de MAO e a original, sem alpha e sem a metade extra.
@@ -260,16 +273,15 @@ def main():
     print("textura de mao   original, sem alpha -> %s" % OUT_TEXTURE_HAND)
 
     ground = os.path.join(OUT_MODELS, "Wheelbarrow.fbx")
-    added = halve_u_and_add_shadow(SOURCE, ground, add_shadow=True)
+    added = build_ground(SOURCE, ground)
     print("chao: %d vertices de sombra -> %s" % (added, ground))
 
-    # O modelo de mao parte da MESMA fonte, nao do de chao: senao herdaria o quad.
-    tmp = "source/_hand_uv.fbx"
-    halve_u_and_add_shadow(SOURCE, tmp, add_shadow=False)
+    # O de mao sai da MESMA fonte, sem passar por build_ground: nem o quad nem a
+    # compressao de UV valem para ele. Assim ele fica byte a byte igual ao que
+    # ja funcionava antes da sombra, a menos do giro e do deslocamento.
     hand = os.path.join(OUT_MODELS, "Wheelbarrow_Hand.fbx")
-    shift(tmp, hand, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
+    shift(SOURCE, hand, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
           HAND_ROTATION[0], HAND_ROTATION[1], HAND_ROTATION[2])
-    os.remove(tmp)
     print("mao: giro %s deslocamento %s -> %s"
           % (HAND_ROTATION, HAND_OFFSET, hand))
 

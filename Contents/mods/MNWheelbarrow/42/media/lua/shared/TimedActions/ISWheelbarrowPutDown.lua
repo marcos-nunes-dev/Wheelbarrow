@@ -57,6 +57,9 @@ function ISWheelbarrowPutDown:start()
 end
 
 function ISWheelbarrowPutDown:stop()
+    if getDebug() then
+        print("[Wheelbarrow][ACAO] largar cancelado")
+    end
     self.item:setJobDelta(0.0)
     if WB_Sandbox.get("SpillOnCancel") then
         WB_Spill.dump(self.item, self.character:getSquare())

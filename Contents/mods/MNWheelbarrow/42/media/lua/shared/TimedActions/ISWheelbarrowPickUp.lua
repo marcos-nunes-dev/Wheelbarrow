@@ -61,6 +61,10 @@ function ISWheelbarrowPickUp:start()
 end
 
 function ISWheelbarrowPickUp:stop()
+    if getDebug() then
+        print("[Wheelbarrow][ACAO] pegar cancelado, do "
+            .. (self.worldItem ~= nil and "chao" or "inventario"))
+    end
     self.item:setJobDelta(0.0)
     self:spillIfEnabled()
     ISBaseTimedAction.stop(self)
