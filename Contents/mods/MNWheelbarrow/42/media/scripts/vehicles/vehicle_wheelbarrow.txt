@@ -197,14 +197,43 @@ module Base
            sem animacao customizada. */
         passenger FrontLeft
         {
+            /* ESTES BLOCOS anim SAO OBRIGATORIOS. Sem eles a acao de entrar
+               entra na fila e nao acontece nada -- exatamente o sintoma que
+               tivemos. O jogo base os define no template PassengerCommon, com
+               uma regra coringa "passenger *", e eu nao os havia replicado.
+
+               anim idle e tambem o gancho para o personagem PARECER que empurra
+               o carrinho: e so trocar o nome da animacao aqui. Por enquanto usa
+               a animacao neutra, ate escolhermos uma que tenha os bracos a
+               frente. */
+            area = SeatFrontLeft,
+            hasRoof = false,
+            anim enter
+            {
+                anim = Climb_WindowA,
+                rate = 0.33,
+            }
+            anim idle
+            {
+                anim = Idle,
+                rate = 1.0,
+            }
+            anim exit
+            {
+                anim = Climb_WindowB,
+                rate = 0.23,
+            }
             position inside
             {
                 offset = 0.0 -0.10 -0.75,
                 rotate = 0.0 0.0 0.0,
             }
+            /* Altura junto ao chao, como no carro de luxo vanilla, cuja posicao
+               externa fica em y = -0.41. Eu tinha usado -0.10, meia altura do
+               corpo -- o jogador nao fica flutuando no meio do veiculo. */
             position outside
             {
-                offset = 0.0 -0.10 -1.15,
+                offset = 0.0 -0.30 -1.15,
                 rotate = 0.0 0.0 0.0,
                 area = SeatFrontLeft,
             }
