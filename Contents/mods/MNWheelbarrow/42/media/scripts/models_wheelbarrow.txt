@@ -65,9 +65,10 @@ module Base
      * arquivos daquele mod tem sufixo _Hand. Geramos o nosso com
      * assets/tools_fbx_shift.py a partir do MESMO FBX original.
      *
-     * O deslocamento (0, -0.70, +0.55) e um PONTO DE PARTIDA, nao medicao: nao
-     * sei em que altura fica o osso da mao. Precisa de uma ou duas rodadas de
-     * calibracao visual, e ajustar e reexecutar a ferramenta com outros numeros.
+     * POSICAO: (0, 0, +0.6) com giro de -90 em X, medido em duas rodadas de
+     * calibracao visual (ver o bloco das variantes abaixo). Nessa pose a roda
+     * assenta no chao e a mao do personagem encosta na cacamba. O giro ainda
+     * esta em ajuste: o eixo comprido do carrinho sai em pe em vez de deitado.
      */
     model MNWheelbarrow_Hand
     {
@@ -76,12 +77,18 @@ module Base
         scale = 0.0057,
     }
 
-    /* Calibracao de posicao, rodada 2 -- descartaveis.
-       A rodada 1 revelou que os eixos do osso da mao nao sao os do mundo:
-       mexer em Y nao mudou nada (A e B ficaram identicos), e somar Z afundou o
-       carrinho no chao. Logo +Z e PARA BAIXO neste espaco, e Y nao controla
-       altura. Estas usam metade do Z que afundou, e variam X para descobrir o
-       eixo de frente/tras -- o carrinho esta saindo atras do personagem. */
+    /* Calibracao, rodada 3 -- descartaveis.
+       A rodada 2 fixou os eixos por medicao, nao por deducao: com X = +0.8 o
+       carrinho foi para a mao esquerda e com X = -0.8 para longe a direita, logo
+       X e o eixo LATERAL. Z = +0.6 deixou a roda no chao na altura certa, logo Z
+       e a VERTICAL (invertida: +Z desce). A posicao (0, 0, 0.6) esta boa e fica
+       congelada aqui.
+       O que resta e ROTACAO: com Xm90 o eixo comprido do carrinho ficou EM PE,
+       cabos apontando para cima. O correto e deitado, cabos vindo para as maos.
+       As tres variantes varrem esse giro: R1 = -45 (meio caminho para deitar),
+       R2 = -135 (deita para o outro lado), R3 = -90 + giro de 90 na vertical
+       (mesma pose de pe, virada de lado -- cobre o caso de o eixo comprido
+       precisar de giro no plano do chao, e nao de inclinacao). */
     model MNWheelbarrow_Hand_P1
     {
         mesh = WorldItems/Wheelbarrow_Hand_P1,
