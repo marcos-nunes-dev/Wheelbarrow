@@ -56,8 +56,22 @@ MARGIN = 12
 ANCHOR_X, ANCHOR_Y = 64, 245
 ELEVATION = math.radians(30.0)
 
-# Ordem das faces como o PZ nomeia: a camera olha o objeto de frente em cada uma.
-FACINGS = [("S", 45.0), ("W", 135.0), ("N", 225.0), ("E", 315.0)]
+# OITO faces, nao quatro. O personagem do PZ tem 8 direcoes; com so as 4
+# cardinais, olhar numa diagonal mostrava a face mais proxima e errava 45 graus.
+# Oito sprites de 128px cabem exatos numa linha de 1024.
+#
+# O azimute de cada face vem da projecao: +Z do modelo (a roda, ver a analise da
+# malha em WB_Push.lua) desloca na tela por (-sin(az), cos(az)*sin(30)). Cruzando
+# com a tela do PZ, onde sx = x-y e sy = x+y:
+#
+#     az   0 -> reto para cima      -> NW        az 180 -> reto para baixo  -> SE
+#     az  45 -> cima-esquerda       -> W         az 225 -> baixo-direita    -> E
+#     az  90 -> esquerda            -> SW        az 270 -> direita          -> NE
+#     az 135 -> baixo-esquerda      -> S         az 315 -> cima-direita     -> N
+FACINGS = [
+    ("NW", 0.0), ("W", 45.0), ("SW", 90.0), ("S", 135.0),
+    ("SE", 180.0), ("E", 225.0), ("NE", 270.0), ("N", 315.0),
+]
 
 
 def triangles(pvi):

@@ -22,72 +22,41 @@ local WB_Const = require "WB_Const"
 
 local WB_Push = {}
 
--- Sprites na ordem em que o PackTool os nomeou, que e a ordem das colunas na
--- folha: FACINGS[1..4] em tools_render_iso_sprites.py.
-local SPRITES = {
-    "mnwheelbarrow_01_0",
-    "mnwheelbarrow_01_1",
-    "mnwheelbarrow_01_2",
-    "mnwheelbarrow_01_3",
+-- OITO faces. O personagem do PZ tem 8 direcoes; com so as 4 cardinais, olhar
+-- numa diagonal mostrava a face mais proxima e errava 45 graus na tela.
+--
+-- O mapeamento e derivado, nao tentado. A frente do modelo e o eixo +Z: medi a
+-- malha e o extremo +Z tem |x| medio 0.097 e encosta em y=0 (a roda, estreita e
+-- no chao), enquanto o extremo -Z tem |x| medio 0.387 e nunca desce de 0.588
+-- (os dois cabos, afastados e suspensos).
+--
+-- +Z desloca na tela por (-sin(az), cos(az)*sin(30)). Cruzando com a tela do
+-- PZ, onde sx = x-y e sy = x+y, cada azimute do render serve uma direcao:
+--
+--     az   0 -> reto para cima  -> NW      az 180 -> reto para baixo -> SE
+--     az  45 -> cima-esquerda   -> W       az 225 -> baixo-direita   -> E
+--     az  90 -> esquerda        -> SW      az 270 -> direita         -> NE
+--     az 135 -> baixo-esquerda  -> S       az 315 -> cima-direita    -> N
+--
+-- O PackTool nomeia pela coluna na folha, e FACINGS em
+-- tools_render_iso_sprites.py esta nessa mesma ordem.
+local SPRITE_BY_DIR = {
+    NW = "mnwheelbarrow_01_0",
+    W  = "mnwheelbarrow_01_1",
+    SW = "mnwheelbarrow_01_2",
+    S  = "mnwheelbarrow_01_3",
+    SE = "mnwheelbarrow_01_4",
+    E  = "mnwheelbarrow_01_5",
+    NE = "mnwheelbarrow_01_6",
+    N  = "mnwheelbarrow_01_7",
 }
 
-local FACE_ORDER = { "N", "E", "S", "W" }
-
---- CALIBRACAO DA DIRECAO.
----
---- Eu nao consegui determinar em documentacao nenhuma como o azimute do render
---- corresponde as direcoes do jogo, e ja errei orientacao duas vezes tentando
---- deduzir (a camera olhando por baixo, e agora a face apontando errado). Entao
---- estes dois numeros existem para o jogo responder em vez de eu adivinhar:
----
----   ROTATION  desloca qual sprite serve cada direcao (0..3)
----   MIRRORED  inverte o sentido, para o caso de a malha estar espelhada
----
---- Existe uma opcao de debug que percorre as 8 combinacoes e imprime a atual.
---- Quando a certa for encontrada, os valores viram fixos aqui e a opcao sai.
---- Valores derivados, e nao encontrados por tentativa:
----
---- 1. A frente do modelo e o eixo +Z. Medido na malha: o extremo +Z tem
----    |x| medio 0.097 e encosta em y=0 -- e a roda, estreita e no chao. O
----    extremo -Z tem |x| medio 0.387 e nunca desce de y=0.588 -- sao os dois
----    cabos, afastados e suspensos.
----
---- 2. No render, +Z projeta para cima-esquerda em 45 graus, baixo-esquerda em
----    135, baixo-direita em 225 e cima-direita em 315.
----
---- 3. No PZ a tela e sx=(x-y), sy=(x+y), entao N vai para cima-direita, E para
----    baixo-direita, S para baixo-esquerda e W para cima-esquerda.
----
---- Cruzando 2 e 3: sprite 0 serve W, 1 serve S, 2 serve E, 3 serve N. Contra a
---- ordem N,E,S,W isso e a sequencia INVERTIDA, nao deslocada -- por isso
---- MIRRORED e nenhuma rotacao.
-local ROTATION = 0
-local MIRRORED = true
-
-local function spriteForFace(face)
-    local i
-    for k, name in ipairs(FACE_ORDER) do
-        if name == face then i = k break end
-    end
-    if i == nil then i = 1 end
-    if MIRRORED then i = 5 - i end
-    return SPRITES[((i - 1 + ROTATION) % 4) + 1]
-end
-
--- O jogador tem 8 direcoes, o carrinho tem 4 sprites. As diagonais caem para a
--- cardinal anterior no sentido horario.
-local FACE_BY_DIR = {
-    N = "N", NE = "N",
-    E = "E", SE = "E",
-    S = "S", SW = "S",
-    W = "W", NW = "W",
-}
-
+--- A square a frente do jogador, por direcao. Agora com diagonais.
 local OFFSET = {
-    N = { 0, -1 },
-    S = { 0, 1 },
-    E = { 1, 0 },
-    W = { -1, 0 },
+    N  = {  0, -1 },  NE = {  1, -1 },
+    E  = {  1,  0 },  SE = {  1,  1 },
+    S  = {  0,  1 },  SW = { -1,  1 },
+    W  = { -1,  0 },  NW = { -1, -1 },
 }
 
 --- Estado por jogador. Chaveado pelo indice, nao pelo objeto, porque em
@@ -106,7 +75,8 @@ end
 local function faceOf(player)
     local dir = player:getDir()
     if dir == nil then return "S" end
-    return FACE_BY_DIR[dir:toString()] or "S"
+    local name = dir:toString()
+    return SPRITE_BY_DIR[name] and name or "S"
 end
 
 --- Square onde o carrinho deveria estar: uma a frente do jogador, na direcao
@@ -118,16 +88,34 @@ local function targetSquare(player, face)
     return getCell():getGridSquare(square:getX() + off[1], square:getY() + off[2], square:getZ())
 end
 
-local function moveCart(object, fromSquare, toSquare, face)
-    if fromSquare == nil or toSquare == nil then return false end
-    if fromSquare == toSquare then return false end
+--- Move o carrinho de uma square para outra.
+---
+--- CUIDADO -- esta funcao ja duplicou objetos e sujou saves. A versao anterior
+--- fazia fromSquare:RemoveTileObject(object), pedindo a uma square que eu
+--- ACHAVA ser a dona que removesse o objeto. Como o ponteiro de square do
+--- objeto nao acompanhava o AddTileObject, getSquare() devolvia para sempre a
+--- square original: a cada tick a remocao falhava e um AddTileObject inseria
+--- mais uma copia numa square nova. O carrinho parecia parado na origem
+--- enquanto um rastro de copias se acumulava -- e copias entram no save.
+---
+--- Agora usamos object:removeFromSquare(), que age a partir do proprio objeto
+--- em vez de um palpite meu, e conferimos o resultado. Se o objeto nao acabar
+--- onde deveria, paramos de empurrar em vez de tentar de novo: um loop que
+--- duplica e pior do que um carrinho que nao se move.
+local function moveCart(object, toSquare, face)
+    if toSquare == nil then return false end
 
-    fromSquare:RemoveTileObject(object)
-    object:setSprite(spriteForFace(face))
+    object:removeFromSquare()
+    object:setSprite(SPRITE_BY_DIR[face])
     toSquare:AddTileObject(object)
+    object:setSquare(toSquare)
 
-    fromSquare:RecalcAllWithNeighbours(true)
     toSquare:RecalcAllWithNeighbours(true)
+
+    if object:getSquare() ~= toSquare then
+        print("[Wheelbarrow] ABORTADO: o objeto nao ficou na square de destino")
+        return false
+    end
     return true
 end
 
@@ -198,12 +186,14 @@ local function onPlayerUpdate(player)
 
     if reason ~= "MOVENDO" then
         if target == current then
-            object:setSprite(spriteForFace(face))
+            object:setSprite(SPRITE_BY_DIR[face])
         end
         return
     end
 
-    moveCart(object, current, target, face)
+    if not moveCart(object, target, face) then
+        WB_Push.stop(index)
+    end
 end
 
 Events.OnPlayerUpdate.Add(onPlayerUpdate)
@@ -232,27 +222,45 @@ end
 
 Events.OnFillWorldObjectContextMenu.Add(onFillWorldObjectContextMenu)
 
---- Calibrador de direcao. So com -debug. Percorre as 8 combinacoes possiveis de
---- ROTATION x MIRRORED e imprime a atual, para descobrir empiricamente qual
---- sprite corresponde a qual direcao do jogo. Sai quando os valores estiverem
---- fixados no topo do arquivo.
-local function onFillDebugMenu(playerNum, context, worldobjects, _test)
-    if not getDebug() then return end
-    if not WB_Push.isPushing(playerNum) then return end
+-- O calibrador de direcao foi removido: o mapeamento das 8 faces foi derivado
+-- da geometria da malha e confirmado em tela.
 
-    context:addOption("[SPIKE] Proxima combinacao de face", nil, function()
-        ROTATION = ROTATION + 1
-        if ROTATION > 3 then
-            ROTATION = 0
-            MIRRORED = not MIRRORED
+--- Limpeza dos carrinhos duplicados que a versao anterior espalhou pelo save.
+--- Remove TODO carrinho num raio ao redor do jogador, inclusive o conteudo --
+--- e ferramenta de faxina de teste, nao de jogo. So com -debug.
+local CLEANUP_RADIUS = 12
+
+local function onFillCleanupMenu(playerNum, context, _worldobjects, _test)
+    if not getDebug() then return end
+    local player = getSpecificPlayer(playerNum)
+    if player == nil or player:getSquare() == nil then return end
+
+    context:addOption("[SPIKE] Limpar carrinhos ao redor", nil, function()
+        local origin = player:getSquare()
+        local cell = getCell()
+        local removed = 0
+        for dx = -CLEANUP_RADIUS, CLEANUP_RADIUS do
+            for dy = -CLEANUP_RADIUS, CLEANUP_RADIUS do
+                local sq = cell:getGridSquare(origin:getX() + dx, origin:getY() + dy, origin:getZ())
+                if sq ~= nil then
+                    -- Percorre de tras para frente: remover altera a lista.
+                    local objects = sq:getObjects()
+                    for i = objects:size() - 1, 0, -1 do
+                        local obj = objects:get(i)
+                        if WB_Push.isCart(obj) then
+                            obj:removeFromSquare()
+                            removed = removed + 1
+                        end
+                    end
+                    sq:RecalcAllWithNeighbours(true)
+                end
+            end
         end
-        local player = getSpecificPlayer(playerNum)
-        local dir = player and player:getDir() and player:getDir():toString() or "?"
-        print(("[Wheelbarrow] ROTATION=%d MIRRORED=%s | olhando para %s -> sprite %s")
-            :format(ROTATION, tostring(MIRRORED), dir, spriteForFace(faceOf(player))))
+        WB_Push.stop(playerNum)
+        print(("[Wheelbarrow] %d carrinho(s) removido(s) num raio de %d"):format(removed, CLEANUP_RADIUS))
     end)
 end
 
-Events.OnFillWorldObjectContextMenu.Add(onFillDebugMenu)
+Events.OnFillWorldObjectContextMenu.Add(onFillCleanupMenu)
 
 return WB_Push
