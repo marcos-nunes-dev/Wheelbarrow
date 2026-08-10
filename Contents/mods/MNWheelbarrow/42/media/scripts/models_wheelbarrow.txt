@@ -34,6 +34,24 @@ module Base
      * vezes pequeno demais, 0.0075 ficou 20% grande demais, 0.006 ainda pedia
      * mais 5%. Dobrar o numero dobra o tamanho renderizado.
      *
+     * SOMBRA: este modelo carrega um quad deitado no plano do chao, com uma
+     * mancha escura que desvanece nas bordas. Ele existe porque o engine NAO tem
+     * sombra para item -- shadowExtents e shadowOffset so existem em script de
+     * veiculo, e das 568 chaves de TilePropertyKey nenhuma trata sombra. No PZ,
+     * objeto do mundo que tem sombra tem ela pintada no sprite; como o carrinho
+     * renderiza por modelo 3D, o equivalente e geometria.
+     *
+     * Depende de o shader respeitar alpha, e ele respeita: medido nas texturas
+     * do jogo base, ChristmasTree_Branch.png vai de alpha 0 a 255 com milhares
+     * de pixels intermediarios. A textura por isso dobrou de LARGURA -- metade
+     * esquerda o atlas original, direita a mancha -- e os UVs existentes foram
+     * comprimidos com u' = u/2. Em largura e nao em altura porque U tem a mesma
+     * orientacao em toda convencao, enquanto V pode estar invertido entre o FBX e
+     * o carregador; errar em V viraria a textura inteira de cabeca para baixo.
+     *
+     * O modelo de MAO nao recebe o quad: ele acompanharia o carrinho no ar,
+     * virando uma placa escura flutuando ao lado do personagem.
+     *
      * ALTURA: o mesh foi deslocado 0.380 no eixo Y (ver
      * assets/tools_fbx_shift.py) para a base ficar em Y = 0 em vez de a origem
      * ficar no centro. Os modelos vanilla sao centrados -- medi o Log e o

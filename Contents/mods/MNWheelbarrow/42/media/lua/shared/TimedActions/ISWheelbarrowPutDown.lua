@@ -19,6 +19,10 @@ local WB_Spill = require "WB_Spill"
 ISWheelbarrowPutDown = ISBaseTimedAction:derive("ISWheelbarrowPutDown")
 
 --- Square a frente do personagem, se der para pousar algo la.
+---
+--- getAdjacentSquare(dir) e o caminho do jogo -- e o que CFarming_Interact usa
+--- com player:getDir(). A alternativa, somar dir:dx() e dir:dy() na mao, aparece
+--- num unico arquivo do jogo inteiro; nao vale depender dela.
 local function squareInFront(character)
     local here = character:getSquare()
     if here == nil then return nil end
@@ -26,11 +30,7 @@ local function squareInFront(character)
     local dir = character:getDir()
     if dir == nil then return here end
 
-    local cell = getCell()
-    if cell == nil then return here end
-
-    local target = cell:getGridSquare(
-        here:getX() + dir:dx(), here:getY() + dir:dy(), here:getZ())
+    local target = here:getAdjacentSquare(dir)
 
     -- isBlockedTo cobre parede, janela fechada e movel no caminho. Sem ele o
     -- carrinho atravessaria a parede para a sala vizinha.
