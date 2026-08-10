@@ -97,6 +97,12 @@ Events.OnEnterVehicle.Add(function(player)
     -- pessoa empurrando, e pessoa nao precisa de bateria.
     vehicle:engineDoStartingSuccess()
 
+    -- engineDoStartingSuccess deixa started=true e working=true, mas NAO
+    -- running -- e e running que move o veiculo. Sao estados distintos da
+    -- maquina do motor, e o diagnostico mostrou exatamente essa combinacao:
+    -- started=true, working=true, running=false, e o carrinho parado.
+    vehicle:engineDoRunning()
+
     if getDebug() then
         print(("[Wheelbarrow][MOTOR] running=%s started=%s working=%s hotwired=%s")
             :format(tostring(vehicle:isEngineRunning()),
