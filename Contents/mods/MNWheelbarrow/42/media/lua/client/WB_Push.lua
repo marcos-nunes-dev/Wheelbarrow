@@ -77,7 +77,10 @@ local OFFSET = {
 --- casos: se a unidade for tile, puxa os 0.35 pretendidos; se for pixel, o
 --- deslocamento fica abaixo de um pixel e nao faz mal nenhum. O teste responde
 --- qual dos dois sem risco de sumir de novo.
-local PULL_TILES = 0.35
+--- DESLIGADO durante o diagnostico. O carrinho sumiu com offset em pixels e
+--- continuou sumindo com offset em tiles, entao preciso descartar o offset como
+--- causa antes de continuar mexendo nele. Zero = sem deslocamento nenhum.
+local PULL_TILES = 0.0
 
 local function applyPullOffset(object, face)
     local off = OFFSET[face]
@@ -160,6 +163,24 @@ local function moveCart(object, toSquare, face)
     if object:getSquare() ~= toSquare then
         print("[Wheelbarrow] ABORTADO: o objeto nao ficou na square de destino")
         return false
+    end
+
+    -- Diagnostico do sumico: o objeto se move (o log prova) mas nao aparece.
+    -- Preciso saber se ele ainda tem sprite, se o sprite tem nome, e se a
+    -- square de destino realmente o lista entre seus objetos -- estar na lista
+    -- e o que faz o jogo desenha-lo.
+    if getDebug() then
+        local sprite = object:getSprite()
+        local inList = false
+        local objects = toSquare:getObjects()
+        for i = 0, objects:size() - 1 do
+            if objects:get(i) == object then inList = true break end
+        end
+        print(("[Wheelbarrow] apos mover: sprite=%s nome=%s naListaDaSquare=%s offset=(%.2f,%.2f)")
+            :format(tostring(sprite ~= nil),
+                sprite and tostring(sprite:getName()) or "sem sprite",
+                tostring(inList),
+                object:getOffsetX(), object:getOffsetY()))
     end
     return true
 end
