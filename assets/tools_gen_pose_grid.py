@@ -39,8 +39,13 @@ Como a rotacao foi fechada, e por que a translacao e o que resta:
      Isso confirma a leitura da rodada 1 -- "+Z afundou o carrinho" -- que na
      epoca eu descartei por achar que contradizia as outras observacoes.
 
-O grid abaixo cerca 0.76 em Z e varre os dois eixos horizontais, que nao tem
-medicao: Y (o comprimento do carrinho, logo frente/tras) e X (lateral).
+A passada grossa de translacao fechou dois dos tres eixos: Y = 0.80 e Z = 0.64.
+O lateral caiu ENTRE duas amostras -- 0.00 deixava o carrinho longe demais a
+direita, 0.40 passava um pouco -- e 0.37 e o encaixe. O grid atual e o refino em
+torno disso.
+
+O valor aplicado no item real vive em models_wheelbarrow.txt; este arquivo so
+gera as variantes de calibracao.
 
 Uso:
     python tools_gen_pose_grid.py
@@ -61,17 +66,25 @@ ROTATION = (270, 0, 0)
 
 # Os tres eixos do grid, cada um com um par de teclas proprio.
 #
-# Z: altura. +Z desce. 0.76 e a altura medida da mao, entao a base do carrinho
-#    encosta no chao ali. O alcance so cerca esse valor, para absorver o erro de
-#    onde exatamente fica a base do modelo.
-# Y: frente/tras. E o eixo do COMPRIMENTO do carrinho nesta rotacao, logo e o que
-#    tira o carrinho de dentro do personagem e o poe a frente. Sem medicao, entao
-#    alcance simetrico.
-# X: lateral. A mao e a direita, entao provavelmente precisa de correcao para
-#    centralizar -- mas pouca.
-AXIS_Z = [0.52, 0.64, 0.76, 0.88, 1.00, 1.12]
-AXIS_Y = [-0.8, -0.4, 0.0, 0.4, 0.8]
-AXIS_X = [-0.4, 0.0, 0.4]
+# SEGUNDA PASSADA -- refino, com o orcamento concentrado onde falta resolucao.
+#
+# A passada grossa fechou Y = 0.80 e Z = 0.64 de primeira. O lateral nao: caiu
+# ENTRE duas amostras vizinhas -- 0.00 deixava o carrinho longe demais a direita,
+# 0.40 passava um pouco -- e nenhuma das duas era o encaixe.
+#
+# Entao X ganha doze amostras em passo de 0.02 e Y e Z ficam com tres cada. Nao e
+# arbitrario: o passo grosso de X era 0.40, e a diferenca que o Marcos percebeu
+# entre 0.40 e o ideal foi da ordem de 7% disso, ou seja ~0.03. Passo de 0.02 fica
+# logo abaixo do que se distingue em tela, que e o criterio util -- passo menor
+# gera malha a mais sem gerar informacao a mais.
+#
+# Y e Z seguem com um passo para cada lado so para CONFIRMAR: os valores grossos
+# vieram de passos largos (0.40 em Y, 0.12 em Z), entao acertar ali significa
+# "melhor daquele passo", nao "melhor".
+AXIS_Z = [0.56, 0.64, 0.72]
+AXIS_Y = [0.70, 0.80, 0.90]
+AXIS_X = [0.23, 0.25, 0.27, 0.29, 0.31, 0.33,
+          0.35, 0.37, 0.39, 0.41, 0.43, 0.45]
 
 HEADER = (
     "/*\n"

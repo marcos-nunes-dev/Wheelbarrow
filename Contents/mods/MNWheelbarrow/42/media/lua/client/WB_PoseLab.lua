@@ -15,9 +15,10 @@
     Entao todas as poses vem assadas e este arquivo navega entre elas: o custo do
     restart deixa de multiplicar pelo numero de tentativas.
 
-    ESTADO: a rotacao ja esta resolvida (270, 0, 0) e nao varia mais. Este grid
-    varre a TRANSLACAO -- ver o cabecalho de tools_gen_pose_grid.py para como a
-    rotacao foi fechada e de onde vem a altura 0.76.
+    ESTADO: rotacao resolvida em (270, 0, 0), e da translacao ja sairam Y = 0.80
+    e Z = 0.64. Falta so o LATERAL, que caiu entre duas amostras da passada
+    grossa -- por isso X tem doze valores aqui e os outros dois so tres, para
+    confirmacao. Ver o cabecalho de tools_gen_pose_grid.py para a derivacao.
 
     TRES EIXOS INDEPENDENTES, um par de teclas cada. Isso importa mais do que
     parece: a primeira versao desta calibracao percorria uma lista linear, o que
@@ -57,13 +58,13 @@ local function indexOf(values, wanted)
     return 1
 end
 
--- Ponto de partida: NAO e o primeiro item de cada eixo, e sim o valor MEDIDO.
--- A altura 0.76 saiu da comparacao entre duas poses observadas -- uma pendurava
--- 0.76 abaixo da mao e encostava no chao, logo e essa a altura da mao. Os dois
--- eixos horizontais comecam em zero porque nao ha medicao deles.
-local ix = indexOf(GRID.x, 0.0)
-local iy = indexOf(GRID.y, 0.0)
-local iz = indexOf(GRID.z, 0.76)
+-- Ponto de partida: o melhor ponto da passada anterior, e nao um canto do grid.
+-- Y = 0.80 e Z = 0.64 ja acertaram la; X = 0.37 e a estimativa entre as duas
+-- amostras vizinhas que bracketaram o encaixe. Comecar aqui deixa o refino ser
+-- so um passo para cada lado.
+local ix = indexOf(GRID.x, 0.37)
+local iy = indexOf(GRID.y, 0.80)
+local iz = indexOf(GRID.z, 0.64)
 local started = false
 
 --- O indice linear tem de casar com a ordem em que tools_gen_pose_grid.py assou

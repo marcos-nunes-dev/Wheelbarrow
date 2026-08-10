@@ -52,47 +52,42 @@ module Base
     /*
      * Modelo do carrinho SEGURADO NAS MAOS.
      *
-     * POR QUE ISTO DEIXOU DE ASSAR A TRANSFORMACAO NA MALHA:
+     * A transformacao esta ASSADA NA MALHA, gerada por
      *
-     * A primeira abordagem gerava um .fbx proprio por pose, com giro e
-     * deslocamento assados nos vertices -- foi o que o mod Carry Visible Items
-     * fez, e por isso os arquivos dele tem sufixo _Hand. Funciona, mas custa
-     * caro para CALIBRAR: cada tentativa exige regerar a malha, reiniciar o
-     * jogo e fotografar o resultado.
+     *     python tools_fbx_shift.py Wheelbarrow.fbx Wheelbarrow_Hand.fbx \
+     *            0.37 0.80 0.64  270 0 0
      *
-     * Pior que o custo: quatro rodadas foram gastas variando UM angulo de Euler
-     * por vez, e rotacoes nao comutam. Cada rodada media um espaco diferente da
-     * anterior, e um modelo mental ajustado a quatro observacoes foi derrubado
-     * pela quinta.
+     * POR QUE ASSADA, E NAO NO BLOCO attachment:
+     * o jogo tem um mecanismo declarativo -- `attachment Bip01_Prop2 { offset,
+     * rotate }` -- usado por 1154 modelos vanilla, inclusive pelo livro oco, que
+     * e o unico container do jogo base a aparecer na mao via StaticModel, ou
+     * seja exatamente o nosso caso. Ele NAO funciona aqui: oito variantes que
+     * diferiam so no rotate renderizaram identicas em jogo. O engine ignora
+     * attachment neste caminho. E tambem por isso que o mod Carry Visible Items
+     * assa tudo na malha e da aos arquivos o sufixo _Hand.
      *
-     * O jogo tem mecanismo proprio para isso, e ele e declarativo:
+     * Consequencia pratica, para quem for mexer: mudar a pose exige regerar o
+     * .fbx e reiniciar o jogo. Nao ha ajuste em runtime. A ferramenta de
+     * calibracao -- grid de poses pre-assadas navegavel por tecla, em
+     * assets/tools_gen_pose_grid.py e WB_PoseLab.lua -- existe por causa disso.
      *
-     *     attachment Bip01_Prop2 { offset = x y z, rotate = x y z, scale = s, }
+     * DE ONDE VEM CADA NUMERO. Nenhum foi chutado:
      *
-     * Prop2 e o ponto de apoio do item na mao. 1154 modelos do jogo base o
-     * usam, incluindo o livro oco -- o unico container vanilla que aparece na
-     * mao via StaticModel, que e exatamente o nosso caso. Os numeros passam a
-     * viver em texto, na mesma convencao que o jogo ja usa, e a malha volta a
-     * ser so a malha: MNWheelbarrow_Ground e MNWheelbarrow_Hand compartilham o
-     * MESMO arquivo, sem copia divergente.
-     *
-     * ORDEM DE GRANDEZA do offset, medida nos 1154: mediana 0.013 em X, 0.022
-     * em Y, 0.006 em Z; o maior de todos e 0.33. Numero na casa da unidade aqui
-     * esta errado por duas ordens de grandeza.
-     *
-     * O rotate abaixo e o resultado da varredura de base descrita em
-     * models_wheelbarrow_test.txt. Ate ela fechar, fica em zero -- que e
-     * exatamente a variante A daquela varredura.
+     *   giro 270 0 0   duas poses do grid diferiam so no sinal de Z: uma ficou
+     *                  de pe e a outra de cabeca para baixo. O eixo de cima da
+     *                  malha aponta para -Z, logo 270 e o giro que o poe em pe.
+     *   Z = 0.64       +Z e para BAIXO. A pose que pendurava 0.76 abaixo da mao
+     *                  encostava no chao, o que mede a altura da mao; 0.64 e o
+     *                  refino em tela a partir dai.
+     *   Y = 0.80       frente/tras, o eixo do comprimento nesta rotacao. Tira o
+     *                  carrinho de dentro do personagem.
+     *   X = 0.37       lateral. 0.00 deixava o carrinho longe demais a direita e
+     *                  0.40 passava um pouco.
      */
     model MNWheelbarrow_Hand
     {
-        mesh = WorldItems/Wheelbarrow,
+        mesh = WorldItems/Wheelbarrow_Hand,
         texture = WorldItems/Wheelbarrow,
         scale = 0.0057,
-        attachment Bip01_Prop2
-        {
-            offset = 0.0 0.0 0.0,
-            rotate = 0.0 0.0 0.0,
-        }
     }
 }
