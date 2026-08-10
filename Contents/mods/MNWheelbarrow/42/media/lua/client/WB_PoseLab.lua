@@ -15,18 +15,22 @@
     Entao todas as poses vem assadas e este arquivo navega entre elas: o custo do
     restart deixa de multiplicar pelo numero de tentativas.
 
+    ESTADO: a rotacao ja esta resolvida (270, 0, 0) e nao varia mais. Este grid
+    varre a TRANSLACAO -- ver o cabecalho de tools_gen_pose_grid.py para como a
+    rotacao foi fechada e de onde vem a altura 0.76.
+
     TRES EIXOS INDEPENDENTES, um par de teclas cada. Isso importa mais do que
-    parece: rotacoes nao comutam, e a versao anterior desta calibracao percorria
-    uma lista linear de orientacoes, o que fazia cada passo mudar duas coisas ao
-    mesmo tempo. Separar os eixos e o que torna o ajuste legivel -- mexer em um e
-    ver so aquilo mudar.
+    parece: a primeira versao desta calibracao percorria uma lista linear, o que
+    fazia cada passo mudar duas coisas ao mesmo tempo -- o mesmo defeito de
+    metodo que custou as quatro primeiras rodadas. Mexer em um eixo e ver so
+    aquilo mudar e o que torna o ajuste legivel.
 
-      ]  [   cabeceira (giro no plano do chao, eixo Z)
-      '  ;   inclinacao (eixo Y)
-      .  ,   familia em X (as duas escolhas plausiveis)
+      ]  [   Z -- altura. +Z DESCE (medido: a mao esta a 0.76 do chao)
+      '  ;   Y -- frente/tras, o eixo do comprimento do carrinho
+      .  ,   X -- lateral
 
-    Os tres angulos aparecem na tela e no console a cada passo. O numero que
-    interessa e a TRINCA, nao o indice da pose.
+    Os tres valores aparecem na tela e no console a cada passo. O que interessa e
+    a TRINCA, nao o indice da pose.
 
     So responde a teclas com o jogo em debug: e ferramenta de desenvolvimento.
 ]]
@@ -47,14 +51,13 @@ local function indexOf(values, wanted)
     return 1
 end
 
--- Ponto de partida: NAO e o primeiro item de cada eixo, e sim a pose que a
--- medicao aponta como provavel -- X = 270 (a pose 17 antiga, Rx 90, apareceu
--- deitada de barriga para CIMA, logo o giro oposto e o candidato), inclinacao
--- zero e cabeceira zero. Comecar no candidato em vez de num canto do grid
--- economiza passos e deixa claro o que esta sendo testado.
-local ix = indexOf(GRID.x, 270)
-local iy = indexOf(GRID.y, 0)
-local iz = indexOf(GRID.z, 0)
+-- Ponto de partida: NAO e o primeiro item de cada eixo, e sim o valor MEDIDO.
+-- A altura 0.76 saiu da comparacao entre duas poses observadas -- uma pendurava
+-- 0.76 abaixo da mao e encostava no chao, logo e essa a altura da mao. Os dois
+-- eixos horizontais comecam em zero porque nao ha medicao deles.
+local ix = indexOf(GRID.x, 0.0)
+local iy = indexOf(GRID.y, 0.0)
+local iz = indexOf(GRID.z, 0.76)
 local started = false
 
 --- O indice linear tem de casar com a ordem em que tools_gen_pose_grid.py assou
@@ -106,7 +109,7 @@ function WB_PoseLab.apply(player)
     -- so e reconstruido quando alguem pede.
     player:resetModelNextFrame()
 
-    announce(player, string.format("X=%d  Y=%d  Z=%d   (pose %d)",
+    announce(player, string.format("X=%.2f  Y=%.2f  Z=%.2f   (pose %d)",
         GRID.x[ix], GRID.y[iy], GRID.z[iz], linear))
 end
 

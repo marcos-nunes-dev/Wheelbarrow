@@ -7,152 +7,188 @@ module Base
  * no boot. O grid existe para que a varredura inteira caiba em UM restart:
  * o Lua troca o item, ver WB_PoseLab.lua.
  *
- * NAO EDITAR A MAO: regerar pelo script -- os angulos aqui e os assados nas
+ * NAO EDITAR A MAO: regerar pelo script -- os numeros aqui e os assados nas
  * malhas tem de continuar sendo os mesmos.
  * NAO PUBLICAR: sai junto com WB_PoseLab.lua antes do upload.
  */
-    /* X  90  Y  -20  Z    0 */
+    /*   1:  X -0.40  Y -0.80  Z +0.52 */
     model WB_Pose001 { mesh = WorldItems/WB_Pose001, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z   30 */
+    /*   2:  X -0.40  Y -0.80  Z +0.64 */
     model WB_Pose002 { mesh = WorldItems/WB_Pose002, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z   60 */
+    /*   3:  X -0.40  Y -0.80  Z +0.76 */
     model WB_Pose003 { mesh = WorldItems/WB_Pose003, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z   90 */
+    /*   4:  X -0.40  Y -0.80  Z +0.88 */
     model WB_Pose004 { mesh = WorldItems/WB_Pose004, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z  120 */
+    /*   5:  X -0.40  Y -0.80  Z +1.00 */
     model WB_Pose005 { mesh = WorldItems/WB_Pose005, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z  150 */
+    /*   6:  X -0.40  Y -0.80  Z +1.12 */
     model WB_Pose006 { mesh = WorldItems/WB_Pose006, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z  180 */
+    /*   7:  X -0.40  Y -0.40  Z +0.52 */
     model WB_Pose007 { mesh = WorldItems/WB_Pose007, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z  210 */
+    /*   8:  X -0.40  Y -0.40  Z +0.64 */
     model WB_Pose008 { mesh = WorldItems/WB_Pose008, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z  240 */
+    /*   9:  X -0.40  Y -0.40  Z +0.76 */
     model WB_Pose009 { mesh = WorldItems/WB_Pose009, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z  270 */
+    /*  10:  X -0.40  Y -0.40  Z +0.88 */
     model WB_Pose010 { mesh = WorldItems/WB_Pose010, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z  300 */
+    /*  11:  X -0.40  Y -0.40  Z +1.00 */
     model WB_Pose011 { mesh = WorldItems/WB_Pose011, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y  -20  Z  330 */
+    /*  12:  X -0.40  Y -0.40  Z +1.12 */
     model WB_Pose012 { mesh = WorldItems/WB_Pose012, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z    0 */
+    /*  13:  X -0.40  Y +0.00  Z +0.52 */
     model WB_Pose013 { mesh = WorldItems/WB_Pose013, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z   30 */
+    /*  14:  X -0.40  Y +0.00  Z +0.64 */
     model WB_Pose014 { mesh = WorldItems/WB_Pose014, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z   60 */
+    /*  15:  X -0.40  Y +0.00  Z +0.76 */
     model WB_Pose015 { mesh = WorldItems/WB_Pose015, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z   90 */
+    /*  16:  X -0.40  Y +0.00  Z +0.88 */
     model WB_Pose016 { mesh = WorldItems/WB_Pose016, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z  120 */
+    /*  17:  X -0.40  Y +0.00  Z +1.00 */
     model WB_Pose017 { mesh = WorldItems/WB_Pose017, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z  150 */
+    /*  18:  X -0.40  Y +0.00  Z +1.12 */
     model WB_Pose018 { mesh = WorldItems/WB_Pose018, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z  180 */
+    /*  19:  X -0.40  Y +0.40  Z +0.52 */
     model WB_Pose019 { mesh = WorldItems/WB_Pose019, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z  210 */
+    /*  20:  X -0.40  Y +0.40  Z +0.64 */
     model WB_Pose020 { mesh = WorldItems/WB_Pose020, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z  240 */
+    /*  21:  X -0.40  Y +0.40  Z +0.76 */
     model WB_Pose021 { mesh = WorldItems/WB_Pose021, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z  270 */
+    /*  22:  X -0.40  Y +0.40  Z +0.88 */
     model WB_Pose022 { mesh = WorldItems/WB_Pose022, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z  300 */
+    /*  23:  X -0.40  Y +0.40  Z +1.00 */
     model WB_Pose023 { mesh = WorldItems/WB_Pose023, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y    0  Z  330 */
+    /*  24:  X -0.40  Y +0.40  Z +1.12 */
     model WB_Pose024 { mesh = WorldItems/WB_Pose024, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z    0 */
+    /*  25:  X -0.40  Y +0.80  Z +0.52 */
     model WB_Pose025 { mesh = WorldItems/WB_Pose025, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z   30 */
+    /*  26:  X -0.40  Y +0.80  Z +0.64 */
     model WB_Pose026 { mesh = WorldItems/WB_Pose026, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z   60 */
+    /*  27:  X -0.40  Y +0.80  Z +0.76 */
     model WB_Pose027 { mesh = WorldItems/WB_Pose027, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z   90 */
+    /*  28:  X -0.40  Y +0.80  Z +0.88 */
     model WB_Pose028 { mesh = WorldItems/WB_Pose028, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z  120 */
+    /*  29:  X -0.40  Y +0.80  Z +1.00 */
     model WB_Pose029 { mesh = WorldItems/WB_Pose029, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z  150 */
+    /*  30:  X -0.40  Y +0.80  Z +1.12 */
     model WB_Pose030 { mesh = WorldItems/WB_Pose030, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z  180 */
+    /*  31:  X +0.00  Y -0.80  Z +0.52 */
     model WB_Pose031 { mesh = WorldItems/WB_Pose031, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z  210 */
+    /*  32:  X +0.00  Y -0.80  Z +0.64 */
     model WB_Pose032 { mesh = WorldItems/WB_Pose032, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z  240 */
+    /*  33:  X +0.00  Y -0.80  Z +0.76 */
     model WB_Pose033 { mesh = WorldItems/WB_Pose033, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z  270 */
+    /*  34:  X +0.00  Y -0.80  Z +0.88 */
     model WB_Pose034 { mesh = WorldItems/WB_Pose034, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z  300 */
+    /*  35:  X +0.00  Y -0.80  Z +1.00 */
     model WB_Pose035 { mesh = WorldItems/WB_Pose035, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X  90  Y   20  Z  330 */
+    /*  36:  X +0.00  Y -0.80  Z +1.12 */
     model WB_Pose036 { mesh = WorldItems/WB_Pose036, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z    0 */
+    /*  37:  X +0.00  Y -0.40  Z +0.52 */
     model WB_Pose037 { mesh = WorldItems/WB_Pose037, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z   30 */
+    /*  38:  X +0.00  Y -0.40  Z +0.64 */
     model WB_Pose038 { mesh = WorldItems/WB_Pose038, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z   60 */
+    /*  39:  X +0.00  Y -0.40  Z +0.76 */
     model WB_Pose039 { mesh = WorldItems/WB_Pose039, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z   90 */
+    /*  40:  X +0.00  Y -0.40  Z +0.88 */
     model WB_Pose040 { mesh = WorldItems/WB_Pose040, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z  120 */
+    /*  41:  X +0.00  Y -0.40  Z +1.00 */
     model WB_Pose041 { mesh = WorldItems/WB_Pose041, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z  150 */
+    /*  42:  X +0.00  Y -0.40  Z +1.12 */
     model WB_Pose042 { mesh = WorldItems/WB_Pose042, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z  180 */
+    /*  43:  X +0.00  Y +0.00  Z +0.52 */
     model WB_Pose043 { mesh = WorldItems/WB_Pose043, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z  210 */
+    /*  44:  X +0.00  Y +0.00  Z +0.64 */
     model WB_Pose044 { mesh = WorldItems/WB_Pose044, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z  240 */
+    /*  45:  X +0.00  Y +0.00  Z +0.76 */
     model WB_Pose045 { mesh = WorldItems/WB_Pose045, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z  270 */
+    /*  46:  X +0.00  Y +0.00  Z +0.88 */
     model WB_Pose046 { mesh = WorldItems/WB_Pose046, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z  300 */
+    /*  47:  X +0.00  Y +0.00  Z +1.00 */
     model WB_Pose047 { mesh = WorldItems/WB_Pose047, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y  -20  Z  330 */
+    /*  48:  X +0.00  Y +0.00  Z +1.12 */
     model WB_Pose048 { mesh = WorldItems/WB_Pose048, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z    0 */
+    /*  49:  X +0.00  Y +0.40  Z +0.52 */
     model WB_Pose049 { mesh = WorldItems/WB_Pose049, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z   30 */
+    /*  50:  X +0.00  Y +0.40  Z +0.64 */
     model WB_Pose050 { mesh = WorldItems/WB_Pose050, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z   60 */
+    /*  51:  X +0.00  Y +0.40  Z +0.76 */
     model WB_Pose051 { mesh = WorldItems/WB_Pose051, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z   90 */
+    /*  52:  X +0.00  Y +0.40  Z +0.88 */
     model WB_Pose052 { mesh = WorldItems/WB_Pose052, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z  120 */
+    /*  53:  X +0.00  Y +0.40  Z +1.00 */
     model WB_Pose053 { mesh = WorldItems/WB_Pose053, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z  150 */
+    /*  54:  X +0.00  Y +0.40  Z +1.12 */
     model WB_Pose054 { mesh = WorldItems/WB_Pose054, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z  180 */
+    /*  55:  X +0.00  Y +0.80  Z +0.52 */
     model WB_Pose055 { mesh = WorldItems/WB_Pose055, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z  210 */
+    /*  56:  X +0.00  Y +0.80  Z +0.64 */
     model WB_Pose056 { mesh = WorldItems/WB_Pose056, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z  240 */
+    /*  57:  X +0.00  Y +0.80  Z +0.76 */
     model WB_Pose057 { mesh = WorldItems/WB_Pose057, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z  270 */
+    /*  58:  X +0.00  Y +0.80  Z +0.88 */
     model WB_Pose058 { mesh = WorldItems/WB_Pose058, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z  300 */
+    /*  59:  X +0.00  Y +0.80  Z +1.00 */
     model WB_Pose059 { mesh = WorldItems/WB_Pose059, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y    0  Z  330 */
+    /*  60:  X +0.00  Y +0.80  Z +1.12 */
     model WB_Pose060 { mesh = WorldItems/WB_Pose060, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z    0 */
+    /*  61:  X +0.40  Y -0.80  Z +0.52 */
     model WB_Pose061 { mesh = WorldItems/WB_Pose061, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z   30 */
+    /*  62:  X +0.40  Y -0.80  Z +0.64 */
     model WB_Pose062 { mesh = WorldItems/WB_Pose062, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z   60 */
+    /*  63:  X +0.40  Y -0.80  Z +0.76 */
     model WB_Pose063 { mesh = WorldItems/WB_Pose063, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z   90 */
+    /*  64:  X +0.40  Y -0.80  Z +0.88 */
     model WB_Pose064 { mesh = WorldItems/WB_Pose064, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z  120 */
+    /*  65:  X +0.40  Y -0.80  Z +1.00 */
     model WB_Pose065 { mesh = WorldItems/WB_Pose065, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z  150 */
+    /*  66:  X +0.40  Y -0.80  Z +1.12 */
     model WB_Pose066 { mesh = WorldItems/WB_Pose066, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z  180 */
+    /*  67:  X +0.40  Y -0.40  Z +0.52 */
     model WB_Pose067 { mesh = WorldItems/WB_Pose067, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z  210 */
+    /*  68:  X +0.40  Y -0.40  Z +0.64 */
     model WB_Pose068 { mesh = WorldItems/WB_Pose068, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z  240 */
+    /*  69:  X +0.40  Y -0.40  Z +0.76 */
     model WB_Pose069 { mesh = WorldItems/WB_Pose069, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z  270 */
+    /*  70:  X +0.40  Y -0.40  Z +0.88 */
     model WB_Pose070 { mesh = WorldItems/WB_Pose070, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z  300 */
+    /*  71:  X +0.40  Y -0.40  Z +1.00 */
     model WB_Pose071 { mesh = WorldItems/WB_Pose071, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
-    /* X 270  Y   20  Z  330 */
+    /*  72:  X +0.40  Y -0.40  Z +1.12 */
     model WB_Pose072 { mesh = WorldItems/WB_Pose072, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  73:  X +0.40  Y +0.00  Z +0.52 */
+    model WB_Pose073 { mesh = WorldItems/WB_Pose073, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  74:  X +0.40  Y +0.00  Z +0.64 */
+    model WB_Pose074 { mesh = WorldItems/WB_Pose074, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  75:  X +0.40  Y +0.00  Z +0.76 */
+    model WB_Pose075 { mesh = WorldItems/WB_Pose075, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  76:  X +0.40  Y +0.00  Z +0.88 */
+    model WB_Pose076 { mesh = WorldItems/WB_Pose076, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  77:  X +0.40  Y +0.00  Z +1.00 */
+    model WB_Pose077 { mesh = WorldItems/WB_Pose077, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  78:  X +0.40  Y +0.00  Z +1.12 */
+    model WB_Pose078 { mesh = WorldItems/WB_Pose078, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  79:  X +0.40  Y +0.40  Z +0.52 */
+    model WB_Pose079 { mesh = WorldItems/WB_Pose079, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  80:  X +0.40  Y +0.40  Z +0.64 */
+    model WB_Pose080 { mesh = WorldItems/WB_Pose080, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  81:  X +0.40  Y +0.40  Z +0.76 */
+    model WB_Pose081 { mesh = WorldItems/WB_Pose081, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  82:  X +0.40  Y +0.40  Z +0.88 */
+    model WB_Pose082 { mesh = WorldItems/WB_Pose082, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  83:  X +0.40  Y +0.40  Z +1.00 */
+    model WB_Pose083 { mesh = WorldItems/WB_Pose083, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  84:  X +0.40  Y +0.40  Z +1.12 */
+    model WB_Pose084 { mesh = WorldItems/WB_Pose084, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  85:  X +0.40  Y +0.80  Z +0.52 */
+    model WB_Pose085 { mesh = WorldItems/WB_Pose085, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  86:  X +0.40  Y +0.80  Z +0.64 */
+    model WB_Pose086 { mesh = WorldItems/WB_Pose086, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  87:  X +0.40  Y +0.80  Z +0.76 */
+    model WB_Pose087 { mesh = WorldItems/WB_Pose087, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  88:  X +0.40  Y +0.80  Z +0.88 */
+    model WB_Pose088 { mesh = WorldItems/WB_Pose088, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  89:  X +0.40  Y +0.80  Z +1.00 */
+    model WB_Pose089 { mesh = WorldItems/WB_Pose089, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
+    /*  90:  X +0.40  Y +0.80  Z +1.12 */
+    model WB_Pose090 { mesh = WorldItems/WB_Pose090, texture = WorldItems/Wheelbarrow, scale = 0.0057, }
 }

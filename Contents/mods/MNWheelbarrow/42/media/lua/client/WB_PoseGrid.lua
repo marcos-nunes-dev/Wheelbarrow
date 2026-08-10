@@ -1,12 +1,14 @@
 --[[ GERADO por assets/tools_gen_pose_grid.py -- nao editar a mao.
      Descartavel: sai antes de publicar com WB_PoseLab.lua.
 
-     A ordem e X mais externo, Y no meio, Z mais interno. O Lua
-     recalcula o indice a partir dela, entao mexer aqui sem mexer
-     la faz o texto na tela mentir sobre a malha mostrada. ]]
+     Este grid varre TRANSLACAO; a rotacao ja esta resolvida em
+     (270, 0, 0). A ordem e X mais externo, Y no meio, Z mais interno,
+     e o Lua recalcula o indice a partir dela -- mexer aqui sem
+     mexer la faz o texto na tela mentir sobre a malha. ]]
 return {
     prefix = "MNWheelbarrow.Pose",
-    x = { 90, 270 },
-    y = { -20, 0, 20 },
-    z = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330 },
+    kind = "translacao",
+    x = { -0.40, 0.00, 0.40 },
+    y = { -0.80, -0.40, 0.00, 0.40, 0.80 },
+    z = { 0.52, 0.64, 0.76, 0.88, 1.00, 1.12 },
 }
