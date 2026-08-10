@@ -145,13 +145,10 @@ local function onFillForceEnter(playerNum, context, _worldobjects, _test)
     if player == nil then return end
 
     context:addOption("[SPIKE] Forcar entrar no carrinho", nil, function()
-        local nearest, bestDist = nil, 9999
-        for v = 0, getCell():getVehicles():size() - 1 do
-            local veh = getCell():getVehicles():get(v)
-            if veh:getScript() and veh:getScript():getName() == "MNWheelbarrow" then
-                local d = math.abs(veh:getX() - player:getX()) + math.abs(veh:getY() - player:getY())
-                if d < bestDist then nearest, bestDist = veh, d end
-            end
+        -- getVehicles() devolve um java.util.Set, que nao tem get por indice.
+        local nearest = ISVehicleMenu.getVehicleToInteractWith(player)
+        if nearest and nearest:getScript() and nearest:getScript():getName() ~= "MNWheelbarrow" then
+            nearest = nil
         end
         if nearest == nil then
             print("[Wheelbarrow][VEICULO] nenhum carrinho por perto")

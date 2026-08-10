@@ -39,19 +39,36 @@ function WB_Vehicle.prepare(vehicle)
     end
 end
 
---- Percorre os veiculos por perto. Barato: a lista de veiculos da celula tem
---- poucas entradas, e isto so roda quando o jogador entra em algum.
+--- getCell():getVehicles() devolve um java.util.Set, e chamar :get(i) nele
+--- estoura com "tried to call nil". Usamos o helper do jogo, que ja resolve
+--- alcance e obstaculo.
 local function prepareNearby(player)
-    local cell = getCell()
-    if cell == nil or player == nil then return end
-    local vehicles = cell:getVehicles()
-    for i = 0, vehicles:size() - 1 do
-        WB_Vehicle.prepare(vehicles:get(i))
-    end
+    if player == nil then return end
+    WB_Vehicle.prepare(ISVehicleMenu.getVehicleToInteractWith(player))
 end
 
 Events.OnEnterVehicle.Add(function(player)
     WB_Vehicle.prepare(player:getVehicle())
+end)
+
+--[[
+    Silencia o som de motor.
+
+    Um carrinho de mao nao faz barulho de carro. engineLoudness = 0 no script
+    reduz o quanto o som ATRAI zumbis, mas nao impede o som de tocar -- sao
+    coisas diferentes, e foi por isso que o ruido continuou.
+
+    Nao existe som silencioso no jogo base para apontar no bloco sound, entao
+    calamos o emissor do veiculo direto. So roda enquanto o jogador esta dentro
+    de um carrinho, entao nao pesa e nao afeta outros veiculos.
+]]
+Events.OnPlayerUpdate.Add(function(player)
+    local vehicle = player and player:getVehicle()
+    if not WB_Vehicle.isWheelbarrow(vehicle) then return end
+    local emitter = vehicle:getVehicleSoundEmitter()
+    if emitter ~= nil then
+        emitter:stopAll()
+    end
 end)
 
 -- Tambem ao criar o personagem, para carrinhos que ja existiam no save.
