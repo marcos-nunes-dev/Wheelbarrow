@@ -1,28 +1,12 @@
 --[[ GERADO por assets/tools_gen_pose_grid.py -- nao editar a mao.
-     Descartavel: sai antes de publicar, junto com WB_PoseLab.lua. ]]
+     Descartavel: sai antes de publicar com WB_PoseLab.lua.
+
+     A ordem e X mais externo, Y no meio, Z mais interno. O Lua
+     recalcula o indice a partir dela, entao mexer aqui sem mexer
+     la faz o texto na tela mentir sobre a malha mostrada. ]]
 return {
-    { id = "MNWheelbarrow.Pose01", rx = 0, ry = 0, rz = 0 },
-    { id = "MNWheelbarrow.Pose02", rx = 0, ry = 0, rz = 90 },
-    { id = "MNWheelbarrow.Pose03", rx = 0, ry = 0, rz = 180 },
-    { id = "MNWheelbarrow.Pose04", rx = 0, ry = 0, rz = 270 },
-    { id = "MNWheelbarrow.Pose05", rx = 0, ry = 90, rz = 0 },
-    { id = "MNWheelbarrow.Pose06", rx = 0, ry = 90, rz = 90 },
-    { id = "MNWheelbarrow.Pose07", rx = 0, ry = 90, rz = 180 },
-    { id = "MNWheelbarrow.Pose08", rx = 0, ry = 90, rz = 270 },
-    { id = "MNWheelbarrow.Pose09", rx = 0, ry = 180, rz = 0 },
-    { id = "MNWheelbarrow.Pose10", rx = 0, ry = 180, rz = 90 },
-    { id = "MNWheelbarrow.Pose11", rx = 0, ry = 180, rz = 180 },
-    { id = "MNWheelbarrow.Pose12", rx = 0, ry = 180, rz = 270 },
-    { id = "MNWheelbarrow.Pose13", rx = 0, ry = 270, rz = 0 },
-    { id = "MNWheelbarrow.Pose14", rx = 0, ry = 270, rz = 90 },
-    { id = "MNWheelbarrow.Pose15", rx = 0, ry = 270, rz = 180 },
-    { id = "MNWheelbarrow.Pose16", rx = 0, ry = 270, rz = 270 },
-    { id = "MNWheelbarrow.Pose17", rx = 90, ry = 0, rz = 0 },
-    { id = "MNWheelbarrow.Pose18", rx = 90, ry = 0, rz = 90 },
-    { id = "MNWheelbarrow.Pose19", rx = 90, ry = 0, rz = 180 },
-    { id = "MNWheelbarrow.Pose20", rx = 90, ry = 0, rz = 270 },
-    { id = "MNWheelbarrow.Pose21", rx = 90, ry = 180, rz = 0 },
-    { id = "MNWheelbarrow.Pose22", rx = 90, ry = 180, rz = 90 },
-    { id = "MNWheelbarrow.Pose23", rx = 90, ry = 180, rz = 180 },
-    { id = "MNWheelbarrow.Pose24", rx = 90, ry = 180, rz = 270 },
+    prefix = "MNWheelbarrow.Pose",
+    x = { 90, 270 },
+    y = { -20, 0, 20 },
+    z = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330 },
 }

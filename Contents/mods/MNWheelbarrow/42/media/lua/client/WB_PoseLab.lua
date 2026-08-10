@@ -1,96 +1,144 @@
 --[[
-    Laboratorio de pose: percorre as poses do carrinho com uma tecla.
+    Laboratorio de pose: ajusta a pose do carrinho na mao, em jogo, por tecla.
 
     DESCARTAVEL. Sai do mod antes de publicar, junto com WB_PoseGrid.lua e os
-    scripts items_wheelbarrow_poses.txt / models_wheelbarrow_poses.txt.
+    scripts *_poses.txt.
 
     POR QUE ISTO EXISTE:
-    a pose do item na mao esta assada na malha -- o bloco `attachment
-    Bip01_Prop2`, que seria o caminho declarativo, foi testado com oito rotacoes
-    e as oito renderizaram identicas, entao o engine o ignora neste caminho.
-    Malha e script so recarregam no boot, entao cada tentativa de pose custava um
-    RESTART do jogo. Quatro rodadas foram gastas a tres variantes por rodada.
+    a pose do item na mao esta assada na malha. Nao ha caminho declarativo -- o
+    bloco `attachment Bip01_Prop2` foi testado com oito rotacoes e as oito
+    renderizaram identicas, entao o engine o ignora neste caminho. E malha e
+    script so recarregam no boot, logo cada tentativa custava um RESTART do jogo.
+    Quatro rodadas foram gastas a tres variantes por rodada.
 
-    A troca: assar todas as poses de uma vez (24 malhas, as rotacoes alinhadas
-    aos eixos) e trocar o ITEM em runtime, que e coisa que o Lua faz. O custo do
+    Nao da para mudar a transformacao em runtime, mas da para trocar o ITEM.
+    Entao todas as poses vem assadas e este arquivo navega entre elas: o custo do
     restart deixa de multiplicar pelo numero de tentativas.
 
-    COMO USAR:
-      1. equipar qualquer carrinho de teste, ou nenhum -- a primeira tecla ja
-         entrega a pose 1 na mao
-      2. ] avanca, [ volta
-      3. os angulos aparecem na tela; anotar o numero da pose que ficar certa
+    TRES EIXOS INDEPENDENTES, um par de teclas cada. Isso importa mais do que
+    parece: rotacoes nao comutam, e a versao anterior desta calibracao percorria
+    uma lista linear de orientacoes, o que fazia cada passo mudar duas coisas ao
+    mesmo tempo. Separar os eixos e o que torna o ajuste legivel -- mexer em um e
+    ver so aquilo mudar.
 
-    So roda com o jogo em debug: e ferramenta de desenvolvimento, e nao deve
-    responder a teclas na maquina de um jogador.
+      ]  [   cabeceira (giro no plano do chao, eixo Z)
+      '  ;   inclinacao (eixo Y)
+      .  ,   familia em X (as duas escolhas plausiveis)
+
+    Os tres angulos aparecem na tela e no console a cada passo. O numero que
+    interessa e a TRINCA, nao o indice da pose.
+
+    So responde a teclas com o jogo em debug: e ferramenta de desenvolvimento.
 ]]
 
-local POSES = require "WB_PoseGrid"
+local GRID = require "WB_PoseGrid"
 
 local WB_PoseLab = {}
 
-local index = 0
+local function wrap(value, count)
+    return ((value - 1) % count) + 1
+end
+
+--- Indice de um valor no eixo, com queda para o primeiro se nao existir.
+local function indexOf(values, wanted)
+    for i, v in ipairs(values) do
+        if v == wanted then return i end
+    end
+    return 1
+end
+
+-- Ponto de partida: NAO e o primeiro item de cada eixo, e sim a pose que a
+-- medicao aponta como provavel -- X = 270 (a pose 17 antiga, Rx 90, apareceu
+-- deitada de barriga para CIMA, logo o giro oposto e o candidato), inclinacao
+-- zero e cabeceira zero. Comecar no candidato em vez de num canto do grid
+-- economiza passos e deixa claro o que esta sendo testado.
+local ix = indexOf(GRID.x, 270)
+local iy = indexOf(GRID.y, 0)
+local iz = indexOf(GRID.z, 0)
+local started = false
+
+--- O indice linear tem de casar com a ordem em que tools_gen_pose_grid.py assou
+--- as malhas: X mais externo, Y no meio, Z mais interno. Errar isto nao gera
+--- erro -- gera texto na tela mentindo sobre a malha mostrada.
+local function poseId()
+    local ny, nz = #GRID.y, #GRID.z
+    local linear = ((ix - 1) * ny + (iy - 1)) * nz + iz
+    return string.format("%s%03d", GRID.prefix, linear), linear
+end
 
 local function announce(player, text)
-    -- HaloTextHelper e o caminho do jogo para texto flutuante sobre o
-    -- personagem. Guardado porque e UI e nao vale derrubar a ferramenta se a
-    -- assinatura mudar; o print no console e o registro que sempre sobra.
     print("[Wheelbarrow][POSE] " .. text)
     if HaloTextHelper and HaloTextHelper.addText then
-        local ok = pcall(HaloTextHelper.addText, player, text)
-        if ok then return end
+        if pcall(HaloTextHelper.addText, player, text) then return end
     end
     pcall(function() player:setHaloNote(text) end)
 end
 
---- Remove da mao e do inventario qualquer pose que ja esteja em uso, para o
---- inventario nao encher de carrinhos ao longo da varredura.
+--- Tira do inventario a pose anterior, para a varredura nao encher o inventario
+--- de carrinhos. Busca pelo prefixo em vez de guardar o item numa variavel: se o
+--- jogador largar ou perder o item no meio, a limpeza continua valendo.
 local function clearPoses(player)
     local inv = player:getInventory()
-    for _, pose in ipairs(POSES) do
-        local item = inv:FindAndReturn(pose.id)
+    local total = #GRID.x * #GRID.y * #GRID.z
+    for i = 1, total do
+        local id = string.format("%s%03d", GRID.prefix, i)
+        local item = inv:FindAndReturn(id)
         while item ~= nil do
             if player:isPrimaryHandItem(item) then player:setPrimaryHandItem(nil) end
             if player:isSecondaryHandItem(item) then player:setSecondaryHandItem(nil) end
             inv:Remove(item)
-            item = inv:FindAndReturn(pose.id)
+            item = inv:FindAndReturn(id)
         end
     end
 end
 
-function WB_PoseLab.show(player, step)
-    if player == nil or #POSES == 0 then return end
-
-    index = index + step
-    if index < 1 then index = #POSES end
-    if index > #POSES then index = 1 end
-
-    local pose = POSES[index]
+function WB_PoseLab.apply(player)
+    local id, linear = poseId()
     clearPoses(player)
 
-    local item = player:getInventory():AddItem(pose.id)
+    local item = player:getInventory():AddItem(id)
     if item == nil then
-        announce(player, "pose " .. index .. ": item nao existe (script nao carregou?)")
+        announce(player, id .. " nao existe -- o script de poses nao carregou")
         return
     end
     player:setPrimaryHandItem(item)
-    -- Sem isto o modelo do personagem pode continuar mostrando a pose anterior:
-    -- ele so e reconstruido quando alguem pede.
+    -- Sem isto o personagem pode continuar mostrando a pose anterior: o modelo
+    -- so e reconstruido quando alguem pede.
     player:resetModelNextFrame()
 
-    announce(player, string.format("pose %d/%d  X=%d Y=%d Z=%d",
-        index, #POSES, pose.rx, pose.ry, pose.rz))
+    announce(player, string.format("X=%d  Y=%d  Z=%d   (pose %d)",
+        GRID.x[ix], GRID.y[iy], GRID.z[iz], linear))
+end
+
+local function step(axis, delta)
+    local player = getSpecificPlayer(0)
+    if player == nil or player:isDead() then return end
+
+    -- O primeiro toque em qualquer tecla so entrega a pose inicial, sem andar:
+    -- assim o ponto de partida e sempre o mesmo, independente de qual tecla foi
+    -- apertada primeiro.
+    if not started then
+        started = true
+    elseif axis == "x" then
+        ix = wrap(ix + delta, #GRID.x)
+    elseif axis == "y" then
+        iy = wrap(iy + delta, #GRID.y)
+    else
+        iz = wrap(iz + delta, #GRID.z)
+    end
+
+    WB_PoseLab.apply(player)
 end
 
 Events.OnKeyPressed.Add(function(key)
     if not getCore():getDebug() then return end
-    local player = getSpecificPlayer(0)
-    if player == nil or player:isDead() then return end
 
-    if key == Keyboard.KEY_RBRACKET then
-        WB_PoseLab.show(player, 1)
-    elseif key == Keyboard.KEY_LBRACKET then
-        WB_PoseLab.show(player, -1)
+    if key == Keyboard.KEY_RBRACKET then step("z", 1)
+    elseif key == Keyboard.KEY_LBRACKET then step("z", -1)
+    elseif key == Keyboard.KEY_APOSTROPHE then step("y", 1)
+    elseif key == Keyboard.KEY_SEMICOLON then step("y", -1)
+    elseif key == Keyboard.KEY_PERIOD then step("x", 1)
+    elseif key == Keyboard.KEY_COMMA then step("x", -1)
     end
 end)
 
