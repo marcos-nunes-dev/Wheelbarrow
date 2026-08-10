@@ -58,6 +58,16 @@ local function blockWeapons()
     return vars.BlockWeapons == true
 end
 
+--- O carrinho ainda pertence a este jogador?
+---
+--- Existe porque este arquivo REEQUIPA, e reequipar sem perguntar isso
+--- ressuscita item largado. Ver o comentario em repair().
+local function stillOwned(player, cart)
+    if cart:getWorldItem() ~= nil then return false end
+    local inv = player:getInventory()
+    return inv ~= nil and inv:containsRecursive(cart)
+end
+
 --- Restaura o estado valido: o carrinho nas duas maos.
 ---
 --- Nunca destroi nem larga nada no chao -- o que sai da mao volta para o
@@ -72,6 +82,27 @@ function WB_Hands.repair(player)
     if isCart(primary) then cart = primary
     elseif isCart(secondary) then cart = secondary end
     if cart == nil then return end
+
+    --[[ LARGAR O CARRINHO passa por aqui, e sem esta guarda vira bug.
+
+         Ao largar, o jogo tira o carrinho de UMA das maos e dispara
+         OnEquipPrimary. O repair entao encontrava o carrinho ainda na outra mao,
+         concluia que o estado estava invalido e reequipava nas duas -- o item
+         aparecia no chao E continuava renderizado na mao, fora do inventario.
+
+         Nao e caso de borda: e consequencia direta de este arquivo reequipar. Se
+         a mao secundaria esvaziar por qualquer caminho (largar, transferir para
+         um bau, morrer), o evento chega igual e o item ja nao e do jogador. A
+         pergunta certa nao e "as maos estao consistentes" e sim "isto ainda e
+         meu" -- por isso a checagem vem ANTES de qualquer decisao. ]]
+    if not stillOwned(player, cart) then
+        repairing = true
+        if player:isPrimaryHandItem(cart) then player:setPrimaryHandItem(nil) end
+        if player:isSecondaryHandItem(cart) then player:setSecondaryHandItem(nil) end
+        repairing = false
+        player:resetModelNextFrame()
+        return
+    end
 
     if primary == cart and secondary == cart then return end
 
@@ -107,5 +138,44 @@ end
 
 Events.OnEquipPrimary.Add(function(player, _item) WB_Hands.repair(player) end)
 Events.OnEquipSecondary.Add(function(player, _item) WB_Hands.repair(player) end)
+
+--[[
+    Rede de seguranca contra carrinho-fantasma na mao.
+
+    A guarda dentro de repair() cobre os caminhos que disparam OnEquipPrimary ou
+    OnEquipSecondary. Nem todo caminho dispara: o item pode sair do jogador sem
+    passar por esses eventos. E o sintoma -- modelo renderizado na mao de um item
+    que ja esta no chao -- e daqueles que o jogador nao consegue desfazer sozinho.
+
+    A checagem e so getWorldItem(), de proposito. Ela responde "este item ja esta
+    no chao" com um getter, enquanto a checagem completa de posse percorre a
+    arvore do inventario -- e o carrinho e um container, entao essa arvore tem o
+    conteudo dele dentro. Por quadro, isso pesa. O caso completo continua sendo
+    tratado em repair(); aqui fica so o barato que resolve o sintoma visivel.
+]]
+local function droppedButHeld(item)
+    return isCart(item) and item:getWorldItem() ~= nil
+end
+
+Events.OnPlayerUpdate.Add(function(player)
+    if repairing or player == nil then return end
+
+    -- As duas maos conferidas separadamente, e nao por um `for` sobre uma tabela
+    -- das duas: com a mao primaria vazia a tabela comeca em nil, ipairs para no
+    -- indice 1 e a mao secundaria nunca seria olhada.
+    local ghost = nil
+    if droppedButHeld(player:getPrimaryHandItem()) then
+        ghost = player:getPrimaryHandItem()
+    elseif droppedButHeld(player:getSecondaryHandItem()) then
+        ghost = player:getSecondaryHandItem()
+    end
+    if ghost == nil then return end
+
+    repairing = true
+    if player:isPrimaryHandItem(ghost) then player:setPrimaryHandItem(nil) end
+    if player:isSecondaryHandItem(ghost) then player:setSecondaryHandItem(nil) end
+    repairing = false
+    player:resetModelNextFrame()
+end)
 
 return WB_Hands
