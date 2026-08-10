@@ -100,4 +100,30 @@ function WB_Spill.dump(cart, origin)
     return dropped
 end
 
+--- Tira o carrinho das maos e do inventario e o poe no chao.
+---
+--- Mora aqui, e nao em WB_Placement, porque as timed actions tambem precisam
+--- dele -- e elas vivem em shared/, enquanto WB_Placement e de cliente. Um
+--- require de shared/ para client/ seria codigo morto num servidor dedicado.
+---
+--- @return boolean se o carrinho foi de fato para o chao
+function WB_Spill.dropCart(character, cart, square)
+    if character == nil or cart == nil then return false end
+    square = square or character:getSquare()
+    if square == nil then return false end
+
+    -- Ja esta no chao: nada a fazer, e mexer criaria um segundo objeto.
+    if cart:getWorldItem() ~= nil then return false end
+
+    if character:isPrimaryHandItem(cart) then character:setPrimaryHandItem(nil) end
+    if character:isSecondaryHandItem(cart) then character:setSecondaryHandItem(nil) end
+
+    local container = cart:getContainer()
+    if container ~= nil then container:Remove(cart) end
+
+    square:AddWorldInventoryItem(cart, 0.5, 0.5, 0.0)
+    character:resetModelNextFrame()
+    return true
+end
+
 return WB_Spill

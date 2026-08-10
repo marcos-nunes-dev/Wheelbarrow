@@ -36,10 +36,19 @@ Nem mochila, nem baú, nem outro carrinho. Vale para o inventário principal
 também, exceto de passagem: ele só está lá porque a mão exige.
 
 **R2 — Chão → mãos passa pela ação cronometrada.**
-A opção "Pegar" do jogo é REMOVIDA do menu do carrinho no chão. Ela era o furo:
-punha o carrinho na bolsa sem animação, e de lá o jogador equipava — nunca
-passando pela ação que pode ser cancelada. Sobra um caminho só, e ele custa
-tempo.
+A opção "Pegar" do jogo era o furo: punha o carrinho na bolsa sem animação, e de
+lá o jogador equipava — nunca passando pela ação que pode ser cancelada.
+
+A primeira tentativa **removia a opção do menu por nome, e não funcionou**. O
+nome não é único: oito pontos do jogo criam uma opção "Pegar", e o menu do chão
+não é o mesmo do painel de chão do inventário. Pior, remover por nome é
+grosseiro — "Pegar" vale para a square inteira, então tirá-la com outros itens
+caídos ali deixaria o jogador sem como pegar aquilo.
+
+O que funciona é interceptar a **ação**, não o menu: todos os oito caminhos
+terminam em `ISGrabItemAction:new`, então o construtor é envolvido e devolve a
+nossa ação quando o objeto é um carrinho. O menu fica intacto; só o que a opção
+faz muda.
 
 **R3 — Mãos → chão também.**
 Desequipar não devolve para a bolsa: larga no chão, com animação.
@@ -65,6 +74,25 @@ defesa*.
 | Ter que pegar antes de equipar | R2 — equipar direto do chão |
 
 ---
+
+## O que a rede não podia adivinhar
+
+R4 põe no chão todo carrinho desequipado que encontre num inventário — e
+**equipar passa exatamente por esse estado**, porque o item precisa entrar no
+inventário antes de ir para a mão. Sem um aviso, a rede desfazia a própria ação
+de equipar: em jogo, a tecla de interagir teleportava o carrinho para os pés do
+jogador em vez de equipá-lo.
+
+`WB_Transfer` é o aviso. As ações do mod levantam o sinalizador enquanto movem o
+carrinho de propósito, e a rede se cala. É um contador e não um booleano, porque
+ações podem se aninhar e a primeira a terminar liberaria a rede no meio da
+segunda.
+
+## Cancelar derruba o conjunto
+
+Cancelar derrama a carga **e o próprio carrinho** no chão. Deixar o carrinho na
+mão era a metade estranha do resultado, e também criaria o estado que R4 existe
+para impedir.
 
 ## Tecla E
 

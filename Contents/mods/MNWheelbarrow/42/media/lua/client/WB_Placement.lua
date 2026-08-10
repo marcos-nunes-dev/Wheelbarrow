@@ -13,7 +13,8 @@
     existe pela garantia:
 
       R1  o carrinho nao entra em container nenhum
-      R2  chao -> maos so pela acao cronometrada; a opcao "Pegar" do jogo some
+      R2  chao -> maos so pela acao cronometrada; o "Pegar" do jogo e desviado
+          para ela, por qualquer caminho de menu
       R3  maos -> chao tambem pela acao cronometrada
       R4  carrinho desequipado em inventario vai para o chao
 
@@ -31,6 +32,8 @@ require "TimedActions/ISWheelbarrowPickUp"
 require "TimedActions/ISWheelbarrowPutDown"
 
 local WB_Cart = require "WB_Cart"
+local WB_Spill = require "WB_Spill"
+local WB_Transfer = require "WB_Transfer"
 
 local WB_Placement = {}
 
@@ -40,22 +43,16 @@ local settling = false
 --- Larga o carrinho no chao imediatamente, sem animacao.
 ---
 --- Este e o caminho da REDE (R4), nao o do jogador. O caminho do jogador tem
---- animacao e pode ser cancelado; aqui o estado ja e invalido e o objetivo e
---- so sair dele.
+--- animacao e pode ser cancelado; aqui o estado ja e invalido e o objetivo e so
+--- sair dele.
+---
+--- A colocacao em si e de WB_Spill, que e quem as timed actions tambem usam ao
+--- cancelar. Duas copias divergiriam no dia em que uma delas ganhasse um passo a
+--- mais -- e aqui esquecer de tirar das maos deixaria o carrinho-fantasma.
 function WB_Placement.forceToGround(character, cart)
-    if settling or character == nil or cart == nil then return end
-    local square = character:getSquare()
-    if square == nil then return end
-
+    if settling then return end
     settling = true
-    if character:isPrimaryHandItem(cart) then character:setPrimaryHandItem(nil) end
-    if character:isSecondaryHandItem(cart) then character:setSecondaryHandItem(nil) end
-
-    local container = cart:getContainer()
-    if container ~= nil then container:Remove(cart) end
-
-    square:AddWorldInventoryItem(cart, 0.5, 0.5, 0.0)
-    character:resetModelNextFrame()
+    WB_Spill.dropCart(character, cart)
     settling = false
 end
 
@@ -93,7 +90,7 @@ local function settleLoose(character, container, depth)
 end
 
 function WB_Placement.enforce(character)
-    if settling or character == nil then return end
+    if settling or WB_Transfer.active() or character == nil then return end
     settleLoose(character, character:getInventory(), 0)
 end
 
@@ -112,39 +109,34 @@ Events.OnEquipPrimary.Add(function(character, _item) WB_Placement.enforce(charac
 Events.OnEquipSecondary.Add(function(character, _item) WB_Placement.enforce(character) end)
 
 --[[
-    R2: tira a opcao "Pegar" do jogo do menu do carrinho no chao.
+    R2: pegar um carrinho do chao vira a NOSSA acao, por qualquer caminho.
 
-    Era o furo que o Marcos encontrou: "Pegar" punha o carrinho na bolsa sem
-    animacao, e de la o jogador equipava -- nunca passando pela acao que pode ser
-    cancelada. Removendo, sobra um caminho so, e ele custa tempo.
+    A primeira tentativa removia a opcao "Pegar" do menu por NOME, e nao
+    funcionou por dois motivos. O nome nao e unico -- ha oito pontos no jogo que
+    criam essa opcao, e o menu do chao nao e o mesmo do painel de chao do
+    inventario. E remover por nome e grosseiro: "Pegar" vale para a square
+    inteira, entao tira-la com outros itens caidos ali deixaria o jogador sem
+    como pegar aquilo.
 
-    Roda DEPOIS do jogo montar o menu, porque so da para remover o que ja existe.
-    Nosso proprio handler adiciona a opcao de pegar em WB_ContextMenu; a ordem
-    entre os dois nao importa, porque removemos por nome e o nome e outro.
+    Interceptar a ACAO resolve os dois de uma vez. Todos os oito caminhos
+    terminam em ISGrabItemAction:new, entao envolvemos o construtor: quando o
+    objeto e um carrinho, devolvemos a nossa acao no lugar. Ela deriva da mesma
+    base, entao a fila trata as duas igual, e quem chamou nao precisa saber.
+
+    O menu continua com as opcoes do jogo, no lugar de sempre -- so o que elas
+    fazem muda.
 ]]
-Events.OnFillWorldObjectContextMenu.Add(function(_player, context, worldobjects, _test)
-    local carts, others = 0, 0
-    for _, obj in ipairs(worldobjects) do
-        if instanceof(obj, "IsoWorldInventoryObject") then
-            if WB_Cart.is(obj:getItem()) then carts = carts + 1 else others = others + 1 end
+Events.OnGameStart.Add(function()
+    if ISGrabItemAction == nil then return end
+
+    local original = ISGrabItemAction.new
+    ISGrabItemAction.new = function(self, character, worldItem, time)
+        if worldItem ~= nil and instanceof(worldItem, "IsoWorldInventoryObject")
+            and WB_Cart.is(worldItem:getItem()) then
+            return ISWheelbarrowPickUp:new(character, worldItem)
         end
+        return original(self, character, worldItem, time)
     end
-    if carts == 0 then return end
-
-    -- SO quando o carrinho esta sozinho na square.
-    --
-    -- Remover por NOME e grosseiro: "Pegar" e "Pegar tudo" valem para a square
-    -- inteira, nao por item. Se houver outra coisa caida ali, tira-las deixaria
-    -- o jogador sem como pegar aquilo -- consertar o furo do carrinho quebrando o
-    -- resto do chao e um mau negocio.
-    --
-    -- Com outros itens presentes, quem segura a regra e a rede: pegar o carrinho
-    -- o poe no inventario, e R4 o devolve ao chao no mesmo evento. O furo fecha
-    -- de qualquer jeito; so nao fica tao limpo na tela.
-    if others > 0 then return end
-
-    context:removeOptionByName(getText("ContextMenu_Grab"))
-    context:removeOptionByName(getText("ContextMenu_Grab_all"))
 end)
 
 --[[

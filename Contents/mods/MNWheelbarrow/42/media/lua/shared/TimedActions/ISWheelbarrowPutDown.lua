@@ -62,7 +62,11 @@ function ISWheelbarrowPutDown:stop()
     end
     self.item:setJobDelta(0.0)
     if WB_Sandbox.get("SpillOnCancel") then
-        WB_Spill.dump(self.item, self.character:getSquare())
+        local square = self.character:getSquare()
+        WB_Spill.dump(self.item, square)
+        -- O carrinho vai junto: cancelar no meio de largar e o carrinho tombando,
+        -- nao o jogador se arrependendo. Simetrico ao cancelar de pegar.
+        WB_Spill.dropCart(self.character, self.item, square)
     end
     ISBaseTimedAction.stop(self)
 end

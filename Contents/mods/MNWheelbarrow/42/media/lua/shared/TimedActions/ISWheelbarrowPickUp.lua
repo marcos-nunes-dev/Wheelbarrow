@@ -32,6 +32,7 @@ require "TimedActions/ISBaseTimedAction"
 
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Spill = require "WB_Spill"
+local WB_Transfer = require "WB_Transfer"
 
 ISWheelbarrowPickUp = ISBaseTimedAction:derive("ISWheelbarrowPickUp")
 
@@ -70,20 +71,32 @@ function ISWheelbarrowPickUp:stop()
     ISBaseTimedAction.stop(self)
 end
 
---- Derrama a carga, se a opcao estiver ligada.
+--- Cancelar derruba TUDO: a carga e o proprio carrinho.
 ---
---- Vive aqui e nao em stop() porque a mesma regra vale para largar: as duas
---- acoes derramam pelo mesmo motivo, e uma so definicao evita que so uma delas
---- respeite a opcao do jogador.
+--- O carrinho ir junto nao e detalhe. Sem isso, cancelar deixava a carga no chao
+--- e o carrinho na mao do jogador -- que e a metade estranha do resultado, e foi
+--- o que apareceu no teste. Interromper uma manobra dessas derruba o conjunto.
+---
+--- E tambem o que sustenta a invariante das duas posicoes: no meio de equipar o
+--- carrinho esta no inventario, e abandonar ali seria criar exatamente o estado
+--- que WB_Placement existe para impedir.
 function ISWheelbarrowPickUp:spillIfEnabled()
     if not WB_Sandbox.get("SpillOnCancel") then return end
     local square = self.worldItem and self.worldItem:getSquare()
     if square == nil then square = self.character:getSquare() end
     WB_Spill.dump(self.item, square)
+    WB_Spill.dropCart(self.character, self.item, square)
 end
 
 function ISWheelbarrowPickUp:perform()
     self.item:setJobDelta(0.0)
+
+    -- A rede de WB_Placement poe no chao todo carrinho desequipado que encontre
+    -- num inventario, e para equipar o carrinho precisa passar por esse estado:
+    -- AddItem vem antes de setPrimaryHandItem. Sem suspender, a rede o teleporta
+    -- para os pes do jogador no meio da acao -- que foi exatamente o sintoma
+    -- observado, "traz o carrinho ate onde estou mas nao equipa".
+    WB_Transfer.begin()
 
     if self.worldItem ~= nil then
         local square = self.worldItem:getSquare()
@@ -106,6 +119,8 @@ function ISWheelbarrowPickUp:perform()
     self.character:setPrimaryHandItem(self.item)
     self.character:setSecondaryHandItem(self.item)
     self.character:resetModelNextFrame()
+
+    WB_Transfer.finish()
 
     ISBaseTimedAction.perform(self)
 end
