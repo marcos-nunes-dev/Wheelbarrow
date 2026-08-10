@@ -132,11 +132,13 @@ Events.OnFillWorldObjectContextMenu.Add(onFillVehicleSpike)
 
 --- Entrada FORCADA, sem menu e sem pathfinding.
 ---
---- O menu radial mostra o assento e clicar nao faz nada, o que aponta para a
---- ação de caminhar ate a posicao externa falhando em silencio. Chamar
---- vehicle:enter direto separa as duas coisas: se o personagem entrar por aqui,
---- o assento esta bom e o problema e so a posicao externa/pathfinding; se nem
---- assim entrar, o bloqueio e no proprio assento.
+--- getBestSeat NAO SERVE de diagnostico: o bytecode dele tem 2 bytes e sempre
+--- devolve -1, para qualquer veiculo. E um stub na B42. Como o prompt da tecla
+--- E depende dele, esse caminho nunca vai funcionar -- entrar e pelo menu
+--- radial mesmo.
+---
+--- O que resta investigar e o pathfinding ate a posicao externa do assento,
+--- que era o que falhava em silencio ao clicar no menu.
 local function onFillForceEnter(playerNum, context, _worldobjects, _test)
     if not getDebug() then return end
     local player = getSpecificPlayer(playerNum)
@@ -155,9 +157,12 @@ local function onFillForceEnter(playerNum, context, _worldobjects, _test)
             print("[Wheelbarrow][VEICULO] nenhum carrinho por perto")
             return
         end
-        local ok = nearest:enter(0, player)
-        print(("[Wheelbarrow][VEICULO] enter(0) devolveu %s | jogador esta em veiculo: %s")
-            :format(tostring(ok), tostring(player:getVehicle() ~= nil)))
+        -- Usa o caminho do proprio jogo em vez de BaseVehicle.enter: a
+        -- sobrecarga de dois argumentos nao esta exposta ao Lua, e chama-la
+        -- direto so gera erro.
+        ISVehicleMenu.onEnter(player, nearest, 0)
+        print(("[Wheelbarrow][VEICULO] onEnter chamado | jogador esta em veiculo: %s")
+            :format(tostring(player:getVehicle() ~= nil)))
     end)
 end
 

@@ -134,9 +134,14 @@ module Base
         {
             xywh = 0.0 0.0 0.8 0.9,
         }
+        /* A area do assento e onde o jogador FICA EM PE para entrar, e por isso
+           precisa cair FORA do corpo. O veiculo tem meia-profundidade 0.836,
+           entao qualquer coisa acima de -0.836 esta dentro dele -- o -0.75 que
+           eu tinha posto ficava embutido no carrinho, e o pathfinding nao tem
+           para onde levar o personagem. Agora fica atras, no espaco livre. */
         area SeatFrontLeft
         {
-            xywh = 0.0 -0.75 0.6 0.6,
+            xywh = 0.0 -1.15 0.7 0.7,
         }
 
         template = Trunk/part/TruckBed,
@@ -199,7 +204,7 @@ module Base
             }
             position outside
             {
-                offset = 0.55 -0.10 -0.75,
+                offset = 0.0 -0.10 -1.15,
                 rotate = 0.0 0.0 0.0,
                 area = SeatFrontLeft,
             }
