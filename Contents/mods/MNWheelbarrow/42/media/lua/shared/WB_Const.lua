@@ -29,7 +29,7 @@ WB_Const.HAULER_TYPES = {
     -- DESCARTAVEL: sai com items_wheelbarrow_test.txt. Sem estar aqui o item de
     -- teste nao recebe o tratamento de duas maos nem o bloqueio de corrida, e o
     -- experimento compararia coisas diferentes.
-    ["MNWheelbarrow.TestLeftArm"] = true,
+    ["MNWheelbarrow.TestOneMask"] = true,
 }
 
 --- Namespace das sandbox options. Precisa bater com o "page" e com o prefixo

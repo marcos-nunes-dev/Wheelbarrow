@@ -5,35 +5,27 @@ module MNWheelbarrow
     /*
      * DESCARTAVEL -- uma pergunta so, sai antes de publicar.
      *
-     * PERGUNTA: ReplaceInSecondHand com uma malha INVISIVEL poe o braco esquerdo
-     * na pose, sem desenhar um segundo carrinho?
+     * PERGUNTA: com a animacao 2H_Heavy ligada, a mascara da mao esquerda ajuda
+     * ou estorva?
      *
-     * POR QUE: secondaryAnimMask nao serve para isso. Ele e a mascara de quando o
-     * item esta na mao SECUNDARIA, e nao a segunda metade de uma pose de duas
-     * maos -- com o mesmo objeto nas duas maos o jogo aplica uma so, e foi por
-     * isso que o braco esquerdo continuou fazendo a animacao de andar.
+     * A animacao de dois bracos agora vem de WB_Anim, setando a variavel Weapon =
+     * "heavy" -- uma animacao de CORPO INTEIRO. As mascaras sao outra camada:
+     * remendos por cima da animacao, aplicados por mao. Com a animacao certa
+     * embaixo, secondaryAnimMask pode passar a ATRAPALHAR, puxando o braco
+     * esquerdo para fora da pose.
      *
-     * O caminho do jogo base para os dois bracos e ReplaceInPrimaryHand +
-     * ReplaceInSecondHand, e a mascara vem COLADA no item de roupa. O item de
-     * roupa aponta para uma malha skinned -- rigging, justamente o que nos fez
-     * escolher StaticModel.
+     * primaryAnimMask fica nos DOIS itens, e nao por simetria: esta medido neste
+     * projeto que StaticModel so renderiza quando existe uma mascara. Sem ela o
+     * carrinho desaparece da mao. Entao a mascara primaria nao e ajustavel, e o
+     * unico campo que este teste varia e o secundario.
      *
-     * A aposta: essa malha nao precisa ser vista. O carrinho ja aparece pelo
-     * StaticModel; o modelo da mao esquerda existe so para carregar a mascara.
-     * MNWB_LHandEmpty aponta para uma malha com todos os vertices na origem, ou
-     * seja triangulos de area zero, que nao desenham nada.
+     *   item real     mascara primaria + secundaria
+     *   TestOneMask   so a primaria
      *
-     * ReplaceInPrimaryHand fica de FORA: se eu trocar a mao primaria tambem, o
-     * carrinho para de aparecer, porque o StaticModel seria substituido. So a
-     * secundaria e trocada, e ela e a que hoje nao tem modelo nenhum.
-     *
-     * O RISCO E BAIXO E O MODO DE FALHA E BARATO: ou o item de roupa nao carrega,
-     * e o braco fica como esta hoje, ou aparece um ponto de um pixel. Nao ha
-     * caminho em que isso desenhe algo grande.
-     *
-     * Se funcionar, os campos vao para o item real e o problema fecha.
+     * Qual dos dois tiver os bracos mais coerentes com a animacao vence, e o
+     * outro campo sai.
      */
-    item TestLeftArm
+    item TestOneMask
     {
         DisplayCategory = Container,
         ItemType = base:container,
@@ -43,7 +35,6 @@ module MNWheelbarrow
         WorldStaticModel = MNWheelbarrow_Ground,
         StaticModel = MNWheelbarrow_Hand,
         primaryAnimMask = holdingbagright,
-        ReplaceInSecondHand = MNWB_LHandEmpty holdingbagleft,
         RequiresEquippedBothHands = TRUE,
         Tags = MNWheelbarrow:mnwbHauler,
     }
