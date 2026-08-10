@@ -1,0 +1,47 @@
+module MNWheelbarrow
+{
+    imports { Base }
+
+    /*
+     * DESCARTAVEL -- uma pergunta so, sai antes de publicar.
+     *
+     * PERGUNTA: RequiresEquippedBothHands quebra o equipar deste item?
+     *
+     * O menu de contexto ainda oferece "equipar na mao primaria" e "na secundaria"
+     * separadamente, quando o certo seria uma unica opcao de duas maos. O jogo ja
+     * tem isso pronto: ISInventoryPaneContextMenu marca force2Hands quando
+     * isRequiresEquippedBothHands() e verdadeiro, e troca as opcoes por
+     * "Equip Two Hands" -- com traducao pronta em todos os idiomas.
+     *
+     * POR QUE NAO PONHO DIRETO NO ITEM REAL: esse campo ja esteve la e saiu porque
+     * "com ele o item nao equipava". Mas aquele diagnostico e SUSPEITO -- foi feito
+     * na mesma epoca em que eu tambem culpei o secondaryAnimMask, e depois se
+     * provou que a causa real era outra: o WB_Hands desequipava o carrinho no
+     * mesmo frame. Consertado o WB_Hands, a mascara voltou e funciona. Ha boa
+     * chance de este campo tambem ser inocente.
+     *
+     * "Boa chance" nao e certeza, e o item real esta funcionando agora. Entao o
+     * risco fica aqui: se travar o equipar, quem fica inequipavel e o descartavel.
+     *
+     * O jogo base sustenta a tentativa: o Gerador usa RequiresEquippedBothHands e
+     * e carregado com os dois bracos. Ele nao e container, entao continua sem
+     * precedente exato -- container de duas maos nao existe no vanilla.
+     *
+     * Precisa estar em WB_Const.HAULER_TYPES, senao nao recebe o tratamento de
+     * duas maos e o teste compararia coisas diferentes.
+     */
+    item TestTwoHandField
+    {
+        DisplayCategory = Container,
+        ItemType = base:container,
+        Weight = 3.0,
+        Icon = Toolbox,
+        Capacity = 20,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand,
+        primaryAnimMask = holdingbagright,
+        secondaryAnimMask = holdingbagleft,
+        RequiresEquippedBothHands = TRUE,
+        Tags = MNWheelbarrow:mnwbHauler;base:heavyitem,
+    }
+}

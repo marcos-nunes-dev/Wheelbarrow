@@ -91,6 +91,28 @@ module MNWheelbarrow
         CloseSound = CloseBag,
         PutInSound = PutItemInBag,
 
-        Tags = MNWheelbarrow:mnwbHauler,
+        /* base:heavyitem NAO e decoracao: e o que escolhe a animacao de carregar
+           com os DOIS bracos.
+
+           As mascaras nao dao isso. secondaryAnimMask existe para quando o item
+           esta na mao SECUNDARIA -- e a mascara daquela mao, nao a segunda metade
+           de uma pose de duas maos. Com o mesmo objeto nas duas maos, o jogo
+           aplica uma so, e por isso o braco esquerdo ficava parado mesmo com os
+           dois campos declarados.
+
+           O caminho do mod Carry Visible Items para carregar com dois bracos e
+           ReplaceInPrimaryHand + ReplaceInSecondHand, um par de malhas SKINNED,
+           uma por mao. Nao serve aqui: skinned exige rigging, que e o motivo de
+           termos escolhido StaticModel desde o inicio.
+
+           O jogo base tem um terceiro caminho, e e o do gerador: ele nao declara
+           modelo de mao nenhum -- nem StaticModel nem ReplaceIn* -- e ainda assim
+           e carregado com os dois bracos. O que ele tem e RequiresEquippedBothHands
+           mais a tag base:heavyitem, e heavyitem aparece em IsoPlayer e
+           IsoGameCharacter, que sao justamente quem escolhe a animacao.
+
+           Cabe ao carrinho de qualquer forma: ele PESA. E a tag tambem impede
+           guardar o item dentro de uma bolsa, o que e o comportamento correto. */
+        Tags = MNWheelbarrow:mnwbHauler;base:heavyitem,
     }
 }
