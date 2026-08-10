@@ -1,0 +1,57 @@
+module MNWheelbarrow
+{
+    imports { Base }
+
+    /*
+     * VARIANTES DE TESTE -- descartaveis.
+     *
+     * O carrinho parou de equipar quando troquei ReplaceInPrimaryHand por
+     * StaticModel + animMask. Tres elementos mudaram de uma vez, e nenhum
+     * container do jogo base combina os tres:
+     *
+     *   - livro oco: container + StaticModel, SEM RequiresEquippedBothHands
+     *   - lanterna:  animMask, mas e drainable, nao container
+     *   - 207 containers: usam ReplaceInPrimaryHand, nao StaticModel
+     *
+     * Em vez de testar um fator por rodada, estas variantes isolam cada um.
+     * Equipe as tres e veja quais funcionam -- a resposta sai de uma partida so.
+     *
+     * Nenhuma tem container de proposito: aqui so interessa se EQUIPA e se
+     * APARECE nas maos.
+     */
+
+    /* A: como o carrinho de verdade, menos as mascaras de animacao. */
+    item TestA_SemMascara
+    {
+        DisplayCategory = Container,
+        ItemType = base:normal,
+        Weight = 3.0,
+        Icon = Toolbox,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand,
+        RequiresEquippedBothHands = TRUE,
+    }
+
+    /* B: com mascaras, mas de uma mao so -- sem exigir as duas. */
+    item TestB_UmaMao
+    {
+        DisplayCategory = Container,
+        ItemType = base:normal,
+        Weight = 3.0,
+        Icon = Toolbox,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand,
+        primaryAnimMask = holdingbagright,
+    }
+
+    /* C: o minimo -- so o modelo, como o livro oco faz. */
+    item TestC_Minimo
+    {
+        DisplayCategory = Container,
+        ItemType = base:normal,
+        Weight = 3.0,
+        Icon = Toolbox,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand,
+    }
+}
