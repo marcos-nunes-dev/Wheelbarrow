@@ -76,13 +76,24 @@ module MNWheelbarrow
 
         RunSpeedModifier = 0.80,
 
-        /* RequiresEquippedBothHands foi REMOVIDO daqui.
-           Com ele o item nao equipava de forma nenhuma. O padrao do jogo base
-           aponta na mesma direcao: dos 207 containers que aparecem na mao, todos
-           usam ReplaceInPrimaryHand; o unico que usa StaticModel e o livro oco,
-           e ele NAO exige as duas maos.
-           A exigencia das duas maos volta por Lua, que e onde ela nao conflita
-           com o desenho do modelo. */
+        /* RequiresEquippedBothHands: TERCEIRO campo que eu havia removido por
+           diagnostico errado, e o terceiro a voltar depois de testado isolado.
+           Ele equipa sem problema nenhum.
+
+           O que ele entrega e a UI: ISInventoryPaneContextMenu marca force2Hands
+           quando isRequiresEquippedBothHands() e verdadeiro e troca "equipar na
+           primaria" / "equipar na secundaria" por uma unica opcao "Equip Two
+           Hands", com traducao pronta em todos os idiomas do jogo.
+
+           A causa real de o item nao equipar era o WB_Hands, que o desequipava no
+           mesmo frame. Enquanto isso estava quebrado eu culpei tres campos
+           diferentes -- secondaryAnimMask, RequiresEquippedBothHands e o modelo --
+           porque comparava o item real com variantes que o WB_Hands nao tocava.
+           Nenhum dos tres tinha culpa.
+
+           O WB_Hands continua necessario: e ele que impede uma arma na mao livre
+           e conserta estados que deixavam o personagem invisivel. */
+        RequiresEquippedBothHands = TRUE,
 
         AcceptItemFunction = MNWheelbarrow.AcceptItem,
         Tooltip = Tooltip_item_MNWheelbarrow,
@@ -91,28 +102,13 @@ module MNWheelbarrow
         CloseSound = CloseBag,
         PutInSound = PutItemInBag,
 
-        /* base:heavyitem NAO e decoracao: e o que escolhe a animacao de carregar
-           com os DOIS bracos.
-
-           As mascaras nao dao isso. secondaryAnimMask existe para quando o item
-           esta na mao SECUNDARIA -- e a mascara daquela mao, nao a segunda metade
-           de uma pose de duas maos. Com o mesmo objeto nas duas maos, o jogo
-           aplica uma so, e por isso o braco esquerdo ficava parado mesmo com os
-           dois campos declarados.
-
-           O caminho do mod Carry Visible Items para carregar com dois bracos e
-           ReplaceInPrimaryHand + ReplaceInSecondHand, um par de malhas SKINNED,
-           uma por mao. Nao serve aqui: skinned exige rigging, que e o motivo de
-           termos escolhido StaticModel desde o inicio.
-
-           O jogo base tem um terceiro caminho, e e o do gerador: ele nao declara
-           modelo de mao nenhum -- nem StaticModel nem ReplaceIn* -- e ainda assim
-           e carregado com os dois bracos. O que ele tem e RequiresEquippedBothHands
-           mais a tag base:heavyitem, e heavyitem aparece em IsoPlayer e
-           IsoGameCharacter, que sao justamente quem escolhe a animacao.
-
-           Cabe ao carrinho de qualquer forma: ele PESA. E a tag tambem impede
-           guardar o item dentro de uma bolsa, o que e o comportamento correto. */
-        Tags = MNWheelbarrow:mnwbHauler;base:heavyitem,
+        /* base:heavyitem foi TESTADA e nao entregou: o gerador usa essa tag e e
+           carregado com dois bracos, mas no carrinho a animacao continuou de um
+           braco so. Removida em vez de mantida "por garantia" -- ela nao serve ao
+           que eu a adicionei, e semanticamente contradiz o item (o carrinho pesa
+           3.0 justamente para maximizar a capacidade, entao pesado ele nao e) e
+           toca exatamente os caminhos de carregar-item-pesado que ja deixaram o
+           personagem invisivel neste projeto. */
+        Tags = MNWheelbarrow:mnwbHauler,
     }
 }

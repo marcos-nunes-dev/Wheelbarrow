@@ -5,32 +5,35 @@ module MNWheelbarrow
     /*
      * DESCARTAVEL -- uma pergunta so, sai antes de publicar.
      *
-     * PERGUNTA: RequiresEquippedBothHands quebra o equipar deste item?
+     * PERGUNTA: ReplaceInSecondHand com uma malha INVISIVEL poe o braco esquerdo
+     * na pose, sem desenhar um segundo carrinho?
      *
-     * O menu de contexto ainda oferece "equipar na mao primaria" e "na secundaria"
-     * separadamente, quando o certo seria uma unica opcao de duas maos. O jogo ja
-     * tem isso pronto: ISInventoryPaneContextMenu marca force2Hands quando
-     * isRequiresEquippedBothHands() e verdadeiro, e troca as opcoes por
-     * "Equip Two Hands" -- com traducao pronta em todos os idiomas.
+     * POR QUE: secondaryAnimMask nao serve para isso. Ele e a mascara de quando o
+     * item esta na mao SECUNDARIA, e nao a segunda metade de uma pose de duas
+     * maos -- com o mesmo objeto nas duas maos o jogo aplica uma so, e foi por
+     * isso que o braco esquerdo continuou fazendo a animacao de andar.
      *
-     * POR QUE NAO PONHO DIRETO NO ITEM REAL: esse campo ja esteve la e saiu porque
-     * "com ele o item nao equipava". Mas aquele diagnostico e SUSPEITO -- foi feito
-     * na mesma epoca em que eu tambem culpei o secondaryAnimMask, e depois se
-     * provou que a causa real era outra: o WB_Hands desequipava o carrinho no
-     * mesmo frame. Consertado o WB_Hands, a mascara voltou e funciona. Ha boa
-     * chance de este campo tambem ser inocente.
+     * O caminho do jogo base para os dois bracos e ReplaceInPrimaryHand +
+     * ReplaceInSecondHand, e a mascara vem COLADA no item de roupa. O item de
+     * roupa aponta para uma malha skinned -- rigging, justamente o que nos fez
+     * escolher StaticModel.
      *
-     * "Boa chance" nao e certeza, e o item real esta funcionando agora. Entao o
-     * risco fica aqui: se travar o equipar, quem fica inequipavel e o descartavel.
+     * A aposta: essa malha nao precisa ser vista. O carrinho ja aparece pelo
+     * StaticModel; o modelo da mao esquerda existe so para carregar a mascara.
+     * MNWB_LHandEmpty aponta para uma malha com todos os vertices na origem, ou
+     * seja triangulos de area zero, que nao desenham nada.
      *
-     * O jogo base sustenta a tentativa: o Gerador usa RequiresEquippedBothHands e
-     * e carregado com os dois bracos. Ele nao e container, entao continua sem
-     * precedente exato -- container de duas maos nao existe no vanilla.
+     * ReplaceInPrimaryHand fica de FORA: se eu trocar a mao primaria tambem, o
+     * carrinho para de aparecer, porque o StaticModel seria substituido. So a
+     * secundaria e trocada, e ela e a que hoje nao tem modelo nenhum.
      *
-     * Precisa estar em WB_Const.HAULER_TYPES, senao nao recebe o tratamento de
-     * duas maos e o teste compararia coisas diferentes.
+     * O RISCO E BAIXO E O MODO DE FALHA E BARATO: ou o item de roupa nao carrega,
+     * e o braco fica como esta hoje, ou aparece um ponto de um pixel. Nao ha
+     * caminho em que isso desenhe algo grande.
+     *
+     * Se funcionar, os campos vao para o item real e o problema fecha.
      */
-    item TestTwoHandField
+    item TestLeftArm
     {
         DisplayCategory = Container,
         ItemType = base:container,
@@ -40,8 +43,8 @@ module MNWheelbarrow
         WorldStaticModel = MNWheelbarrow_Ground,
         StaticModel = MNWheelbarrow_Hand,
         primaryAnimMask = holdingbagright,
-        secondaryAnimMask = holdingbagleft,
+        ReplaceInSecondHand = MNWB_LHandEmpty holdingbagleft,
         RequiresEquippedBothHands = TRUE,
-        Tags = MNWheelbarrow:mnwbHauler;base:heavyitem,
+        Tags = MNWheelbarrow:mnwbHauler,
     }
 }
