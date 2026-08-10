@@ -26,8 +26,14 @@
     aquilo mudar e o que torna o ajuste legivel.
 
       ]  [   Z -- altura. +Z DESCE (medido: a mao esta a 0.76 do chao)
-      '  ;   Y -- frente/tras, o eixo do comprimento do carrinho
-      .  ,   X -- lateral
+      =  -   Y -- frente/tras, o eixo do comprimento do carrinho
+      .  ;   X -- lateral
+
+    TECLAS JA USADAS PELO JOGO: = e - sao Zoom in / Zoom out no padrao, e ] e
+    Toggle Moveable Panel Mode. OnKeyPressed nao consome a tecla, entao a acao do
+    jogo acontece junto -- ajustar Y vai dar zoom tambem. Nao vale codigo para
+    contornar numa ferramenta descartavel; se incomodar, e so trocar o Zoom nas
+    opcoes de controle. [ . e ; estao livres.
 
     Os tres valores aparecem na tela e no console a cada passo. O que interessa e
     a TRINCA, nao o indice da pose.
@@ -138,10 +144,10 @@ Events.OnKeyPressed.Add(function(key)
 
     if key == Keyboard.KEY_RBRACKET then step("z", 1)
     elseif key == Keyboard.KEY_LBRACKET then step("z", -1)
-    elseif key == Keyboard.KEY_APOSTROPHE then step("y", 1)
-    elseif key == Keyboard.KEY_SEMICOLON then step("y", -1)
+    elseif key == Keyboard.KEY_EQUALS then step("y", 1)
+    elseif key == Keyboard.KEY_MINUS then step("y", -1)
     elseif key == Keyboard.KEY_PERIOD then step("x", 1)
-    elseif key == Keyboard.KEY_COMMA then step("x", -1)
+    elseif key == Keyboard.KEY_SEMICOLON then step("x", -1)
     end
 end)
 
