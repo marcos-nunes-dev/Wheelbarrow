@@ -65,11 +65,18 @@ local OFFSET = {
 --- 1.41 tiles de distancia, contra 1.0 nas cardinais -- por isso ele parece
 --- mais longe em umas direcoes que em outras.
 ---
---- SUPOSICAO NAO VERIFICADA: setOffsetX/setOffsetY nao aparecem em nenhum
---- arquivo Lua do jogo base, entao nao consegui confirmar a unidade. Assumo
---- pixels na escala 1x, onde um tile e 64 de largura por 32 de altura e a tela
---- e sx=(x-y)*32, sy=(x+y)*16. Se o carrinho pular longe demais ou nem se
---- mexer, o erro esta aqui e a correcao e um multiplicador.
+--- A UNIDADE DE setOffsetX/setOffsetY NAO E PIXEL.
+---
+--- Esses metodos nao aparecem em nenhum Lua do jogo base, entao supus pixels na
+--- escala 1x e multipliquei por 32 e 16, gerando valores de ate 22. O carrinho
+--- SUMIU da tela -- o log mostrava o objeto existindo e se movendo normalmente,
+--- so que desenhado fora da area visivel. Um deslocamento de 22 pixels seria
+--- imperceptivel; some so se a unidade for muito maior, quase certamente tiles.
+---
+--- Agora passo o valor em tiles direto, sem multiplicar. Isso e seguro nos dois
+--- casos: se a unidade for tile, puxa os 0.35 pretendidos; se for pixel, o
+--- deslocamento fica abaixo de um pixel e nao faz mal nenhum. O teste responde
+--- qual dos dois sem risco de sumir de novo.
 local PULL_TILES = 0.35
 
 local function applyPullOffset(object, face)
@@ -77,8 +84,8 @@ local function applyPullOffset(object, face)
     if off == nil then return end
     local dx = -PULL_TILES * off[1]
     local dy = -PULL_TILES * off[2]
-    object:setOffsetX((dx - dy) * 32.0)
-    object:setOffsetY((dx + dy) * 16.0)
+    object:setOffsetX(dx - dy)
+    object:setOffsetY(dx + dy)
 end
 
 --- Estado por jogador. Chaveado pelo indice, nao pelo objeto, porque em
