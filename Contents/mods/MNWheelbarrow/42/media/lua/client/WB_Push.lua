@@ -161,26 +161,48 @@ end
 --- invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW) toda vez que muda o
 --- que e desenhado. Invalidamos os dois lados: a square de origem, senao fica
 --- um fantasma, e o objeto ja na nova, senao ele nao e desenhado.
+--- RECRIA em vez de mover, e isso e uma concessao consciente.
+---
+--- Mover o mesmo IsoObject entre squares deixa o estado perfeito -- o
+--- diagnostico mostrou sprite valido, objeto na lista da square certa, offset
+--- zerado -- e mesmo assim nada e desenhado. O sistema de IsoObject e feito
+--- para objetos ESTATICOS: o cache de render por chunk da B42 assume que eles
+--- nao se mexem, e nada no jogo base move um IsoObject continuamente.
+---
+--- Em vez de continuar caçando qual estrutura interna falta atualizar, uso o
+--- unico caminho comprovado: criar o objeto do zero na square de destino, que e
+--- exatamente o que o spike faz e sempre renderizou.
+---
+--- O CONTAINER E O MESMO OBJETO, nao uma copia: setContainer + setParent
+--- transferem a instancia. Isso preserva o conteudo e a identidade, entao uma
+--- janela de loot aberta continua apontando para o container certo.
 local function moveCart(object, toSquare, face)
     if toSquare == nil then return false end
 
     local fromSquare = object:getSquare()
-    if fromSquare ~= nil then
-        fromSquare:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
+    local container = object:getContainer()
+
+    local replacement = IsoObject.new(getCell(), toSquare, SPRITE_BY_DIR[face])
+    if container ~= nil then
+        replacement:setContainer(container)
+        container:setParent(replacement)
+        container:setSourceGrid(toSquare)
     end
 
     object:removeFromSquare()
-    object:setSpriteFromName(SPRITE_BY_DIR[face])
-    toSquare:AddTileObject(object)
-    object:setSquare(toSquare)
+    if fromSquare ~= nil then
+        fromSquare:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
+        fromSquare:RecalcAllWithNeighbours(true)
+    end
 
-    applyPullOffset(object, face)
-    object:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
+    toSquare:AddTileObject(replacement)
+    applyPullOffset(replacement, face)
+    replacement:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
     toSquare:RecalcAllWithNeighbours(true)
 
-    if object:getSquare() ~= toSquare then
+    if replacement:getSquare() ~= toSquare then
         print("[Wheelbarrow] ABORTADO: o objeto nao ficou na square de destino")
-        return false
+        return nil
     end
 
     -- Diagnostico do sumico: o objeto se move (o log prova) mas nao aparece.
@@ -188,19 +210,22 @@ local function moveCart(object, toSquare, face)
     -- square de destino realmente o lista entre seus objetos -- estar na lista
     -- e o que faz o jogo desenha-lo.
     if getDebug() then
-        local sprite = object:getSprite()
+        local sprite = replacement:getSprite()
         local inList = false
         local objects = toSquare:getObjects()
         for i = 0, objects:size() - 1 do
-            if objects:get(i) == object then inList = true break end
+            if objects:get(i) == replacement then inList = true break end
         end
         print(("[Wheelbarrow] apos mover: sprite=%s nome=%s naListaDaSquare=%s offset=(%.2f,%.2f)")
             :format(tostring(sprite ~= nil),
                 sprite and tostring(sprite:getName()) or "sem sprite",
                 tostring(inList),
-                object:getOffsetX(), object:getOffsetY()))
+                replacement:getOffsetX(), replacement:getOffsetY()))
     end
-    return true
+
+    -- Devolve o objeto NOVO: quem empurra precisa parar de apontar para o que
+    -- acabou de sair do mundo, senao o proximo tick opera sobre um objeto morto.
+    return replacement
 end
 
 function WB_Push.stop(playerIndex)
@@ -277,8 +302,11 @@ local function onPlayerUpdate(player)
         return
     end
 
-    if not moveCart(object, target, face) then
+    local moved = moveCart(object, target, face)
+    if moved == nil then
         WB_Push.stop(index)
+    else
+        entry.object = moved
     end
 end
 
