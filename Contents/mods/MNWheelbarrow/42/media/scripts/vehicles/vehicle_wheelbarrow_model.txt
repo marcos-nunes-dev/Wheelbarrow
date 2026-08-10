@@ -27,6 +27,6 @@ module Base
         mesh = vehicles/wheelbarrow,
         shader = vehicle,
         invertX = false,
-        scale = 0.0044,
+        scale = 0.0088,
     }
 }

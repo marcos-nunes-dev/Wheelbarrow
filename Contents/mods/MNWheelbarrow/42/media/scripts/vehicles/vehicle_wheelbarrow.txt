@@ -24,8 +24,9 @@ module Base
      * possivel (o mod de cavalos faz, com AnimSets/player e anims_X proprios) e
      * e a parte mais pesada daquele mod.
      *
-     * Numeros de fisica sao copiados do trailer vanilla e ajustados para um
-     * objeto pequeno. Nao sao calibrados: e um spike.
+     * RESPOSTAS JA OBTIDAS no primeiro teste: o veiculo carrega e spawna, o
+     * modelo 3D renderiza, e a capacidade do porta-malas chegou a 64 -- acima
+     * do teto de 50 dos itens. A rota entrega o que prometia.
      */
     vehicle MNWheelbarrow
     {
@@ -60,11 +61,13 @@ module Base
         textureDamage2Shell = Vehicles/Veh_Damage2,
         textureRust = Vehicles/Veh_Rust,
 
-        extents = 0.45 0.30 0.80,
+        /* Numeros MEDIDOS na malha, nao estimados. Com scale 0.0088 o modelo
+           renderiza 0.785 x 0.669 x 1.672, entao as meias-extensoes sao: */
+        extents = 0.392 0.334 0.836,
         mass = 40,
-        physicsChassisShape = 0.45 0.30 0.80,
-        centerOfMassOffset = 0.0 -0.25 0.0,
-        shadowExtents = 0.45 0.80,
+        physicsChassisShape = 0.392 0.334 0.836,
+        centerOfMassOffset = 0.0 -0.20 0.30,
+        shadowExtents = 0.392 0.836,
         shadowOffset = 0.0 0.0,
 
         /* Um carrinho e empurrado por pessoa: forca baixa e velocidade de
@@ -91,33 +94,36 @@ module Base
         physics box
         {
             offset = 0.0 0.0 0.0,
-            extents = 0.45 0.25 0.80,
+            extents = 0.392 0.30 0.836,
             rotate = 0.0 0.0 0.0,
         }
 
-        /* Um carrinho tem UMA roda na frente e dois pes atras. Fisica de
-           veiculo costuma precisar de mais de um ponto de apoio, entao os pes
-           entram como rodas minusculas -- se isso se mostrar desnecessario no
-           teste, viram um. */
+        /* A roda foi MEDIDA na malha: 884 vertices no extremo +Z com |x| < 0.12,
+           ocupando y de 0 a 0.600 e z de 0.552 a 0.950. Convertido para a escala
+           renderizada, isso da raio 0.264 e centro em z 0.661, y -0.070.
+
+           Os "pes" de tras entram como rodas minusculas porque a fisica de
+           veiculo precisa de mais de um ponto de apoio -- com uma roda so o
+           corpo tomba. Elas ficam na altura em que o modelo encosta no chao. */
         wheel FrontCenter
         {
             front = true,
-            offset = 0.0 -0.12 0.34,
-            radius = 0.14,
-            width = 0.06,
+            offset = 0.0 -0.070 0.661,
+            radius = 0.264,
+            width = 0.08,
         }
         wheel RearLeft
         {
             front = false,
-            offset = 0.16 -0.12 -0.30,
-            radius = 0.05,
+            offset = 0.20 -0.274 -0.55,
+            radius = 0.06,
             width = 0.05,
         }
         wheel RearRight
         {
             front = false,
-            offset = -0.16 -0.12 -0.30,
-            radius = 0.05,
+            offset = -0.20 -0.274 -0.55,
+            radius = 0.06,
             width = 0.05,
         }
 
@@ -130,11 +136,33 @@ module Base
         }
         area SeatFrontLeft
         {
-            xywh = 0.0 -0.6 0.6 0.6,
+            xywh = 0.0 -0.75 0.6 0.6,
         }
 
         template = Trunk/part/TruckBed,
         template = Seat/part/SeatFrontLeft,
+
+        /* SEM ISTO NAO DA PARA ENTRAR NO VEICULO. O template Seat cria a peca,
+           mas quem define onde o jogador fica e por onde ele entra e o bloco
+           passenger -- eu tinha omitido.
+
+           "inside" fica ATRAS do carrinho, em z negativo, que e onde alguem se
+           posiciona para empurrar. E o mais perto que se chega da pose certa
+           sem animacao customizada. */
+        passenger FrontLeft
+        {
+            position inside
+            {
+                offset = 0.0 -0.10 -0.75,
+                rotate = 0.0 0.0 0.0,
+            }
+            position outside
+            {
+                offset = 0.55 -0.10 -0.75,
+                rotate = 0.0 0.0 0.0,
+                area = SeatFrontLeft,
+            }
+        }
 
         /* A caçamba. E aqui que a capacidade passa de 50: container preso a
            peca de veiculo tem teto de 1000 no engine, contra 50 de container
@@ -146,6 +174,11 @@ module Base
             container
             {
                 capacity = 100,
+                /* O template Trunk liga conditionAffectsCapacity, e a
+                   capacidade passa a escalar com a condicao da peca -- foi por
+                   isso que o teste mostrou 64 em vez de 100. Um carrinho de mao
+                   nao tem porta-malas que amassa, entao desligamos. */
+                conditionAffectsCapacity = false,
             }
         }
     }
