@@ -39,5 +39,8 @@ option MNWheelbarrow.SpillOnCancel
 option MNWheelbarrow.BlockWeapons
 {type = boolean, default = true, page = MNWheelbarrow, translation = MNWBBlockWeapons,}
 
+option MNWheelbarrow.BlockRunning
+{type = boolean, default = true, page = MNWheelbarrow, translation = MNWBBlockRunning,}
+
 option MNWheelbarrow.AllowCorpses
 {type = boolean, default = false, page = MNWheelbarrow, translation = MNWBAllowCorpses,}

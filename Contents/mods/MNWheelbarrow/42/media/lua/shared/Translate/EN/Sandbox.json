@@ -29,6 +29,9 @@
     "Sandbox_MNWBBlockWeapons": "Block weapons while in use",
     "Sandbox_MNWBBlockWeapons_tooltip": "The wheelbarrow takes both hands, so no weapon can be equipped while pushing it.",
 
+    "Sandbox_MNWBBlockRunning": "Block running while in use",
+    "Sandbox_MNWBBlockRunning_tooltip": "Pushing a loaded wheelbarrow is a walk, not a jog.<br>Turn off to keep running available at the reduced speed.",
+
     "Sandbox_MNWBAllowCorpses": "Allow corpses",
     "Sandbox_MNWBAllowCorpses_tooltip": "Lets bodies be loaded into the wheelbarrow.<br>Off by default, since it makes clearing out a house much easier."
 }

@@ -25,6 +25,11 @@ local WB_Const = {}
 --- proposito: nao custa nada e deixa outros mods detectarem o carrinho.
 WB_Const.HAULER_TYPES = {
     ["MNWheelbarrow.Wheelbarrow"] = true,
+
+    -- DESCARTAVEL: sai junto com items_wheelbarrow_test.txt. Precisa estar aqui
+    -- para o item de teste receber o mesmo tratamento de duas maos que o real --
+    -- sem isso o experimento compararia coisas diferentes.
+    ["MNWheelbarrow.TestBoth"] = true,
 }
 
 --- Namespace das sandbox options. Precisa bater com o "page" e com o prefixo

@@ -29,6 +29,9 @@
     "Sandbox_MNWBBlockWeapons": "Bloquear armas em uso",
     "Sandbox_MNWBBlockWeapons_tooltip": "O carrinho ocupa as duas mãos, então nenhuma arma pode ser equipada enquanto ele estiver em uso.",
 
+    "Sandbox_MNWBBlockRunning": "Impedir corrida em uso",
+    "Sandbox_MNWBBlockRunning_tooltip": "Empurrar um carrinho carregado e caminhada, nao corrida.<br>Desligue para continuar podendo correr, na velocidade reduzida.",
+
     "Sandbox_MNWBAllowCorpses": "Permitir cadáveres",
     "Sandbox_MNWBAllowCorpses_tooltip": "Permite carregar corpos no carrinho.<br>Desligado por padrão, porque facilita muito limpar uma casa."
 }

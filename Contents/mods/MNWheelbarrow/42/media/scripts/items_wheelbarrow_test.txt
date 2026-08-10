@@ -1,0 +1,47 @@
+module MNWheelbarrow
+{
+    imports { Base }
+
+    /*
+     * DESCARTAVEL -- experimento de UMA pergunta, sai antes de publicar.
+     *
+     * PERGUNTA: com o item nas duas maos, secondaryAnimMask passa a funcionar?
+     *
+     * O braco ESQUERDO nao entra na pose de segurar. primaryAnimMask cuida so do
+     * direito; o esquerdo precisaria de secondaryAnimMask. Esse campo ja esteve
+     * no item real e foi REMOVIDO porque com ele o carrinho nao equipava de jeito
+     * nenhum -- o diagnostico foi por comparacao controlada, era o unico campo
+     * ligado as maos que o item real tinha a mais que uma variante que equipava.
+     *
+     * Mas aquele teste rodou quando o item ia so para a mao primaria. Agora o
+     * WB_Hands poe o mesmo objeto nas DUAS maos, que e o padrao do jogo para item
+     * de duas maos, e a mascara secundaria pode passar a fazer sentido para o
+     * engine. Vale medir de novo em vez de assumir que a conclusao antiga
+     * sobrevive a mudanca.
+     *
+     * POR QUE NAO TESTAR DIRETO NO ITEM REAL: se o campo voltar a bloquear,
+     * o item real fica inequipavel e a rodada de teste inteira se perde. Aqui o
+     * risco fica isolado num item descartavel.
+     *
+     * Este item esta em WB_Const.HAULER_TYPES, senao nao receberia o tratamento
+     * de duas maos e o experimento compararia coisas diferentes.
+     *
+     * RESULTADO ESPERADO, um dos tres:
+     *   nao equipa          -> a conclusao antiga vale, o braco esquerdo fica sem
+     *                          pose e a alternativa e outro caminho de render
+     *   equipa, dois bracos -> mascara secundaria funciona; copiar para o real
+     *   equipa, um braco    -> o campo e aceito mas ignorado neste caminho
+     */
+    item TestBoth
+    {
+        DisplayCategory = Container,
+        ItemType = base:container,
+        Weight = 3.0,
+        Icon = Toolbox,
+        Capacity = 20,
+        WorldStaticModel = MNWheelbarrow_Ground,
+        StaticModel = MNWheelbarrow_Hand,
+        primaryAnimMask = holdingbagright,
+        secondaryAnimMask = holdingbagleft,
+    }
+}
