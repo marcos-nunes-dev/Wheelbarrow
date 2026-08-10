@@ -207,13 +207,15 @@ module Base
                a animacao neutra, ate escolhermos uma que tenha os bracos a
                frente. */
             area = SeatFrontLeft,
-            /* hasRoof = true mesmo sem teto. Eu tinha posto false por
-               realismo, mas TODO veiculo do jogo base em que se entra usa true,
-               e a mecanica do veiculo funciona enquanto a entrada nao -- ou
-               seja, o veiculo e alcancavel e o problema e especifico do caminho
-               de entrada. Um valor que nenhum veiculo vanilla usa e suspeito
-               logico. */
-            hasRoof = true,
+            /* hasRoof controla se o jogo ESCONDE quem esta dentro. Com true o
+               personagem sumia ao entrar, como num carro fechado. Um carrinho
+               de mao nao tem teto, e queremos ver o personagem empurrando, entao
+               false.
+
+               (Eu tinha trocado para true suspeitando que fosse o que travava a
+               entrada. Nao era: o problema era a UI de assentos nao registrar o
+               clique, e a entrada funciona pela tecla numerica.) */
+            hasRoof = false,
             anim enter
             {
                 anim = Climb_WindowA,
