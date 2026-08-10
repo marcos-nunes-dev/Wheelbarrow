@@ -49,18 +49,12 @@ from tools_fbx_strip_embedded import parse, size_of, write
 SOURCE = "source/Wheelbarrow_raw.fbx"
 SOURCE_TEXTURE = "source/Wheelbarrow_raw.png"
 OUT_MODELS = "../Contents/mods/MNWheelbarrow/common/media/models_X/WorldItems"
-# DUAS texturas, e a separacao nao e organizacao -- e isolamento.
-#
-# Na primeira versao os dois modelos dividiam uma textura com canal alpha, e o
-# resultado em jogo foi personagem E VEICULOS sumindo da tela. Os dois sao
-# desenhados pelo mesmo passe de modelo 3D, e o modelo de MAO faz parte do
-# personagem: uma textura que aquele passe nao digira derruba o passe inteiro,
-# nao so o carrinho. O cenario, que e sprite, continuava aparecendo -- e foi
-# esse recorte que apontou a causa.
-#
-# Agora a alpha existe SO na textura do modelo de chao. O personagem volta a
-# usar a textura original, sem alpha, exatamente como antes da sombra.
-OUT_TEXTURE_HAND = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems/Wheelbarrow.png"
+# UMA TEXTURA POR MODELO, com o mesmo conteudo. Parece desperdicio de 300 KB e
+# nao e: as duas nascem da mesma funcao, mas ter arquivos separados permite
+# apontar o modelo de mao de volta para uma versao SEM alpha sem tocar no de
+# chao. Isso importa porque ja aconteceu de personagem e veiculos sumirem da tela
+# com alpha no passe de modelo, e a reversao precisa ser de uma linha.
+OUT_TEXTURE_HAND = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems/Wheelbarrow_Hand.png"
 OUT_TEXTURE_GROUND = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems/Wheelbarrow_Ground.png"
 
 # Pose da mao, medida em jogo. Ver o cabecalho de models_wheelbarrow.txt.
@@ -142,71 +136,39 @@ def _save(src_bytes, roots, tail, dst):
 # --------------------------------------------------------------------------
 
 
-def build_ground(src, dst):
-    """Comprime os UVs para a metade esquerda e junta o quad de sombra.
+def _add_quad(target, corners):
+    """Junta um quad de sombra a geometria, em DOIS poligonos de giros opostos.
 
-    SO O MODELO DE CHAO passa por aqui, e a razao e a que me escapou na primeira
-    versao: a compressao de U existe porque a textura DELE dobrou de largura. O
-    modelo de mao continua com a textura original de 512, entao comprimir os UVs
-    dele o fazia amostrar metade de uma textura inteira -- o carrinho na mao
-    aparecia com a textura errada.
-
-    A regra: a compressao acompanha a textura, nao o modelo.
+    Um quad tem uma face so. Se o sentido de giro nao casar com a convencao de
+    descarte do renderizador, ele fica invisivel justamente de cima -- que e de
+    onde a camera olha, e foi assim que a primeira versao ficou sem sombra
+    nenhuma. Nao da para testar isso aqui, e acertar por forca bruta custa quatro
+    vertices.
     """
-    add_shadow = True
-    data = open(src, "rb").read()
-    _ver, roots, tail = parse(data)
-    root = roots[0] if len(roots) == 1 else None
-    # A geometria vive num unico no Objects/Geometry; procurar em todas as
-    # raizes evita depender de qual delas e.
-    target = None
-    for candidate in roots:
-        if _array_node(candidate, b"Vertices") is not None:
-            target = candidate
-            break
-    if target is None:
-        raise SystemExit("nenhuma geometria encontrada em %s" % src)
-
-    uv, uv_type = _get(target, b"UV")
-    for i in range(0, len(uv), 2):
-        uv[i] = uv[i] * 0.5
-
     verts, v_type = _get(target, b"Vertices")
     pvi, pvi_type = _get(target, b"PolygonVertexIndex")
     normals, n_type = _get(target, b"Normals")
     nidx, nidx_type = _get(target, b"NormalsIndex")
+    uv, uv_type = _get(target, b"UV")
     uvidx, uvidx_type = _get(target, b"UVIndex")
 
-    xs = verts[0::3]
-    zs = verts[2::3]
-    x0, x1 = min(xs) - SHADOW_MARGIN, max(xs) + SHADOW_MARGIN
-    z0, z1 = min(zs) - SHADOW_MARGIN, max(zs) + SHADOW_MARGIN
-
     base = len(verts) // 3
-    quad = [(x0, SHADOW_LIFT, z0), (x1, SHADOW_LIFT, z0),
-            (x1, SHADOW_LIFT, z1), (x0, SHADOW_LIFT, z1)]
-    for x, y, z in quad:
+    for x, y, z in corners:
         verts.extend([x, y, z])
 
-    # DOIS poligonos sobre os mesmos quatro cantos, com sentidos de giro
-    # OPOSTOS. Um quad so tem uma face; se o sentido nao casar com a convencao de
-    # descarte do renderizador, ele e invisivel justamente de cima -- que e de
-    # onde a camera olha. Nao da para testar isso aqui, e o custo de acertar por
-    # forca bruta e quatro vertices. Foi assim que a primeira versao ficou sem
-    # sombra nenhuma.
     pvi.extend([base, base + 1, base + 2, ~(base + 3)])
     pvi.extend([base + 3, base + 2, base + 1, ~base])
 
-    # Normais sao ByVertice/IndexToDirect: uma por vertice novo, apontando para
-    # cima, e uma entrada de indice para cada.
+    # Normais sao ByVertice/IndexToDirect: uma por vertice novo e um indice para
+    # cada. A direcao nao importa para o resultado -- os dois giros ja garantem
+    # que a face aparece dos dois lados.
     for _ in range(4):
         normals.extend([0.0, 1.0, 0.0])
     start_normal = len(normals) // 3 - 4
     nidx.extend([start_normal + i for i in range(4)])
 
-    # UVs sao ByPolygonVertex/IndexToDirect: os quatro cantos caem na metade
-    # DIREITA da textura, que e onde a mancha de sombra foi pintada. Os oito
-    # indices cobrem os dois poligonos.
+    # UVs sao ByPolygonVertex/IndexToDirect: os cantos caem na metade DIREITA da
+    # textura, onde a mancha foi pintada. Oito indices, um jogo por poligono.
     uv_base = len(uv) // 2
     uv.extend([0.5, 0.0, 1.0, 0.0, 1.0, 1.0, 0.5, 1.0])
     uvidx.extend([uv_base + i for i in range(4)])
@@ -219,7 +181,76 @@ def build_ground(src, dst):
     _set(target, b"UV", uv, uv_type)
     _set(target, b"UVIndex", uvidx, uvidx_type)
 
+
+def _open_geometry(src):
+    data = open(src, "rb").read()
+    _ver, roots, tail = parse(data)
+    for candidate in roots:
+        if _array_node(candidate, b"Vertices") is not None:
+            return data, roots, tail, candidate
+    raise SystemExit("nenhuma geometria encontrada em %s" % src)
+
+
+def _halve_u(target):
+    """Comprime os UVs para a metade esquerda da textura.
+
+    Acompanha a TEXTURA, nao o modelo. Foi essa distincao que me escapou: comprimi
+    os UVs dos dois modelos quando so a textura do chao tinha dobrado, e o modelo
+    de mao passou a amostrar metade de uma textura inteira.
+    """
+    uv, uv_type = _get(target, b"UV")
+    for i in range(0, len(uv), 2):
+        uv[i] = uv[i] * 0.5
+    _set(target, b"UV", uv, uv_type)
+
+
+def build_ground(src, dst):
+    """Modelo de chao: UVs comprimidos e o quad deitado no plano do chao.
+
+    Aqui a malha ainda esta no espaco original, onde Y e a vertical e o chao e
+    Y = 0.
+    """
+    data, roots, tail, target = _open_geometry(src)
+    _halve_u(target)
+
+    verts, _ = _get(target, b"Vertices")
+    xs, zs = verts[0::3], verts[2::3]
+    x0, x1 = min(xs) - SHADOW_MARGIN, max(xs) + SHADOW_MARGIN
+    z0, z1 = min(zs) - SHADOW_MARGIN, max(zs) + SHADOW_MARGIN
+
+    _add_quad(target, [(x0, SHADOW_LIFT, z0), (x1, SHADOW_LIFT, z0),
+                       (x1, SHADOW_LIFT, z1), (x0, SHADOW_LIFT, z1)])
     _save(data, roots, tail, dst)
+    return 4
+
+
+def build_hand(src, dst):
+    """Modelo de mao: o giro e o deslocamento da pose, mais o quad de sombra.
+
+    O PLANO DO CHAO AQUI E OUTRO. Depois da pose, a malha esta no espaco do osso
+    da mao, e nesse espaco +Z aponta para BAIXO -- medido em jogo comparando duas
+    poses que diferiam so no sinal de Z: uma flutuava na altura do ombro e a
+    outra encostava no chao. Entao o chao e um plano de Z constante, e o quad
+    varia em X e Y, ao contrario do modelo de chao.
+    """
+    tmp = "source/_hand_posed.fbx"
+    shift(src, tmp, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
+          HAND_ROTATION[0], HAND_ROTATION[1], HAND_ROTATION[2])
+
+    data, roots, tail, target = _open_geometry(tmp)
+    _halve_u(target)
+
+    verts, _ = _get(target, b"Vertices")
+    xs, ys, zs = verts[0::3], verts[1::3], verts[2::3]
+    x0, x1 = min(xs) - SHADOW_MARGIN, max(xs) + SHADOW_MARGIN
+    y0, y1 = min(ys) - SHADOW_MARGIN, max(ys) + SHADOW_MARGIN
+    # O ponto mais BAIXO e o maior Z, porque +Z desce. E onde a roda toca o chao.
+    ground = max(zs) - SHADOW_LIFT
+
+    _add_quad(target, [(x0, y0, ground), (x1, y0, ground),
+                       (x1, y1, ground), (x0, y1, ground)])
+    _save(data, roots, tail, dst)
+    os.remove(tmp)
     return 4
 
 
@@ -261,29 +292,24 @@ def build_texture():
     out.save(OUT_TEXTURE_GROUND)
 
     # A textura do modelo de MAO e a original, sem alpha e sem a metade extra.
-    original.convert("RGB").save(OUT_TEXTURE_HAND)
+    out.save(OUT_TEXTURE_HAND)
     return out.size
 
 
 def main():
     os.makedirs(os.path.dirname(OUT_TEXTURE_HAND), exist_ok=True)
 
-    print("textura de chao %dx%d (com alpha) -> %s"
-          % (build_texture() + (OUT_TEXTURE_GROUND,)))
-    print("textura de mao   original, sem alpha -> %s" % OUT_TEXTURE_HAND)
+    print("texturas %dx%d com alpha -> chao e mao" % build_texture())
 
     ground = os.path.join(OUT_MODELS, "Wheelbarrow.fbx")
     added = build_ground(SOURCE, ground)
     print("chao: %d vertices de sombra -> %s" % (added, ground))
 
-    # O de mao sai da MESMA fonte, sem passar por build_ground: nem o quad nem a
-    # compressao de UV valem para ele. Assim ele fica byte a byte igual ao que
-    # ja funcionava antes da sombra, a menos do giro e do deslocamento.
+    # O de mao sai da MESMA fonte, e nao do de chao: senao herdaria o quad do
+    # chao, que no espaco da mao ficaria de pe ao lado do personagem.
     hand = os.path.join(OUT_MODELS, "Wheelbarrow_Hand.fbx")
-    shift(SOURCE, hand, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
-          HAND_ROTATION[0], HAND_ROTATION[1], HAND_ROTATION[2])
-    print("mao: giro %s deslocamento %s -> %s"
-          % (HAND_ROTATION, HAND_OFFSET, hand))
+    print("mao: %d vertices de sombra -> %s" % (build_hand(SOURCE, hand), hand))
+
 
 
 if __name__ == "__main__":

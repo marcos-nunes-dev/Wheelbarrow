@@ -57,8 +57,18 @@ module Base
      * inteiro, nao so o carrinho. O cenario, que e sprite, continuava aparecendo
      * -- foi esse recorte que apontou a causa. A alpha agora existe SO aqui.
      *
-     * O modelo de MAO tambem nao recebe o quad: ele acompanharia o carrinho no
-     * ar, virando uma placa escura flutuando ao lado do personagem.
+     * O modelo de MAO tem um quad proprio, num plano DIFERENTE. Depois da pose a
+     * malha esta no espaco do osso da mao, onde +Z aponta para baixo -- entao la
+     * o chao e um plano de Z constante e o quad varia em X e Y, enquanto aqui a
+     * vertical e Y. Copiar o quad de um para o outro o deixaria de pe ao lado do
+     * personagem.
+     *
+     * RISCO CONHECIDO: isso devolve uma textura com alpha ao passe de modelo do
+     * PERSONAGEM, que e onde ja aconteceu de o personagem e os veiculos sumirem
+     * da tela. Aquele episodio tinha DUAS causas possiveis e foi corrigido com
+     * duas mudancas ao mesmo tempo, entao nunca soube qual era. Se o
+     * desaparecimento voltar, este e o primeiro suspeito, e reverter e apontar o
+     * modelo de mao de volta para WorldItems/Wheelbarrow e regerar sem o quad.
      *
      * ALTURA: o mesh foi deslocado 0.380 no eixo Y (ver
      * assets/tools_fbx_shift.py) para a base ficar em Y = 0 em vez de a origem
@@ -131,7 +141,7 @@ module Base
     model MNWheelbarrow_Hand
     {
         mesh = WorldItems/Wheelbarrow_Hand,
-        texture = WorldItems/Wheelbarrow,
+        texture = WorldItems/Wheelbarrow_Hand,
         scale = 0.0057,
     }
 }
