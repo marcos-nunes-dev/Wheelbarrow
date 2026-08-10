@@ -55,7 +55,7 @@ module Base
      * A transformacao esta ASSADA NA MALHA, gerada por
      *
      *     python tools_fbx_shift.py Wheelbarrow.fbx Wheelbarrow_Hand.fbx \
-     *            0.37 0.80 0.64  270 0 0
+     *            0.31 0.90 0.56  270 0 0
      *
      * POR QUE ASSADA, E NAO NO BLOCO attachment:
      * o jogo tem um mecanismo declarativo -- `attachment Bip01_Prop2 { offset,
