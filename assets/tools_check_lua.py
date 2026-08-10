@@ -1,0 +1,85 @@
+"""Confere a estrutura dos arquivos Lua do mod, sem interpretador Lua.
+
+POR QUE EXISTE: nao ha Lua instalado nesta maquina, e erro de sintaxe num
+arquivo do mod nao aparece como erro de sintaxe -- aparece como uma
+funcionalidade que simplesmente nao acontece, porque o jogo aborta o
+carregamento daquele arquivo e segue. Isso ja custou rodadas de teste neste
+projeto por outros motivos; nao vale repetir por um `end` faltando.
+
+O QUE ELE NAO E: um parser de Lua. Ele nao valida expressoes nem escopo. Cobre a
+classe de erro que da para pegar contando: blocos desbalanceados, parenteses e
+chaves desbalanceados, e `ipairs` sobre tabela literal -- este ultimo porque uma
+tabela que comece com nil faz ipairs parar no indice 1, defeito que ja apareceu
+aqui e que nenhum verificador de sintaxe pegaria.
+
+Uso:
+    python tools_check_lua.py [raiz]
+"""
+import os
+import re
+import sys
+
+# `elseif` e `until` nao abrem bloco. `for` e `while` tambem nao -- quem abre e o
+# `do` deles, contado separadamente. `then` nao abre: o `if` ja abriu.
+OPENERS = re.compile(r'\b(function|if|do)\b')
+CLOSERS = re.compile(r'\bend\b')
+REPEATS = re.compile(r'\brepeat\b')
+UNTILS = re.compile(r'\buntil\b')
+
+
+def strip_noise(source):
+    """Remove comentarios e strings, que podem conter palavras-chave soltas."""
+    out = source
+    out = re.sub(r'--\[\[.*?\]\]', ' ', out, flags=re.S)
+    out = re.sub(r'--[^\n]*', ' ', out)
+    out = re.sub(r'\[\[.*?\]\]', ' " " ', out, flags=re.S)
+    out = re.sub(r'"(?:\\.|[^"\\])*"', ' " " ', out)
+    out = re.sub(r"'(?:\\.|[^'\\])*'", " ' ' ", out)
+    return out
+
+
+def check(path):
+    source = open(path, encoding="utf-8").read()
+    code = strip_noise(source)
+    problems = []
+
+    opens = len(OPENERS.findall(code))
+    closes = len(CLOSERS.findall(code))
+    if opens != closes:
+        problems.append("blocos desbalanceados: %d aberturas (function/if/do) "
+                        "para %d `end`" % (opens, closes))
+
+    if len(REPEATS.findall(code)) != len(UNTILS.findall(code)):
+        problems.append("repeat/until desbalanceados")
+
+    for open_ch, close_ch, label in (("(", ")", "parenteses"),
+                                     ("{", "}", "chaves"),
+                                     ("[", "]", "colchetes")):
+        if code.count(open_ch) != code.count(close_ch):
+            problems.append("%s desbalanceados: %d x %d"
+                            % (label, code.count(open_ch), code.count(close_ch)))
+
+    if re.search(r'ipairs\s*\(\s*\{', code):
+        problems.append("ipairs sobre tabela literal -- se o primeiro elemento "
+                        "puder ser nil, a iteracao para no indice 1")
+
+    return problems
+
+
+def main(root):
+    total, checked = 0, 0
+    for dirpath, _dirs, files in os.walk(root):
+        for name in sorted(files):
+            if not name.endswith(".lua"):
+                continue
+            path = os.path.join(dirpath, name)
+            checked += 1
+            for problem in check(path):
+                total += 1
+                print("%s: %s" % (os.path.relpath(path, root), problem))
+    print("%d arquivos Lua verificados, %d problemas" % (checked, total))
+    return 1 if total else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "Contents"))

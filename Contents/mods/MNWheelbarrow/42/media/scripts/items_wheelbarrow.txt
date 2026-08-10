@@ -8,8 +8,8 @@ module MNWheelbarrow
      * Duas mecanicas nao sao definidas aqui, e sim em Lua (WB_Weight.lua),
      * porque o engine nao consegue expressa-las em script:
      *
-     *   Capacity      - o script tem teto de 50 menos o peso do item.
-     *                   O valor real vem de SandboxVars via setCapacity().
+     *   Capacity      - o valor real vem de SandboxVars via setCapacity(),
+     *                   que aceita qualquer numero em runtime.
      *   WeightReduction - o engine aplica UMA porcentagem sobre o peso total
      *                   do conteudo. Como o carrinho so deve aliviar itens
      *                   pesados, a porcentagem equivalente e recalculada a
@@ -26,11 +26,9 @@ module MNWheelbarrow
         DisplayCategory = Container,
         ItemType = base:container,
 
-        /* Weight nao e so realismo: a capacidade maxima e 50 MENOS o peso do
-           proprio item, e esse teto de 50 e absoluto no engine. Manter o
-           carrinho leve e a unica forma de maximizar o que cabe dentro.
-           Peso 3 -> capacidade 47, que comporta 1 gerador (40), 5 troncos (45)
-           ou 4 botijoes (40). */
+        /* Peso baixo por realismo: um carrinho de mao vazio e leve.
+           Ele NAO limita mais a capacidade -- o teto de 50 que essa conta antes
+           assumia nao existe. Ver o cabecalho de WB_Weight.lua. */
         Weight = 3.0,
 
         /* Modelo de chao e de mao proprios (ver models_wheelbarrow.txt).
@@ -70,6 +68,10 @@ module MNWheelbarrow
         primaryAnimMask = holdingbagright,
         secondaryAnimMask = holdingbagleft,
 
+        /* Valor de PARTIDA apenas: WB_Weight sobe para o da sandbox option
+           (200 por padrao) assim que o save carrega. Fica baixo aqui porque o
+           parser de script e que pode ter limite proprio -- o limite de runtime,
+           esse sim, nao existe. */
         Capacity = 47,
         WeightReduction = 0,
         CanHaveHoles = false,

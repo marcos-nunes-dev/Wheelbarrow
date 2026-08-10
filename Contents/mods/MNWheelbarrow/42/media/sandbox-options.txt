@@ -20,8 +20,12 @@ option MNWheelbarrow.SpawnChance
 option MNWheelbarrow.EnableCrafting
 {type = boolean, default = true, page = MNWheelbarrow, translation = MNWBEnableCrafting,}
 
+/* O maximo NAO e mais 50. O bytecode de ItemContainer.setCapacity mostra que
+   50 e apenas o limiar de um aviso de debug -- a atribuicao acontece sempre.
+   Ver o cabecalho de WB_Weight.lua. 200 e o padrao porque cobre o alvo de
+   desenho: geladeira, cama de casal, dois geradores, vinte troncos. */
 option MNWheelbarrow.Capacity
-{type = integer, min = 10, max = 50, default = 47, page = MNWheelbarrow, translation = MNWBCapacity,}
+{type = integer, min = 20, max = 600, default = 200, page = MNWheelbarrow, translation = MNWBCapacity,}
 
 option MNWheelbarrow.HeavyThreshold
 {type = double, min = 0.5, max = 50, default = 8.0, page = MNWheelbarrow, translation = MNWBHeavyThreshold,}

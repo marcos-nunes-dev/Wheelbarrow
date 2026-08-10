@@ -5,14 +5,3 @@ description=A construction wheelbarrow for hauling very heavy loads.
 pzversion=42
 versionMin=42.20
 modversion=0.0.1
-
-# Tileset proprio. Necessario porque objeto do mundo no PZ renderiza por sprite
-# de tile, nao por modelo 3D -- e so container de objeto do mundo passa do teto
-# de capacidade 50 imposto a container de item.
-#
-# O numero 4007 foi escolhido conferindo o registro da comunidade em
-# pzwiki.net/wiki/Tiledefs_used_by_mods: esta num bloco livre, com vizinhos
-# tambem livres. A faixa valida para mods e 100..8190; acima disso o jogo gera
-# IDs de sprite negativos.
-pack=mnwheelbarrow
-tiledef=mnwheelbarrow 4007
