@@ -63,6 +63,15 @@ def check(path):
         problems.append("ipairs sobre tabela literal -- se o primeiro elemento "
                         "puder ser nil, a iteracao para no indice 1")
 
+    # `next` com um argumento so, o idioma comum para "tabela vazia?", quebrou em
+    # jogo: o depurador de Lua parou na linha. Ele aparece UMA vez em todo o Lua
+    # do jogo base, e ainda assim com dois argumentos -- nao vale depender de um
+    # canto do sandbox que o proprio jogo nao exercita. Usar #tabela ou um
+    # contador.
+    if re.search(r'(?<![\w.:])next\s*\([^,)]*\)', code):
+        problems.append("next() com um argumento -- quebrou em jogo; usar "
+                        "#tabela ou um contador")
+
     return problems
 
 

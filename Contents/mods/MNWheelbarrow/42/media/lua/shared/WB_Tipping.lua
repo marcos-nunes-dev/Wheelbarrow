@@ -64,8 +64,26 @@ local function applyAngle(cart, degrees)
     end
 end
 
---- Tombos em andamento: item -> { passo, quando o proximo passo vence }.
+--- Tombos em andamento.
+---
+--- LISTA, e nao tabela indexada pelo item, por um motivo concreto: a primeira
+--- versao usava `next(falling)` para saber se havia trabalho, e isso quebrou em
+--- jogo -- o depurador de Lua parou na linha. `next` aparece UMA vez em todo o
+--- Lua do jogo base, e ainda assim na forma de dois argumentos; nao vale
+--- depender de um canto do sandbox que o proprio jogo nao exercita.
+---
+--- Uma lista resolve sem construcao exotica: o tamanho responde "ha trabalho?" e
+--- o laco de tras para frente permite remover durante a iteracao sem pular
+--- elementos.
 local falling = {}
+
+--- @return number|nil indice do tombo em andamento deste carrinho
+local function indexOf(cart)
+    for i = 1, #falling do
+        if falling[i].cart == cart then return i end
+    end
+    return nil
+end
 
 --- @return boolean se o carrinho esta marcado como tombado
 function WB_Tipping.isTipped(cart)
@@ -79,14 +97,23 @@ function WB_Tipping.start(cart)
     if cart == nil or cart:getWorldItem() == nil then return end
 
     cart:getModData()[TIPPED_KEY] = true
-    falling[cart] = { step = 0, due = getTimestampMs() }
+
+    local existing = indexOf(cart)
+    local entry = { cart = cart, step = 0, due = getTimestampMs() }
+    if existing then
+        falling[existing] = entry
+    else
+        falling[#falling + 1] = entry
+    end
 end
 
 --- Devolve o carrinho a posicao normal. Idempotente: chamar num carrinho que
 --- nunca tombou nao custa nada.
 function WB_Tipping.reset(cart)
     if cart == nil then return end
-    falling[cart] = nil
+
+    local pending = indexOf(cart)
+    if pending then table.remove(falling, pending) end
     if cart:hasModData() then
         cart:getModData()[TIPPED_KEY] = nil
     end
@@ -101,7 +128,8 @@ end
 --- carrinho tombado se levantaria sozinho ao recarregar o jogo.
 function WB_Tipping.restore(cart)
     if not WB_Tipping.isTipped(cart) then return end
-    if falling[cart] ~= nil then return end
+    -- Com um tombo em andamento, quem manda na rotacao e o laco de OnTick.
+    if indexOf(cart) ~= nil then return end
 
     local final = TIP_ANGLES[#TIP_ANGLES]
     local current = (TIP_AXIS == "x") and cart:getWorldXRotation()
@@ -112,20 +140,25 @@ function WB_Tipping.restore(cart)
 end
 
 Events.OnTick.Add(function()
-    if next(falling) == nil then return end
+    if #falling == 0 then return end
 
     local now = getTimestampMs()
-    for cart, state in pairs(falling) do
+    -- De tras para frente: table.remove desloca os indices seguintes, e um laco
+    -- crescente pularia o elemento logo apos cada remocao.
+    for i = #falling, 1, -1 do
+        local state = falling[i]
+        local cart = state.cart
+
         -- O carrinho pode ter saido do chao no meio da queda, se o jogador o
         -- pegou. Sem esta checagem a rotacao continuaria avancando num item que
-        -- ja esta na mao, e reapareceria torto ao ser largado.
+        -- ja esta na mao, e ele reapareceria torto ao ser largado.
         if cart:getWorldItem() == nil then
-            falling[cart] = nil
+            table.remove(falling, i)
         elseif now >= state.due then
             state.step = state.step + 1
             applyAngle(cart, TIP_ANGLES[state.step])
             if state.step >= #TIP_ANGLES then
-                falling[cart] = nil
+                table.remove(falling, i)
             else
                 state.due = now + TIP_STEP_MS
             end
