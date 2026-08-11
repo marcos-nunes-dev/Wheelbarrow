@@ -75,9 +75,18 @@ local function reachableCart(character)
         if found ~= nil then return end
         local inventory = cart:getInventory()
         if inventory == nil then return end
-        -- Capacidade e teto sobre o peso BRUTO do conteudo; a reducao nao entra
-        -- aqui. Ver o cabecalho de WB_Weight.
-        if inventory:getCapacityWeight() + CORPSE_WEIGHT > inventory:getCapacity() then
+        --[[ getEffectiveCapacity(personagem), e nao getCapacity().
+
+             E a mesma conta que o engine faz em canHumanCorpseFit, e ela depende de
+             QUEM esta carregando: Organizado multiplica a capacidade por 1.3 e
+             Desorganizado por 0.7. Com getCapacity() o menu escondia a opcao num
+             ponto e o engine aceitaria em outro -- duas ideias de "cabe" para a
+             mesma pergunta, que e o defeito que este projeto mais repetiu.
+
+             Capacidade e teto sobre o peso BRUTO do conteudo; a reducao de peso nao
+             entra aqui. Ver o cabecalho de WB_Weight. ]]
+        local room = inventory:getEffectiveCapacity(character)
+        if inventory:getCapacityWeight() + CORPSE_WEIGHT > room then
             return
         end
         found = cart
