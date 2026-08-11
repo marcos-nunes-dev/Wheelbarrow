@@ -40,6 +40,7 @@ OUT = "../Contents/mods/MNWheelbarrow/42/media/lua/shared/Translate"
 FIELDS = (
     "wheelbarrow",      # nome do item, titulo do container e nome da pagina
     "put_down",         # menu de contexto
+    "load_into",       # menu de contexto: carregar varios de uma vez
     "picking_up",       # rotulo da acao
     "putting_down",     # rotulo da acao
     "opt_spawn",
@@ -61,6 +62,7 @@ LANGUAGES = {
     "EN": ("English", (
         "Wheelbarrow",
         "Put down wheelbarrow",
+        "Load into",
         "Picking up",
         "Putting down",
         "Spawn in the world",
@@ -79,6 +81,7 @@ LANGUAGES = {
     "PTBR": ("Português Brasileiro", (
         "Carrinho de mão",
         "Largar o carrinho de mão",
+        "Carregar no",
         "Pegando",
         "Largando",
         "Aparecer no mundo",
@@ -97,6 +100,7 @@ LANGUAGES = {
     "PT": ("Português", (
         "Carrinho de mão",
         "Pousar o carrinho de mão",
+        "Carregar no",
         "A pegar",
         "A pousar",
         "Aparecer no mundo",
@@ -115,6 +119,7 @@ LANGUAGES = {
     "ES": ("Español", (
         "Carretilla",
         "Dejar la carretilla",
+        "Cargar en",
         "Recogiendo",
         "Dejando",
         "Aparecer en el mundo",
@@ -133,6 +138,7 @@ LANGUAGES = {
     "FR": ("Français", (
         "Brouette",
         "Poser la brouette",
+        "Charger dans",
         "Ramassage",
         "Dépose",
         "Apparition dans le monde",
@@ -151,6 +157,7 @@ LANGUAGES = {
     "IT": ("Italiano", (
         "Carriola",
         "Posare la carriola",
+        "Carica in",
         "Raccolta",
         "Deposito",
         "Comparsa nel mondo",
@@ -169,6 +176,7 @@ LANGUAGES = {
     "DE": ("Deutsch", (
         "Schubkarre",
         "Schubkarre abstellen",
+        "Laden in",
         "Aufheben",
         "Abstellen",
         "In der Welt erscheinen",
@@ -187,6 +195,7 @@ LANGUAGES = {
     "NL": ("Nederlands", (
         "Kruiwagen",
         "Kruiwagen neerzetten",
+        "Laden in",
         "Oppakken",
         "Neerzetten",
         "Verschijnen in de wereld",
@@ -205,6 +214,7 @@ LANGUAGES = {
     "CA": ("Català", (
         "Carretó",
         "Deixar el carretó",
+        "Carregar al",
         "Recollint",
         "Deixant",
         "Aparèixer al món",
@@ -223,6 +233,7 @@ LANGUAGES = {
     "PL": ("Polski", (
         "Taczka",
         "Odstaw taczkę",
+        "Załaduj do",
         "Podnoszenie",
         "Odstawianie",
         "Pojawianie się w świecie",
@@ -241,6 +252,7 @@ LANGUAGES = {
     "RU": ("Русский", (
         "Тачка",
         "Поставить тачку",
+        "Загрузить в",
         "Поднимает",
         "Ставит",
         "Появление в мире",
@@ -259,6 +271,7 @@ LANGUAGES = {
     "UA": ("Українська", (
         "Тачка",
         "Поставити тачку",
+        "Завантажити в",
         "Піднімає",
         "Ставить",
         "Поява у світі",
@@ -277,6 +290,7 @@ LANGUAGES = {
     "CS": ("Čeština", (
         "Kolečko",
         "Položit kolečko",
+        "Naložit do",
         "Zvedání",
         "Pokládání",
         "Výskyt ve světě",
@@ -295,6 +309,7 @@ LANGUAGES = {
     "HU": ("Magyar", (
         "Talicska",
         "Talicska letétele",
+        "Berakodás ide:",
         "Felvétel",
         "Letétel",
         "Megjelenés a világban",
@@ -313,6 +328,7 @@ LANGUAGES = {
     "NO": ("Norsk", (
         "Trillebår",
         "Sett ned trillebåren",
+        "Last inn i",
         "Plukker opp",
         "Setter ned",
         "Dukker opp i verden",
@@ -331,6 +347,7 @@ LANGUAGES = {
     "TR": ("Türkçe", (
         "El arabası",
         "El arabasını bırak",
+        "Şuraya yükle:",
         "Alınıyor",
         "Bırakılıyor",
         "Dünyada belirme",
@@ -349,6 +366,7 @@ LANGUAGES = {
     "CN": ("简体中文", (
         "手推车",
         "放下手推车",
+        "装入",
         "拾取中",
         "放下中",
         "在世界中生成",
@@ -367,6 +385,7 @@ LANGUAGES = {
     "CH": ("繁體中文", (
         "手推車",
         "放下手推車",
+        "裝入",
         "拾取中",
         "放下中",
         "在世界中生成",
@@ -385,6 +404,7 @@ LANGUAGES = {
     "JP": ("日本語", (
         "手押し車",
         "手押し車を置く",
+        "積み込む:",
         "持ち上げ中",
         "下ろし中",
         "ワールドに出現",
@@ -403,6 +423,7 @@ LANGUAGES = {
     "KR": ("한국어", (
         "손수레",
         "손수레 내려놓기",
+        "싣기:",
         "드는 중",
         "내려놓는 중",
         "월드에 생성",
@@ -421,6 +442,7 @@ LANGUAGES = {
     "TH": ("ไทย", (
         "รถเข็น",
         "วางรถเข็นลง",
+        "บรรทุกลงใน",
         "กำลังยก",
         "กำลังวาง",
         "ปรากฏในโลก",
@@ -439,6 +461,7 @@ LANGUAGES = {
     "VI": ("Tiếng Việt", (
         "Xe cút kít",
         "Đặt xe cút kít xuống",
+        "Chất lên",
         "Đang nhấc",
         "Đang đặt xuống",
         "Xuất hiện trong thế giới",
@@ -457,6 +480,7 @@ LANGUAGES = {
     "AF": ("Afrikaans", (
         "Kruiwa",
         "Sit die kruiwa neer",
+        "Laai in",
         "Tel op",
         "Sit neer",
         "Verskyn in die wêreld",
@@ -635,7 +659,8 @@ def main():
         write(os.path.join(folder, "ItemName.json"),
               {"MNWheelbarrow.Wheelbarrow": text["wheelbarrow"]})
         write(os.path.join(folder, "ContextMenu.json"),
-              {"ContextMenu_MNWB_PutDown": text["put_down"]})
+              {"ContextMenu_MNWB_PutDown": text["put_down"],
+             "ContextMenu_MNWB_LoadInto": text["load_into"]})
         # NAO existe IGUI_ContainerTitle_ aqui de proposito. O titulo de um
         # container que vem de ITEM e o nome do item -- ISInventoryPage passa
         # item:getName() direto. A chave IGUI_ContainerTitle_<tipo> so vale para

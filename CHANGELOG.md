@@ -35,6 +35,15 @@ Versão maior porque a mecânica central mudou.
   O peso alterado **não vai para o save** — `actualWeight` não é serializado.
   Qualquer item que escape leve volta ao normal no próximo carregamento.
 
+### Adicionado (continuação)
+
+- **"Carregar no carrinho de mão"** no menu de contexto do inventário, quando há
+  vários itens selecionados. Arrastar 20 troncos movia 5 e parava: o preditor de
+  lote da interface soma o peso **real** de tudo que está sendo arrastado e assume
+  que ele não muda ao entrar — e no carrinho ele muda. A opção enfileira uma
+  transferência do próprio jogo por item, e cada uma revalida a capacidade sozinha.
+  A regra continua sendo do jogo; o que fica de lado é só a previsão em lote.
+
 ### Removido da promessa
 
 - **Geladeira e cama de casal.** Pesam 40, e apanhar móvel exige a capacidade do
