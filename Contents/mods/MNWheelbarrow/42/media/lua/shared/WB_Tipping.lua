@@ -64,8 +64,20 @@ local TIPPED_MODEL = "MNWheelbarrow_Tipped"
 --- O 308 medido antes NAO vale: ele foi achado sob a decomposicao invalida, e
 --- descrevia uma pose que so existia naquele calculo errado. Recomeca em 80, que
 --- e quase deitado, e o laboratorio refina.
-local tipAngle = 80.0
-local tipHeight = 0.10
+local tipAngle = 280.0
+local tipHeight = 0.08
+
+--- Correcao de direcao do carrinho TOMBADO, em graus.
+---
+--- Deitado, ele saia 90 graus fora do que sai de pe, ainda que os dois usem a
+--- mesma guinada. O motivo e que inclinar em torno do eixo comprido troca qual
+--- face do carrinho aponta para a frente: de pe a referencia e a cacamba, e
+--- deitado passa a ser a lateral. A guinada e a mesma; o que muda e o que ela
+--- gira.
+---
+--- Por isso a correcao vive aqui e nao em WB_Spill: ela nao e da colocacao, e da
+--- POSE. Carrinho de pe nao precisa dela.
+local tipYawOffset = 90.0
 
 --- Inclina o carrinho no eixo LOCAL dele.
 ---
@@ -104,11 +116,13 @@ end
 --- Valores atuais, para o laboratorio de calibracao mostrar.
 function WB_Tipping.getAngle() return tipAngle end
 function WB_Tipping.getHeight() return tipHeight end
+function WB_Tipping.getYawOffset() return tipYawOffset end
 
 --- Ajusta em runtime. Existe para WB_TipLab; quando a calibracao fechar, os
 --- numeros viram os padroes acima e isto sai junto com o laboratorio.
 function WB_Tipping.setAngle(value) tipAngle = value end
 function WB_Tipping.setHeight(value) tipHeight = value end
+function WB_Tipping.setYawOffset(value) tipYawOffset = value % 360 end
 
 --- Poe o carrinho no chao JA TOMBADO.
 ---
@@ -133,6 +147,10 @@ function WB_Tipping.dropTipped(character, cart, square)
 
     -- Sempre depois da criacao: o construtor zera as duas rotacoes de inclinacao.
     applyAngle(cart, tipAngle)
+    -- A guinada, ao contrario, sobrevive a criacao -- so e sorteada quando chega
+    -- negativa. Aqui ela ja veio da direcao do personagem, e so recebe a correcao
+    -- da pose deitada.
+    cart:setWorldZRotation((cart:getWorldZRotation() + tipYawOffset) % 360)
 end
 
 --- Devolve o carrinho a posicao normal. Idempotente.
