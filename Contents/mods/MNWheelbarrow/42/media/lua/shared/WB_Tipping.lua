@@ -58,26 +58,28 @@ local TIPPED_MODEL = "MNWheelbarrow_Tipped"
 
 --- Quanto o carrinho deita, em graus, e a que altura fica na square.
 ---
---- Ajustaveis em jogo por WB_TipLab enquanto a calibracao nao fechar. Noventa
---- graus seria deitado exato; menos deixa o carrinho apoiado, o que costuma ler
---- melhor do que perfeitamente plano.
---- O 308 medido antes NAO vale: ele foi achado sob a decomposicao invalida, e
---- descrevia uma pose que so existia naquele calculo errado. Recomeca em 80, que
---- e quase deitado, e o laboratorio refina.
+--- Medidos em jogo, num laboratorio de teclas que ja cumpriu o papel e saiu. A
+--- altura existe como parametro porque deitado o carrinho ocupa outro volume:
+--- com zero, parte dele afundava no piso.
 local tipAngle = 280.0
 local tipHeight = 0.08
 
 --- Correcao de direcao do carrinho TOMBADO, em graus.
 ---
---- Deitado, ele saia 90 graus fora do que sai de pe, ainda que os dois usem a
---- mesma guinada. O motivo e que inclinar em torno do eixo comprido troca qual
+--- Deitado, ele saia bem fora do que sai de pe, ainda que os dois usem a mesma
+--- guinada. O motivo e que inclinar em torno do eixo comprido troca qual
 --- face do carrinho aponta para a frente: de pe a referencia e a cacamba, e
 --- deitado passa a ser a lateral. A guinada e a mesma; o que muda e o que ela
 --- gira.
 ---
 --- Por isso a correcao vive aqui e nao em WB_Spill: ela nao e da colocacao, e da
 --- POSE. Carrinho de pe nao precisa dela.
-local tipYawOffset = 90.0
+---
+--- 105 e medido, nao deduzido -- se fosse so a troca de face seria 90 redondo. Os
+--- 15 a mais vem de a inclinacao nao ser 90 exatos: a 280 o carrinho fica
+--- apoiado, nao perfeitamente deitado, e a face de referencia gira um pouco
+--- junto. Mexer na inclinacao pede remedir isto.
+local tipYawOffset = 105.0
 
 --- Inclina o carrinho no eixo LOCAL dele.
 ---
@@ -112,17 +114,6 @@ function WB_Tipping.isTipped(cart)
     return cart ~= nil and cart:hasModData()
         and cart:getModData()[TIPPED_KEY] == true
 end
-
---- Valores atuais, para o laboratorio de calibracao mostrar.
-function WB_Tipping.getAngle() return tipAngle end
-function WB_Tipping.getHeight() return tipHeight end
-function WB_Tipping.getYawOffset() return tipYawOffset end
-
---- Ajusta em runtime. Existe para WB_TipLab; quando a calibracao fechar, os
---- numeros viram os padroes acima e isto sai junto com o laboratorio.
-function WB_Tipping.setAngle(value) tipAngle = value end
-function WB_Tipping.setHeight(value) tipHeight = value end
-function WB_Tipping.setYawOffset(value) tipYawOffset = value % 360 end
 
 --- Poe o carrinho no chao JA TOMBADO.
 ---
