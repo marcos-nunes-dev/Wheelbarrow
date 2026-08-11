@@ -453,7 +453,7 @@ LANGUAGES = {
         "Chặn vũ khí khi đang dùng",
         "Chặn chạy khi đang dùng",
         "Cho phép chở xác",
-        "Không thể khi đang cầm xe rùa")),
+        "Không thể khi đang cầm xe cút kít")),
     "AF": ("Afrikaans", (
         "Kruiwa",
         "Sit die kruiwa neer",
@@ -519,15 +519,92 @@ TOOLTIPS = {
 }
 
 ITEM_TOOLTIP = (
-    "Hauls very heavy loads: generators, logs, propane tanks.<br>Light items "
-    "gain nothing from it.<br>Occupies both hands, and you cannot run while "
-    "pushing it.<br>Set it on the ground to load it."
+    "Hauls very heavy loads: generators, logs, propane tanks.<br>Light items gain "
+    "nothing from it, and only a little fits.<br>Occupies both hands, and you cannot "
+    "run while pushing it.<br>Set it on the ground to load it."
 )
 
 RECIPE_TOOLTIP = (
     "Welds a wheelbarrow from sheet metal, pipe and a car tyre.<br>Needs a "
     "blowtorch, welding rods and a mask, so it is not an early-game build."
 )
+
+#: Tooltips em portugues.
+#:
+#: PORTUGUES E A EXCECAO A REGRA "tooltip so em ingles", e a razao e a mesma que
+#: criou a regra. O risco de traduzir texto longo e que chave ERRADA nao cai para
+#: nada -- fica errada para sempre -- e ninguem aqui saberia revisar um paragrafo
+#: tecnico em tailandes. Em portugues sabemos. Onde a revisao existe, o motivo da
+#: regra desaparece.
+#:
+#: O que nao estiver aqui cai para o ingles, que e o fallback do jogo.
+TOOLTIPS_PT = {
+    "PTBR": {
+        "Tooltip_item_MNWheelbarrow":
+            "Carrega peso muito alto: geradores, troncos, botijões.<br>Itens leves "
+            "não ganham nada com ele, e cabe pouca tralha.<br>Ocupa as duas mãos, e "
+            "não dá para correr enquanto o empurra.<br>Deixe no chão para carregar.",
+        "Tooltip_craft_MNWBWheelbarrow":
+            "Solda um carrinho de mão com chapa de metal, tubo e um pneu de "
+            "carro.<br>Precisa de maçarico, varetas de solda e máscara, então não é "
+            "coisa de começo de jogo.",
+        "Sandbox_MNWBEnableWorldSpawn_tooltip":
+            "Carrinhos aparecem largados em obras, galpões, garagens e lojas de "
+            "ferramentas.<br>Desligue para que só existam por fabricação.",
+        "Sandbox_MNWBSpawnChance_tooltip":
+            "Chance, em porcento, de um carrinho aparecer num lugar elegível.<br>Cada "
+            "lugar é sorteado uma única vez na vida do save.",
+        "Sandbox_MNWBEnableCrafting_tooltip":
+            "Libera a receita para construir um carrinho do zero.",
+        "Sandbox_MNWBCapacity_tooltip":
+            "Quanto o carrinho aguenta no total.<br>Para comparar: um gerador pesa "
+            "40, um tronco 9.<br>Carregue com ele no chão; o jogo não aceita item "
+            "pesado num compartimento que você está segurando.",
+        "Sandbox_MNWBLightCapacity_tooltip":
+            "Um segundo teto, muito mais baixo, que vale só para itens ABAIXO do "
+            "limite de peso pesado.<br>Sem ele a capacidade total permitiria uma "
+            "quantidade absurda de tralha: 200 livros pesam 200, e nada disso seria "
+            "reduzido.<br>Zero remove o limite de carga leve.",
+        "Sandbox_MNWBHeavyThreshold_tooltip":
+            "Item com este peso ou mais conta como pesado e recebe a redução.<br>Mais "
+            "leve que isso não recebe nada: o carrinho é deliberadamente inútil para "
+            "tralha pequena.",
+        "Sandbox_MNWBHeavyReduction_tooltip":
+            "Quanto peso sai dos itens pesados, em porcento.<br>Item leve nunca é "
+            "reduzido, independente deste valor.",
+        "Sandbox_MNWBActionDuration_tooltip":
+            "Quanto tempo leva para erguer ou largar o carrinho.<br>Mais tempo "
+            "significa que cancelar por acidente é um risco de verdade.",
+        "Sandbox_MNWBSpillOnCancel_tooltip":
+            "Cancelar a animação de pegar ou largar faz o carrinho tombar, "
+            "derramando a carga e ele mesmo no chão.<br>Desligue para um jogo mais "
+            "tolerante.",
+        "Sandbox_MNWBBlockWeapons_tooltip":
+            "O carrinho ocupa as duas mãos, então nenhuma arma pode ser equipada "
+            "enquanto você o empurra.",
+        "Sandbox_MNWBBlockRunning_tooltip":
+            "Empurrar um carrinho carregado é caminhada, não corrida.<br>Desligue "
+            "para poder correr na velocidade reduzida.",
+        "Sandbox_MNWBAllowCorpses_tooltip":
+            "Permite carregar corpos no carrinho.<br>Desligue se transportar "
+            "cadáveres deixa limpar uma casa fácil demais para o seu gosto.",
+    },
+}
+
+# PT de Portugal parte do PTBR: o texto tecnico e praticamente o mesmo, e o que
+# difere de verdade sao os rotulos curtos, que ja estao na tabela LANGUAGES.
+TOOLTIPS_PT["PT"] = dict(TOOLTIPS_PT["PTBR"])
+TOOLTIPS_PT["PT"]["Tooltip_item_MNWheelbarrow"] = (
+    "Transporta peso muito alto: geradores, troncos, botijas.<br>Itens leves não "
+    "ganham nada com ele, e cabe pouca tralha.<br>Ocupa as duas mãos, e não dá para "
+    "correr enquanto o empurra.<br>Deixe no chão para carregar."
+)
+
+
+def tooltip(language, key, fallback):
+    """Tooltip do idioma, caindo para o ingles quando nao houver."""
+    return TOOLTIPS_PT.get(language, {}).get(key, fallback)
+
 
 OPTION_KEYS = (
     "Sandbox_MNWBEnableWorldSpawn", "Sandbox_MNWBSpawnChance",
@@ -559,15 +636,21 @@ def main():
               {"MNWheelbarrow.Wheelbarrow": text["wheelbarrow"]})
         write(os.path.join(folder, "ContextMenu.json"),
               {"ContextMenu_MNWB_PutDown": text["put_down"]})
+        # NAO existe IGUI_ContainerTitle_ aqui de proposito. O titulo de um
+        # container que vem de ITEM e o nome do item -- ISInventoryPage passa
+        # item:getName() direto. A chave IGUI_ContainerTitle_<tipo> so vale para
+        # container de objeto de mundo e de corpo, e o jogo base nao define nenhuma
+        # para bolsa. Uma existiu aqui e nunca foi lida.
         write(os.path.join(folder, "IG_UI.json"), {
-            "IGUI_ContainerTitle_wheelbarrow": text["wheelbarrow"],
             "IGUI_MNWB_PickingUp": text["picking_up"],
             "IGUI_MNWB_PuttingDown": text["putting_down"],
             "IGUI_MNWB_Refuse": text["refuse"],
         })
         write(os.path.join(folder, "Tooltip.json"), {
-            "Tooltip_item_MNWheelbarrow": ITEM_TOOLTIP,
-            "Tooltip_craft_MNWBWheelbarrow": RECIPE_TOOLTIP,
+            "Tooltip_item_MNWheelbarrow":
+                tooltip(code, "Tooltip_item_MNWheelbarrow", ITEM_TOOLTIP),
+            "Tooltip_craft_MNWBWheelbarrow":
+                tooltip(code, "Tooltip_craft_MNWBWheelbarrow", RECIPE_TOOLTIP),
         })
 
         # A chave do nome de uma craftRecipe E o nome dela, sem prefixo -- ver
@@ -578,7 +661,8 @@ def main():
         sandbox = {"Sandbox_MNWheelbarrow": text["wheelbarrow"]}
         for key, label in zip(OPTION_KEYS, values[4:]):
             sandbox[key] = label
-            sandbox[key + "_tooltip"] = TOOLTIPS[key + "_tooltip"]
+            sandbox[key + "_tooltip"] = tooltip(
+                code, key + "_tooltip", TOOLTIPS[key + "_tooltip"])
         write(os.path.join(folder, "Sandbox.json"), sandbox)
 
         print("%-5s %-22s %d rotulos" % (code, name, len(values)))
