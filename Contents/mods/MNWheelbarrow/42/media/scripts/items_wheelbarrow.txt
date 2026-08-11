@@ -17,9 +17,8 @@ module MNWheelbarrow
      *
      * Os valores abaixo sao so o ponto de partida antes do Lua assumir.
      *
-     * Icon, WorldStaticModel e os modelos de mao sao PLACEHOLDERS emprestados
-     * do Toolbox e da Suitcase, ate o modelo 3D proprio existir. Trocar esses
-     * campos nao muda o ID do item, entao saves existentes continuam validos.
+     * Icone, modelo de chao e modelo de mao saem todos do mesmo .fbx, gerados
+     * por assets/tools_render_icon.py e assets/tools_build_models.py.
      */
     item Wheelbarrow
     {
@@ -31,10 +30,15 @@ module MNWheelbarrow
            assumia nao existe. Ver o cabecalho de WB_Weight.lua. */
         Weight = 3.0,
 
-        /* Modelo de chao e de mao proprios (ver models_wheelbarrow.txt).
-           So o icone segue placeholder: ele precisa de um render 2D do modelo,
-           que e trabalho separado. */
-        Icon = Toolbox,
+        /* O icone e RENDERIZADO DO PROPRIO MODELO, por
+           assets/tools_render_icon.py, e nao desenhado a mao. Isso importa: um
+           icone desenhado separado envelhece mal, porque a cada ajuste de malha
+           ou textura ele passa a mostrar um carrinho que nao existe mais. Aqui
+           os dois saem da mesma fonte.
+
+           O nome do arquivo obedece a convencao do jogo -- Icon = Wheelbarrow
+           procura textures/Item_Wheelbarrow.png. */
+        Icon = Wheelbarrow,
         WorldStaticModel = MNWheelbarrow_Ground,
 
         /* Aparece nas maos com mesh ESTATICO, sem rigging.

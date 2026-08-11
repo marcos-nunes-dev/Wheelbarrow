@@ -17,9 +17,14 @@ SCRIPTS = "Contents/mods/MNWheelbarrow/42/media/scripts"
 
 # Extensoes aceitas por tipo de referencia. O PZ resolve o caminho sem extensao,
 # entao qualquer uma delas serve.
+# O terceiro par tem um detalhe proprio: o campo Icon nao guarda o nome do
+# arquivo, e sim o sufixo dele. `Icon = Wheelbarrow` procura
+# textures/Item_Wheelbarrow.png. Errar isso nao da erro -- o item so aparece sem
+# icone.
 KINDS = (
-    ("texture", "textures", (".png",)),
-    ("mesh", "models_X", (".fbx", ".FBX", ".x", ".X")),
+    ("texture", "textures", (".png",), ""),
+    ("mesh", "models_X", (".fbx", ".FBX", ".x", ".X"), ""),
+    ("Icon", "textures", (".png",), "Item_"),
 )
 
 
@@ -35,14 +40,15 @@ def main(root):
         # Comentarios fora: eles citam nomes de arquivo como exemplo.
         source = re.sub(r"/\*.*?\*/", " ", source, flags=re.S)
 
-        for kind, folder, exts in KINDS:
+        for kind, folder, exts, prefix in KINDS:
             for ref in re.findall(kind + r"\s*=\s*([\w/]+)\s*,", source):
                 checked += 1
-                if not any(os.path.exists(os.path.join(media, folder, ref + e))
+                target = prefix + ref
+                if not any(os.path.exists(os.path.join(media, folder, target + e))
                            for e in exts):
                     problems += 1
-                    print("%s: %s = %s nao existe em %s/"
-                          % (name, kind, ref, folder))
+                    print("%s: %s = %s nao existe como %s/%s"
+                          % (name, kind, ref, folder, target))
 
     print("%d referencias conferidas, %d quebradas" % (checked, problems))
     return 1 if problems else 0
