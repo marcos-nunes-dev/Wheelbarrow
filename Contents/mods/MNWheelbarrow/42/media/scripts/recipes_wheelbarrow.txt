@@ -50,7 +50,11 @@ module MNWheelbarrow
         }
         outputs
         {
-            item 1 [MNWheelbarrow.Wheelbarrow],
+            /* SEM COLCHETES. Eles sao sintaxe de ENTRADA, onde expressam alternativas
+               ("[Base.OldTire1;Base.NormalTire1]"). Em outputs o parser le o colchete
+               como parte do nome do tipo, nao acha o item, e o jogo aborta o
+               carregamento do mundo inteiro com WorldDictionaryException. */
+            item 1 MNWheelbarrow.Wheelbarrow,
         }
     }
 }

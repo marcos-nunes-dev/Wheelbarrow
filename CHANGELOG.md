@@ -6,6 +6,16 @@ versão**. Toda mudança de `modversion` em `mod.info` tem uma entrada aqui.
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.1.1] — 2026-08-11
+
+### Corrigido
+
+- **O jogo não carregava.** A receita de fabricação declarava a saída como
+  `item 1 [MNWheelbarrow.Wheelbarrow]`, com colchetes. Colchete é sintaxe de
+  **entrada**, onde lista alternativas; em `outputs` o parser lê o colchete como
+  parte do nome do tipo, não acha o item, e o carregamento do mundo aborta com
+  `WorldDictionaryException`. O jogador não chegava nem ao menu.
+
 ## [0.1.0] — 2026-08-11
 
 Primeira versão enviada à Workshop, como item **privado** para verificação.

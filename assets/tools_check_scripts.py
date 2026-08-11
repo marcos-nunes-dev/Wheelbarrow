@@ -47,14 +47,48 @@ CHECKS = (
 )
 
 
+#: Item de saida de receita, com colchete. Precisa de contexto de bloco, entao nao
+#: entra em CHECKS: `item 1 [X]` e CERTO em inputs e ERRADO em outputs.
+OUTPUT_ITEM = re.compile(r'^\s*item\s+\d+\s*\[')
+
+
 def check_file(path):
     problems = []
+    in_outputs = False
+    depth = 0
+
     with open(path, encoding="utf-8", errors="replace") as fh:
         for lineno, line in enumerate(fh, 1):
             code = line.split("/*")[0]
+
             for pattern, why in CHECKS:
                 if pattern.search(code):
                     problems.append((lineno, why, line.rstrip()))
+
+            #[[ COLCHETE EM OUTPUTS derruba o jogo inteiro, e nao so a receita.
+            #
+            #   O colchete e sintaxe de ENTRADA, onde lista alternativas
+            #   ("[Base.OldTire1;Base.NormalTire1]"). Em outputs o parser le o
+            #   colchete como parte do NOME do tipo, nao acha o item, e o
+            #   carregamento do mundo aborta com WorldDictionaryException -- o
+            #   jogador nem chega ao menu. Foi o que aconteceu com este mod, ja
+            #   publicado.
+            #
+            #   Precisa de contexto de bloco porque a MESMA linha e correta em
+            #   inputs. Dai o rastreio de chaves em vez de uma regex solta. ]]
+            if in_outputs:
+                if OUTPUT_ITEM.match(code):
+                    problems.append((lineno,
+                        "colchete em item de OUTPUT -- colchete e sintaxe de "
+                        "entrada; aqui vira parte do nome do tipo e o jogo aborta "
+                        "o carregamento do mundo", line.rstrip()))
+                depth += code.count("{") - code.count("}")
+                if depth <= 0:
+                    in_outputs = False
+            elif re.match(r'^\s*outputs\b', code):
+                in_outputs = True
+                depth = code.count("{") - code.count("}")
+
     return problems
 
 
