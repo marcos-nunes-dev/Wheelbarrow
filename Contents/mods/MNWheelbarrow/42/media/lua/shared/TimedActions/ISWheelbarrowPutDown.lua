@@ -1,20 +1,34 @@
 --[[
-    Largar o carrinho no chao, com animacao -- e derramando a carga se cancelar.
+    Largar o carrinho no chao, com animacao.
 
-    Simetrica a ISWheelbarrowPickUp: mesma duracao, mesma animacao, mesma regra
-    de derrame. Ver aquele arquivo para o porque de a acao ser cronometrada e de
-    o cancelamento custar a carga.
+    O CARRINHO DESCE NO INICIO DA ACAO, NAO NO FIM. Essa e a diferenca em relacao
+    a primeira versao, e ela conserta um artefato que o Marcos apontou: o
+    carrinho SUMIA durante a animacao e reaparecia no chao no final.
 
-    A square de destino e escolhida aqui e nao pelo jogador: o carrinho vai para
-    a square a frente do personagem se ela estiver livre, senao para a dele. E o
-    mesmo criterio que o jogo usa para largar movel, e evita a pergunta "onde?"
-    numa acao que deve ser rapida de disparar.
+    A causa e a mascara: o carrinho na mao e desenhado pela mascara de animacao
+    mnwb_holdingcart, e uma acao cronometrada substitui a animacao do personagem
+    enquanto roda. Sem a mascara, o modelo nao e desenhado -- o carrinho nao
+    "some", ele nunca esteve na mao como objeto do mundo.
+
+    Nao ha como manter o modelo de mao visivel durante a acao. Mas ha como o
+    carrinho ficar visivel: pondo ele no CHAO logo no inicio. O personagem se
+    abaixa ao lado de um carrinho que ja esta la, que e o que acontece na vida
+    real e o que casa com a regra de o carrinho nunca ir para o inventario.
+
+    Consequencia boa: cancelar deixa de ser caso especial. O carrinho ja esta no
+    chao de qualquer jeito; cancelar so acrescenta o derrame da carga.
+
+    ANIMACAO: "Loot", a mesma que ISGrabItemAction usa para pegar coisa do chao.
+    A primeira versao usava BuildLow, que e martelar agachado -- o Marcos
+    descreveu como "pregar no chao", e ele estava certo: nao ha prego nenhum
+    nisto.
 ]]
 
 require "TimedActions/ISBaseTimedAction"
 
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Spill = require "WB_Spill"
+local WB_Transfer = require "WB_Transfer"
 local WB_UI = require "WB_UI"
 
 ISWheelbarrowPutDown = ISBaseTimedAction:derive("ISWheelbarrowPutDown")
@@ -43,8 +57,9 @@ local function squareInFront(character)
 end
 
 function ISWheelbarrowPutDown:isValid()
+    -- Vale enquanto o item existir. NAO da para exigir que ele esteja no
+    -- inventario: a acao comeca justamente tirando ele de la.
     return self.item ~= nil
-        and self.character:getInventory():contains(self.item)
 end
 
 function ISWheelbarrowPutDown:update()
@@ -54,7 +69,23 @@ end
 function ISWheelbarrowPutDown:start()
     self.item:setJobType(getText("IGUI_MNWB_PuttingDown"))
     self.item:setJobDelta(0.0)
-    self:setActionAnim(CharacterActionAnims.BuildLow)
+    self:setActionAnim("Loot")
+
+    -- Desce AGORA, para ficar visivel durante a animacao inteira. WB_Spill cuida
+    -- de tirar das maos, remover do inventario e apontar o carrinho para onde o
+    -- personagem esta virado.
+    WB_Transfer.begin()
+    WB_Spill.dropCart(self.character, self.item, squareInFront(self.character))
+    WB_Transfer.finish()
+
+    WB_UI.refreshContainers()
+end
+
+--- Square onde o carrinho esta agora, para o derrame cair ao redor dele.
+local function cartSquare(item, character)
+    local worldItem = item:getWorldItem()
+    local square = worldItem and worldItem:getSquare()
+    return square or character:getSquare()
 end
 
 function ISWheelbarrowPutDown:stop()
@@ -62,39 +93,17 @@ function ISWheelbarrowPutDown:stop()
         print("[Wheelbarrow][ACAO] largar cancelado")
     end
     self.item:setJobDelta(0.0)
+    -- O carrinho ja esta no chao desde o start; cancelar so derruba a carga.
     if WB_Sandbox.get("SpillOnCancel") then
-        local square = self.character:getSquare()
-        WB_Spill.dump(self.item, square)
-        -- O carrinho vai junto: cancelar no meio de largar e o carrinho tombando,
-        -- nao o jogador se arrependendo. Simetrico ao cancelar de pegar.
-        WB_Spill.dropCart(self.character, self.item, square)
+        WB_Spill.dump(self.item, cartSquare(self.item, self.character))
     end
     ISBaseTimedAction.stop(self)
 end
 
 function ISWheelbarrowPutDown:perform()
     self.item:setJobDelta(0.0)
-
-    local character = self.character
-    -- Tirar das maos ANTES de largar: se o item sair do inventario enquanto
-    -- ainda esta numa das maos, o modelo continua renderizado numa mao vazia --
-    -- foi exatamente o carrinho-fantasma que WB_Hands teve de consertar.
-    if character:isPrimaryHandItem(self.item) then
-        character:setPrimaryHandItem(nil)
-    end
-    if character:isSecondaryHandItem(self.item) then
-        character:setSecondaryHandItem(nil)
-    end
-
-    character:getInventory():Remove(self.item)
-
-    local target = squareInFront(character) or character:getSquare()
-    if target ~= nil then
-        target:AddWorldInventoryItem(self.item, 0.5, 0.5, 0.0)
-    end
-
-    character:resetModelNextFrame()
-    WB_UI.refreshContainers()
+    -- Nada a mover: o carrinho desceu no start. Terminar aqui e so soltar o
+    -- personagem da animacao.
     ISBaseTimedAction.perform(self)
 end
 

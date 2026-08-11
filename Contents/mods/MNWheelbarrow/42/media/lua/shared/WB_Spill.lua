@@ -106,6 +106,30 @@ function WB_Spill.dump(cart, origin)
     return dropped
 end
 
+--- Angulo do carrinho no chao, em graus, a partir de para onde o personagem olha.
+---
+--- worldZRotation e um float em GRAUS, e o engine o sorteia com Rand.Next(0,360)
+--- quando ele chega negativo -- e por isso que item largado no chao aparece
+--- torto. Definindo antes de por no mundo, o carrinho fica apontando para onde o
+--- jogador estava virado, que e o que se espera de algo que acabou de ser
+--- empurrado ate ali.
+---
+--- A conversao e a mesma que o jogo base usa em FishingRod e no forrageamento:
+--- a direcao de frente vem em radianos com zero em outro eixo, dai o + pi/2.
+---
+--- GROUND_ROTATION_OFFSET e o unico numero a calibrar: ele alinha o eixo
+--- comprido da malha com a frente do personagem. Se o carrinho sair virado, o
+--- conserto e so este numero.
+local GROUND_ROTATION_OFFSET = 0.0
+
+local function facingDegrees(character)
+    local forward = character and character:getForwardDirection()
+    if forward == nil then return nil end
+    local degrees = math.deg(forward:getDirection() + math.pi / 2)
+        + GROUND_ROTATION_OFFSET
+    return degrees % 360
+end
+
 --- Tira o carrinho das maos e do inventario e o poe no chao.
 ---
 --- Mora aqui, e nao em WB_Placement, porque as timed actions tambem precisam
@@ -126,6 +150,11 @@ function WB_Spill.dropCart(character, cart, square)
 
     local container = cart:getContainer()
     if container ~= nil then container:Remove(cart) end
+
+    -- Antes de entrar no mundo: depois de AddWorldInventoryItem o engine ja
+    -- resolveu o angulo, e mudar o valor nao reposiciona o que ja foi criado.
+    local degrees = facingDegrees(character)
+    if degrees ~= nil then cart:setWorldZRotation(degrees) end
 
     square:AddWorldInventoryItem(cart, 0.5, 0.5, 0.0)
     character:resetModelNextFrame()

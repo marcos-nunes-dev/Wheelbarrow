@@ -19,10 +19,10 @@
     carrinho carrega muito mais do que uma pessoa aguenta, e desequilibrar uma
     carga dessas no meio do movimento derruba tudo.
 
-    ANIMACAO: BuildLow -- agachar e erguer. O jogo nao tem animacao de erguer
-    carrinho; as opcoes de acao sao construir, criar, desmontar, cavar e derrubar
-    arvore. BuildLow e a unica que comeca agachada, que e o gesto certo para
-    pegar algo do chao.
+    ANIMACAO: "Loot", a mesma de ISGrabItemAction. Nao e uma das constantes de
+    CharacterActionAnims -- setActionAnim aceita o nome cru, e foi assim que o
+    jogo base resolveu pegar coisa do chao. A primeira versao usava BuildLow, que
+    e martelar agachado, e o Marcos descreveu como "pregar no chao".
 
     Fica em shared/ porque timed action do jogo base tambem fica -- o servidor
     precisa da classe para validar a acao em multiplayer.
@@ -58,7 +58,10 @@ end
 function ISWheelbarrowPickUp:start()
     self.item:setJobType(getText("IGUI_MNWB_PickingUp"))
     self.item:setJobDelta(0.0)
-    self:setActionAnim(CharacterActionAnims.BuildLow)
+    -- "Loot" e a mesma animacao que ISGrabItemAction usa para pegar coisa do
+    -- chao. A primeira versao usava BuildLow, que e martelar agachado -- nao ha
+    -- prego nenhum em erguer um carrinho.
+    self:setActionAnim("Loot")
     self:setOverrideHandModels(nil, nil)
 end
 
