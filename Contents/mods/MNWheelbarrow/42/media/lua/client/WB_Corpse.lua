@@ -89,6 +89,12 @@ local function reachableCart(character)
     return found
 end
 
+--- Da uma square ao container, se ele nao souber onde esta.
+local function anchorToSquare(container, square)
+    if container == nil or container:getSquare() ~= nil then return end
+    container:setSourceGrid(square)
+end
+
 local function onDropCorpse(playerNum, cart)
     local character = getSpecificPlayer(playerNum)
     if character == nil or cart == nil then return end
@@ -103,21 +109,25 @@ local function onDropCorpse(playerNum, cart)
     -- usa em 282 lugares.
     luautils.walkAdj(character, square)
 
-    --[[ INFORMAR A SQUARE AO CONTAINER, senao a acao estoura.
+    --[[ INFORMAR A SQUARE AO CONTAINER DE FORA, senao a acao estoura.
 
          throwGrappledIntoInventory chama ItemContainer.getWorldPosition para virar o
-         personagem na direcao do container, e getWorldPosition precisa de
-         getSquare(). Em ItemContainer, getSquare() resolve por veiculo, depois
-         sourceGrid, depois parent -- os tres nulos num container que vem de item
-         largado no chao. O resultado foi NullPointerException em getWorldPosition.
+         personagem na direcao do container. E getWorldPosition, ANTES de qualquer
+         outra coisa, recursa no getOutermostContainer -- e para um item largado no
+         chao o container de fora nao e o do carrinho, e o container "floor" da
+         square. Esse nao tem square nenhuma, e o getX() nele e o
+         NullPointerException.
 
-         Nao e gambiarra: o carrinho ESTA nesta square, e sourceGrid e exatamente o
-         campo que diz onde o container esta. O que faltava era ninguem ter escrito
-         nele, porque item nunca precisa disso -- so container de objeto de mundo.
+         A primeira tentativa escreveu a square no container DO CARRINHO e nao
+         mudou nada, porque a recursao nunca chega nele. A pista estava no proprio
+         rastro: duas chamadas empilhadas de getWorldPosition, uma chamando a outra.
 
-         Quem limpa e WB_Equip.toHands, quando o carrinho sai do chao. ]]
+         Por isso o alvo aqui e quem devolve nil em getSquare(), seja quem for. E
+         escrever a square nao e mentira: o container "floor" pertence aquela
+         square e sempre pertenceu -- so ninguem tinha preenchido o campo. ]]
     local inventory = cart:getInventory()
-    inventory:setSourceGrid(square)
+    anchorToSquare(inventory:getOutermostContainer(), square)
+    anchorToSquare(inventory, square)
 
     ISTimedActionQueue.add(ISDropCorpseIntoContainer:new(character, inventory))
 end
