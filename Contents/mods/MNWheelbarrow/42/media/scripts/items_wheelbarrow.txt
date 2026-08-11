@@ -48,30 +48,22 @@ module MNWheelbarrow
            o jogo oferece (as outras sao tocha e guarda-chuva). */
         StaticModel = MNWheelbarrow_Hand,
 
-        /* As duas mascaras, uma por braco. Nao existe mascara de duas maos: as
-           nove que o jogo base usa sao todas pares por lado (bag, torch,
-           umbrella, angletorch), entao a unica forma de por os dois bracos na
-           pose e declarar as duas.
+        /* Mascara PROPRIA, e ela e o que finalmente poe os DOIS bracos na pose.
+           Ver 42/media/AnimSets/player/maskingright/mnwb_holdingcart.xml.
 
-           ESTE CAMPO JA FOI REMOVIDO DAQUI, POR DIAGNOSTICO ERRADO MEU. Eu
-           concluira que secondaryAnimMask impedia equipar, comparando o item real
-           (nao equipava) com uma variante de teste (equipava). Mas havia DUAS
-           diferencas entre os dois, nao uma: a mascara, e o WB_Hands, cuja
-           invariante estava quebrada e desequipava o carrinho no mesmo frame. A
-           variante escapava por nao estar em HAULER_TYPES, entao o WB_Hands nunca
-           a tocava. Consertar o WB_Hands e o que resolveu equipar -- a mascara era
-           inocente, e eu credite o resultado a variavel errada.
+           Eu tinha concluido que isso era impossivel -- "mascara e por mao,
+           entao nunca da pose de dois bracos" -- e gastei uma rodada tentando
+           somar primaryAnimMask com secondaryAnimMask, sem efeito. A conclusao
+           estava errada: por mao e o SLOT que declara a mascara; o alcance dela
+           e definido pelos ossos que ela lista, e ali cabe o corpo inteiro.
 
-           O jogo base sustenta isso: 12 itens usam StaticModel com as duas
-           mascaras (as lanternas Hurricane). Nenhum e container, mas a combinacao
-           de campos em si esta longe de ser inedita. */
-        primaryAnimMask = holdingbagright,
-        secondaryAnimMask = holdingbagleft,
+           A mascara nossa acrescenta o lado esquerdo aos ossos da holdingbagright
+           vanilla. Um slot so, dois bracos.
 
-        /* Valor de PARTIDA apenas: WB_Weight sobe para o da sandbox option
-           (200 por padrao) assim que o save carrega. Fica baixo aqui porque o
-           parser de script e que pode ter limite proprio -- o limite de runtime,
-           esse sim, nao existe. */
+           secondaryAnimMask sai junto: com a mascara certa embaixo ele so teria
+           chance de brigar pelo braco esquerdo. */
+        primaryAnimMask = mnwb_holdingcart,
+
         Capacity = 47,
         WeightReduction = 0,
         CanHaveHoles = false,

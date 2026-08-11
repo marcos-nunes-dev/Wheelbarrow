@@ -73,14 +73,33 @@ TEXTURE_SIZE = 512
 ATLAS_SPLIT = 0.78
 SHADOW_U0, SHADOW_U1 = 0.80, 1.0
 
+# MARGEM DE AMOSTRAGEM, em texels. A filtragem bilinear le meio texel para fora
+# de cada borda, entao um UV que termina exatamente na emenda do atlas mistura
+# com o que houver do outro lado. Foi isso que produziu uma linha fina no limite
+# do modelo: a borda direita da textura do carrinho sangrava para dentro da faixa
+# vazia. Recuar as duas regioes por um texel e meio resolve a causa, em vez de
+# disfarcar o sintoma.
+UV_INSET_TEXELS = 1.5
+
 # A sombra cobre a pegada do carrinho com uma folga. Em unidades de malha.
-SHADOW_MARGIN = 0.12
+# Folga menor deixa o quad mais colado ao objeto: quanto menos area de quad
+# transparente sobrar, menos chance de ela aparecer como uma mancha de luz
+# diferente no chao.
+SHADOW_MARGIN = 0.06
 # Distancia do plano do chao. Zero exato briga com o piso pelo mesmo pixel de
-# profundidade e produz cintilacao.
-SHADOW_LIFT = 0.004
-# Fracao do raio com alpha cheio antes de a borda desmanchar. Queda desde o
-# centro fazia a mancha parecer bem menor que o carrinho em tela.
-SHADOW_CORE = 0.55
+# profundidade e produz cintilacao; baixo o suficiente para o quad nao parecer
+# flutuar sobre o piso.
+SHADOW_LIFT = 0.0025
+# Fracao do raio com alpha cheio antes de a borda desmanchar, e o expoente da
+# queda.
+#
+# A primeira versao usava nucleo 0.55 com queda suave, e o resultado foi um HALO
+# largo e fraco que o Marcos leu como "o chao tem uma iluminacao diferente fora
+# da sombra". O olho nao interpreta alpha baixo espalhado como sombra -- ele
+# interpreta como o chao ter mudado de cor. Nucleo maior e queda mais rapida
+# concentram a mancha e encurtam esse halo.
+SHADOW_CORE = 0.68
+SHADOW_FALLOFF_POWER = 1.8
 SHADOW_ALPHA = 170
 
 
@@ -163,9 +182,11 @@ def _shrink_u(target):
     encolhi os UVs de um modelo cuja textura nao tinha mudado, e ele passou a
     amostrar so um pedaco da imagem inteira.
     """
+    inset = UV_INSET_TEXELS / TEXTURE_SIZE
+    limit = ATLAS_SPLIT - inset
     uv, uv_type = _get(target, b"UV")
     for i in range(0, len(uv), 2):
-        uv[i] = uv[i] * ATLAS_SPLIT
+        uv[i] = uv[i] * limit
     _set(target, b"UV", uv, uv_type)
 
 
@@ -200,9 +221,11 @@ def _add_quad(target, corners):
     nidx.extend([start_normal + i for i in range(4)])
 
     # UVs sao ByPolygonVertex/IndexToDirect: os cantos caem na faixa reservada.
+    inset = UV_INSET_TEXELS / TEXTURE_SIZE
+    u0, u1 = SHADOW_U0 + inset, SHADOW_U1 - inset
+    v0, v1 = inset, 1.0 - inset
     uv_base = len(uv) // 2
-    uv.extend([SHADOW_U0, 0.0, SHADOW_U1, 0.0,
-               SHADOW_U1, 1.0, SHADOW_U0, 1.0])
+    uv.extend([u0, v0, u1, v0, u1, v1, u0, v1])
     uvidx.extend([uv_base + i for i in range(4)])
     uvidx.extend([uv_base + 3, uv_base + 2, uv_base + 1, uv_base])
 
@@ -283,8 +306,8 @@ def build_texture(path):
             if d <= SHADOW_CORE:
                 fade = 1.0
             else:
-                fade = 1.0 - (d - SHADOW_CORE) / (1.0 - SHADOW_CORE)
-                fade = fade * fade * (3.0 - 2.0 * fade)
+                t = 1.0 - (d - SHADOW_CORE) / (1.0 - SHADOW_CORE)
+                fade = (t * t * (3.0 - 2.0 * t)) ** SHADOW_FALLOFF_POWER
             px[x, y] = (0, 0, 0, int(SHADOW_ALPHA * fade))
 
     out.save(path)
