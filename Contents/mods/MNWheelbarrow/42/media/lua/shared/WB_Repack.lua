@@ -256,22 +256,22 @@ function WB_Repack.sweepGround(character, radius)
         reconcile(cart:getInventory(), true)
     end)
 
-    local square = character:getSquare()
-    if square == nil then return end
+    --[[ Itens soltos pelo MESMO raio dos carrinhos.
 
-    -- Largar no chao e um dos destinos de saida, e ali o item nao esta em container
-    -- nenhum -- por isso a varredura de objetos de mundo, e nao de itens.
-    local objects = square:getWorldObjects()
-    for i = 0, objects:size() - 1 do
-        local object = objects:get(i)
-        if instanceof(object, "IsoWorldInventoryObject") then
-            local item = object:getItem()
-            if item ~= nil and not WB_Cart.is(item)
-                and item:hasModData() and item:getModData()[MARK] == true then
-                restore(item)
-            end
+         A primeira versao olhava so a square do personagem, e isso deixou passar o
+         caso mais visivel: o carrinho tombado ESPALHA a carga por ate nove squares
+         (WB_Spill.dump respeita um limite de peso por square). Os troncos ficavam
+         comprimidos no chao ate alguem pega-los.
+
+         O erro de fundo era duplicacao: WB_Cart ja sabia varrer squares por raio e eu
+         escrevi uma segunda travessia, pela metade. Agora as duas passam por
+         forEachItemOnGround. ]]
+    WB_Cart.forEachItemOnGround(character, radius, function(item)
+        if not WB_Cart.is(item)
+            and item:hasModData() and item:getModData()[MARK] == true then
+            restore(item)
         end
-    end
+    end)
 end
 
 return WB_Repack

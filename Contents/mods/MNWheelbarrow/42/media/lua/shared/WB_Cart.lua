@@ -60,8 +60,11 @@ end
 --- carregar o carrinho exige larga-lo no chao. Varrer so o inventario deixava
 --- justamente o caso principal de fora.
 ---
+--- Aplica `fn` a cada ITEM largado no chao ao redor do personagem.
+---
 --- @param radius number raio em squares
-function WB_Cart.forEachOnGround(character, radius, fn)
+--- @param fn function(item, worldObject, square)
+function WB_Cart.forEachItemOnGround(character, radius, fn)
     if character == nil then return end
     local square = character:getSquare()
     local cell = getCell()
@@ -81,12 +84,26 @@ function WB_Cart.forEachOnGround(character, radius, fn)
                     -- obrigatorio, nao defensivo.
                     if instanceof(obj, "IsoWorldInventoryObject") then
                         local item = obj:getItem()
-                        if WB_Cart.is(item) then fn(item, obj, sq) end
+                        if item ~= nil then fn(item, obj, sq) end
                     end
                 end
             end
         end
     end
+end
+
+--- Aplica `fn` a cada carrinho largado no chao ao redor do personagem.
+---
+--- Um FILTRO sobre forEachItemOnGround, e nao uma segunda varredura de squares.
+--- WB_Repack precisa dos itens SOLTOS pelo mesmo raio, e ter duas travessias
+--- separadas foi exatamente o defeito: a dele olhava so a square do personagem,
+--- enquanto o carrinho tombado espalha a carga por ate nove.
+---
+--- @param radius number raio em squares
+function WB_Cart.forEachOnGround(character, radius, fn)
+    WB_Cart.forEachItemOnGround(character, radius, function(item, obj, sq)
+        if WB_Cart.is(item) then fn(item, obj, sq) end
+    end)
 end
 
 return WB_Cart
