@@ -103,8 +103,23 @@ local function onDropCorpse(playerNum, cart)
     -- usa em 282 lugares.
     luautils.walkAdj(character, square)
 
-    ISTimedActionQueue.add(
-        ISDropCorpseIntoContainer:new(character, cart:getInventory()))
+    --[[ INFORMAR A SQUARE AO CONTAINER, senao a acao estoura.
+
+         throwGrappledIntoInventory chama ItemContainer.getWorldPosition para virar o
+         personagem na direcao do container, e getWorldPosition precisa de
+         getSquare(). Em ItemContainer, getSquare() resolve por veiculo, depois
+         sourceGrid, depois parent -- os tres nulos num container que vem de item
+         largado no chao. O resultado foi NullPointerException em getWorldPosition.
+
+         Nao e gambiarra: o carrinho ESTA nesta square, e sourceGrid e exatamente o
+         campo que diz onde o container esta. O que faltava era ninguem ter escrito
+         nele, porque item nunca precisa disso -- so container de objeto de mundo.
+
+         Quem limpa e WB_Equip.toHands, quando o carrinho sai do chao. ]]
+    local inventory = cart:getInventory()
+    inventory:setSourceGrid(square)
+
+    ISTimedActionQueue.add(ISDropCorpseIntoContainer:new(character, inventory))
 end
 
 function WB_Corpse.onFillWorldObjectContextMenu(playerNum, context, _worldObjects)

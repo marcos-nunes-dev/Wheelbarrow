@@ -69,6 +69,13 @@ function WB_Equip.toHands(character, cart, worldItem)
         inv:AddItem(cart)
     end
 
+    -- A square do container so e verdade enquanto o carrinho esta no chao. Quem a
+    -- escreve e WB_Corpse, para que throwGrappledIntoInventory ache a posicao; se
+    -- ela sobrevivesse a subida para as maos, ItemContainer.getSquare passaria a
+    -- mentir sobre onde o compartimento esta.
+    local inventory = cart:getInventory()
+    if inventory ~= nil then inventory:setSourceGrid(nil) end
+
     character:setPrimaryHandItem(cart)
     character:setSecondaryHandItem(cart)
     character:resetModelNextFrame()
