@@ -1,5 +1,6 @@
 {
     "IGUI_ContainerTitle_wheelbarrow": "Kruiwagen",
     "IGUI_MNWB_PickingUp": "Oppakken",
-    "IGUI_MNWB_PuttingDown": "Neerzetten"
+    "IGUI_MNWB_PuttingDown": "Neerzetten",
+    "IGUI_MNWB_Refuse": "Niet met de kruiwagen in je handen"
 }

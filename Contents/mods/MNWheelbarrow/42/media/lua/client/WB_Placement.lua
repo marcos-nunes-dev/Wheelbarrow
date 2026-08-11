@@ -32,6 +32,7 @@ require "TimedActions/ISWheelbarrowPickUp"
 require "TimedActions/ISWheelbarrowPutDown"
 
 local WB_Cart = require "WB_Cart"
+local WB_Interact = require "WB_Interact"
 local WB_Spill = require "WB_Spill"
 local WB_Transfer = require "WB_Transfer"
 
@@ -190,10 +191,10 @@ local function nearestCartOnGround(character)
     return best, bestObject
 end
 
-Events.OnKeyPressed.Add(function(key)
-    if not getCore():isKey("Interact", key) then return end
-
-    local character = getSpecificPlayer(0)
+--- Pegar ou largar o carrinho. Chamado por WB_Interact SO quando o engine nao
+--- reivindicou a tecla de interagir -- por isso nao precisa perguntar aqui se ha
+--- uma porta, um portao ou um veiculo por perto.
+local function onInteract(character)
     if character == nil or character:isDead() then return end
     -- Nao atropela outra acao em andamento: a tecla de interagir e compartilhada
     -- com o resto do jogo.
@@ -209,6 +210,14 @@ Events.OnKeyPressed.Add(function(key)
     if worldItem ~= nil then
         ISTimedActionQueue.add(ISWheelbarrowPickUp:new(character, worldItem))
     end
+end
+
+WB_Interact.setCartAction(onInteract)
+
+Events.OnKeyPressed.Add(function(key)
+    if not getCore():isKey("Interact", key) then return end
+    local character = getSpecificPlayer(0)
+    if character ~= nil then WB_Interact.press(character) end
 end)
 
 return WB_Placement

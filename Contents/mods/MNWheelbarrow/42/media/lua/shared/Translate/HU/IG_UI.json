@@ -1,5 +1,6 @@
 {
     "IGUI_ContainerTitle_wheelbarrow": "Talicska",
     "IGUI_MNWB_PickingUp": "Felvétel",
-    "IGUI_MNWB_PuttingDown": "Letétel"
+    "IGUI_MNWB_PuttingDown": "Letétel",
+    "IGUI_MNWB_Refuse": "Nem a talicskával a kezedben"
 }

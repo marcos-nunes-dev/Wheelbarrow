@@ -1,5 +1,6 @@
 {
     "IGUI_ContainerTitle_wheelbarrow": "Xe cút kít",
     "IGUI_MNWB_PickingUp": "Đang nhấc",
-    "IGUI_MNWB_PuttingDown": "Đang đặt xuống"
+    "IGUI_MNWB_PuttingDown": "Đang đặt xuống",
+    "IGUI_MNWB_Refuse": "Không thể khi đang cầm xe rùa"
 }

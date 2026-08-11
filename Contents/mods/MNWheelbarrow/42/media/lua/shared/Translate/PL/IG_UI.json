@@ -1,5 +1,6 @@
 {
     "IGUI_ContainerTitle_wheelbarrow": "Taczka",
     "IGUI_MNWB_PickingUp": "Podnoszenie",
-    "IGUI_MNWB_PuttingDown": "Odstawianie"
+    "IGUI_MNWB_PuttingDown": "Odstawianie",
+    "IGUI_MNWB_Refuse": "Nie z taczką w rękach"
 }
