@@ -30,11 +30,12 @@ module Base
      * scale = 6.5, que renderizou o carrinho 3593x grande demais -- ocupando
      * varios quarteiroes.
      *
-     * 0.00553 e o valor calibrado em tela, em quatro passadas: 0.0025 ficou tres
+     * 0.00525 e o valor calibrado em tela, em cinco passadas: 0.0025 ficou tres
      * vezes pequeno demais, 0.0075 ficou 20% grande demais, 0.006 ainda pedia
-     * mais 5%, e 0.0057 ficou 3% grande depois que a animacao de dois bracos
-     * entrou -- com os dois bracos na pose, o encaixe nas maos passou a ser
-     * visivel e o excesso apareceu. Dobrar o numero dobra o tamanho renderizado.
+     * mais 5%, e depois que a animacao de dois bracos entrou o carrinho ficou
+     * grande outra vez -- com os dois bracos na pose, o encaixe nas maos passou a
+     * ser visivel e o excesso apareceu. Dai 0.0057 -> 0.00553 -> 0.00525.
+     * Dobrar o numero dobra o tamanho renderizado.
      *
      * OS DOIS MODELOS COMPARTILHAM ESTE VALOR de proposito: o de chao e o de mao
      * sao o mesmo objeto e precisam ter o mesmo tamanho. Mudar um so faria o
@@ -95,7 +96,7 @@ module Base
     {
         mesh = WorldItems/Wheelbarrow,
         texture = WorldItems/Wheelbarrow_Ground,
-        scale = 0.00553,
+        scale = 0.00525,
     }
 
     /*
@@ -155,6 +156,6 @@ module Base
     {
         mesh = WorldItems/Wheelbarrow_Hand,
         texture = WorldItems/Wheelbarrow_Hand,
-        scale = 0.00553,
+        scale = 0.00525,
     }
 }
