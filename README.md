@@ -1,4 +1,6 @@
-# Wheelbarrow — Project Zomboid Build 42
+# Wheelbarrow/Carrinho de mão — Heavy Hauling
+
+Project Zomboid Build 42.
 
 A construction wheelbarrow for hauling loads the game normally punishes you for
 carrying: generators, logs, propane tanks.

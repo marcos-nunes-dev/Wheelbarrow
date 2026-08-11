@@ -1,5 +1,5 @@
 version=1
-title=Wheelbarrow
+title=Wheelbarrow/Carrinho de mão — Heavy Hauling
 description=A construction wheelbarrow for hauling the loads Project Zomboid normally punishes you for carrying: generators, logs, propane tanks.
 description=
 description=[b]It is deliberately useless for ordinary loot.[/b] Weight reduction only applies to genuinely heavy items - filling it with nails and canned food gains you nothing. It exists for a handful of very heavy objects, and it charges you for that: it takes [b]both hands[/b], so no weapon while you push it, and it slows you down.
