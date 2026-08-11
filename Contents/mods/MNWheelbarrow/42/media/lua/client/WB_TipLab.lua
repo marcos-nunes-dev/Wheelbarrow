@@ -75,10 +75,9 @@ local function adjust(character, angleDelta, heightDelta)
     -- nao ha como ajusta-la sem repor o objeto -- ver WB_Tipping.dropTipped.
     WB_Tipping.dropTipped(character, target.cart, target.square)
 
+    -- So a guinada. A inclinacao nao depende dela: ela e aplicada no eixo LOCAL
+    -- do carrinho, antes da guinada na composicao do engine.
     target.cart:setWorldZRotation(heading)
-    -- A inclinacao e decomposta PELA guinada, entao devolver a direcao exige
-    -- refazer a inclinacao: dropTipped a calculou com a guinada do personagem.
-    WB_Tipping.reapplyTilt(target.cart)
 
     announce(character, string.format("inclinacao %.0f  altura %.2f",
         WB_Tipping.getAngle(), WB_Tipping.getHeight()))

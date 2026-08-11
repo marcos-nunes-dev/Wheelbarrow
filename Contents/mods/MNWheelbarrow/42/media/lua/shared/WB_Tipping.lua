@@ -61,27 +61,38 @@ local TIPPED_MODEL = "MNWheelbarrow_Tipped"
 --- Ajustaveis em jogo por WB_TipLab enquanto a calibracao nao fechar. Noventa
 --- graus seria deitado exato; menos deixa o carrinho apoiado, o que costuma ler
 --- melhor do que perfeitamente plano.
-local tipAngle = 308.0
+--- O 308 medido antes NAO vale: ele foi achado sob a decomposicao invalida, e
+--- descrevia uma pose que so existia naquele calculo errado. Recomeca em 80, que
+--- e quase deitado, e o laboratorio refina.
+local tipAngle = 80.0
 local tipHeight = 0.10
 
---- Fase entre a guinada do carrinho e o eixo em que ele deve tombar.
-local TIP_PHASE = 0.0
-
---- Direcoes distintas usadas ao decompor a inclinacao.
+--- Inclina o carrinho no eixo LOCAL dele.
 ---
---- Inclinar num eixo fixo do MUNDO faz a direcao da queda depender de para onde
---- o carrinho aponta -- ele tombava na diagonal. Decompor pela guinada resolve,
---- mas guinada e continua e cada combinacao vira entrada de atlas. Arredondar
---- para oito direcoes limita o total e todas viram cache. O erro maximo e 22.5
---- graus na direcao da queda, invisivel num objeto deitado.
-local TIP_DIRECTIONS = 8
-
+--- QUAL EIXO USAR NAO E ESCOLHA, e sim consequencia da ordem em que o engine
+--- compoe as rotacoes. O atlas monta a matriz com Matrix4f.rotateXYZ, que aplica
+--- X, depois Y, depois Z -- e o mapeamento e
+---
+---     angle.x = worldXRotation
+---     angle.y = worldZRotation   (a guinada)
+---     angle.z = worldYRotation
+---
+--- Entao worldXRotation entra DEPOIS da guinada, em espaco de MUNDO, enquanto
+--- worldYRotation entra ANTES, no espaco do proprio carrinho. Por isso inclinar
+--- em X fazia a direcao da queda depender de para onde o carrinho apontava --
+--- era world-space -- e por isso inclinar em Y e consistente de graca.
+---
+--- Duas tentativas anteriores morreram por nao saber disto: inclinar so em X
+--- (tombava na diagonal) e depois espalhar o angulo entre X e Y por seno e
+--- cosseno. A segunda e matematicamente invalida: rotacao nao se decompoe como
+--- vetor, so vale para angulo infinitesimal, e a 50 graus ja gira torto. Nada
+--- disso e necessario -- basta usar o eixo local.
+---
+--- De quebra some a explosao de entradas de atlas: como a inclinacao nao depende
+--- mais da guinada, existe UM valor de angulo, e nao um por direcao.
 local function applyAngle(cart, degrees)
-    local step = 360.0 / TIP_DIRECTIONS
-    local yaw = math.floor((cart:getWorldZRotation() + TIP_PHASE) / step + 0.5) * step
-    local radians = math.rad(yaw)
-    cart:setWorldXRotation(degrees * math.cos(radians))
-    cart:setWorldYRotation(degrees * math.sin(radians))
+    cart:setWorldXRotation(0.0)
+    cart:setWorldYRotation(degrees)
 end
 
 --- @return boolean se o carrinho esta marcado como tombado
@@ -124,17 +135,6 @@ function WB_Tipping.dropTipped(character, cart, square)
     applyAngle(cart, tipAngle)
 end
 
---- Recalcula a inclinacao a partir da guinada ATUAL do carrinho.
----
---- A inclinacao e decomposta pela guinada, entao mudar uma exige refazer a
---- outra. Existe para quem altera a direcao depois de o carrinho ja estar
---- tombado -- hoje so o laboratorio de calibracao, que preserva a direcao entre
---- ajustes.
-function WB_Tipping.reapplyTilt(cart)
-    if cart == nil then return end
-    applyAngle(cart, tipAngle)
-end
-
 --- Devolve o carrinho a posicao normal. Idempotente.
 function WB_Tipping.reset(cart)
     if cart == nil then return end
@@ -157,11 +157,7 @@ function WB_Tipping.restore(cart)
     -- O modelo tambem nao sobrevive ao recarregamento: e estado de runtime.
     cart:setWorldStaticModel(TIPPED_MODEL)
 
-    -- A soma das componentes so e zero com o carrinho em pe, entao ela detecta
-    -- que a inclinacao foi perdida.
-    local tilt = math.abs(cart:getWorldXRotation())
-        + math.abs(cart:getWorldYRotation())
-    if tilt < 0.5 then
+    if math.abs(cart:getWorldYRotation()) < 0.5 then
         applyAngle(cart, tipAngle)
     end
 end
