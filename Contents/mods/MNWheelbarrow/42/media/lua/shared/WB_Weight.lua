@@ -168,6 +168,10 @@ function WB_Weight.refreshNearbyGround(player, force)
     if not force and now - lastGroundScan < GROUND_SCAN_INTERVAL_MS then return end
     lastGroundScan = now
 
+    -- Dentro do trecho estrangulado de proposito: reacondicionar carrinho no chao
+    -- exige varrer squares, e isso nao pode acontecer a cada mudanca de container.
+    WB_Repack.sweepGround(player, GROUND_RADIUS)
+
     WB_Cart.forEachOnGround(player, GROUND_RADIUS, function(cart)
         WB_Weight.refresh(cart)
         -- Recarregar o save recria o objeto de mundo, e o construtor zera as
@@ -188,7 +192,7 @@ local function refreshLocalPlayers(force)
                  le esses pesos para calcular a reducao. Na ordem inversa, a reducao
                  seria calculada sobre um estado que a varredura ainda ia mudar, e o
                  painel mostraria o valor de um quadro atras a cada transferencia. ]]
-            WB_Repack.sweep(player, GROUND_RADIUS)
+            WB_Repack.sweepCarried(player)
 
             WB_Weight.refreshPlayer(player)
             WB_Weight.refreshNearbyGround(player, force)

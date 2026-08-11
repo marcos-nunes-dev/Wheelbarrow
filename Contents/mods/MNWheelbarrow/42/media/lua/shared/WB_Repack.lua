@@ -79,6 +79,7 @@
 ]]
 
 local WB_Cart = require "WB_Cart"
+local WB_Sandbox = require "WB_Sandbox"
 
 local WB_Repack = {}
 
@@ -92,6 +93,13 @@ local MARK = "MNWB_repacked"
 --- 50 do teto com folga para o portao de entrada, que soma o peso REAL do item que
 --- esta entrando ao peso ja reacondicionado do conteudo.
 local FACTOR = 0.2
+
+--- Profundidade maxima da descida por containers aninhados.
+---
+--- Nao e paranoia: isto roda a cada mudanca de container, e estouro de pilha num
+--- handler desses derruba o jogo inteiro em vez de falhar sozinho. WB_Legacy escolheu
+--- o mesmo 3 pelo mesmo motivo, e nenhuma arvore real de inventario passa disso.
+local MAX_DEPTH = 3
 
 --- @return number|nil peso canonico do script, ou nil se nao houver
 local function scriptWeight(item)
@@ -107,13 +115,25 @@ end
 --- restaurar depois sem inventar um numero.
 local function repackable(item)
     if item == nil then return false end
+
+    local real = scriptWeight(item)
+    if real == nil or real <= 0 then return false end
+
+    --[[ SO CARGA PESADA. O reacondicionamento existe para vencer o teto de 50 no que
+         e pesado; item leve nao precisa dele e nao deve receber.
+
+         Duas razoes. O teto de carga leve continua sendo 50 em peso REAL (ver
+         WB_AcceptItem), entao comprimir item leve nao aumentaria quanta tralha cabe --
+         seria so trabalho. E cada item tocado e uma chance de vazamento: restringir ao
+         que precisa reduz a superficie do unico risco real deste arquivo. ]]
+    if real < WB_Sandbox.get("HeavyThreshold") then return false end
+
+    -- Peso que muda com o uso: comprimir apagaria esse estado na restauracao, porque
+    -- o valor de volta vem do script. Ver a regra 3 no cabecalho.
     if instanceof(item, "DrainableComboItem") then return false end
     if instanceof(item, "Food") then return false end
     if instanceof(item, "Clothing") then return false end
     if WB_Cart.is(item) then return false end
-
-    local real = scriptWeight(item)
-    if real == nil or real <= 0 then return false end
 
     local marked = item:hasModData() and item:getModData()[MARK] == true
     if marked then return true end
@@ -148,61 +168,88 @@ local function restore(item)
     if item:hasModData() then item:getModData()[MARK] = nil end
 end
 
---- Reafirma a invariante em um container.
----
---- @param inside boolean se este container e o de um carrinho
-local function reconcile(container, inside)
-    if container == nil then return end
+--[[ Reafirma a invariante num container, descendo pela arvore.
+
+     O ESTADO "dentro" E DECIDIDO NA DESCIDA, e nao pelo chamador. Ao entrar num item
+     que e um hauler, `inside` passa a ser verdadeiro para tudo abaixo dele.
+
+     A primeira versao recebia `inside` do chamador e tinha um defeito grave por isso:
+     o carrinho EQUIPADO vive dentro do inventario do jogador, entao a passada que
+     varria o inventario com inside=false descia no carrinho e RESTAURAVA o conteudo
+     dele -- desfazendo o reacondicionamento. E rodava depois da passada que
+     reacondicionava, entao ganhava. Carrinho na mao perdia o efeito inteiro.
+
+     Decidir na descida tambem eliminou as passadas separadas por carrinho: uma
+     varredura do inventario do jogador ja cobre carrinho na mao e bolsa dentro do
+     carrinho, na profundidade que existir.
+
+     @param inside boolean se algum ancestral ja e um hauler ]]
+local function reconcile(container, inside, depth)
+    depth = depth or 0
+    if container == nil or depth > MAX_DEPTH then return end
+
     local items = container:getItems()
     for i = 0, items:size() - 1 do
         local item = items:get(i)
-        local marked = item:hasModData() and item:getModData()[MARK] == true
 
-        if inside then
-            if repackable(item) then repack(item) end
-        elseif marked then
+        --[[ Um `elseif` cobre os tres casos, e o terceiro nao e obvio:
+
+               dentro e reacondicionavel  -> comprime (rederivado, idempotente)
+               dentro e marcado, mas ja NAO reacondicionavel -> restaura
+               fora e marcado -> restaura
+
+             O do meio acontece se o limite de peso pesado subir na sandbox: um item
+             marcado que passou a contar como leve ficaria comprimido para sempre
+             dentro do carrinho, porque a restauracao so olhava quem estava fora. ]]
+        if inside and repackable(item) then
+            repack(item)
+        elseif item:hasModData() and item:getModData()[MARK] == true then
             restore(item)
         end
 
-        -- Container dentro de container: mochila dentro do carrinho, carrinho no
-        -- chao com bolsa dentro. A invariante vale em profundidade, senao um item
-        -- escaparia so por estar dentro de uma bolsa.
         if instanceof(item, "InventoryContainer") then
-            reconcile(item:getInventory(), inside)
+            reconcile(item:getInventory(), inside or WB_Cart.is(item), depth + 1)
         end
     end
 end
 
---- Reafirma a invariante em tudo o que da para alcancar a partir do jogador.
+--- Reafirma a invariante no que o jogador carrega.
 ---
---- @param radius number raio em squares para carrinhos no chao
-function WB_Repack.sweep(character, radius)
+--- Cobre carrinho na mao, bolsa dentro do carrinho e qualquer item marcado que tenha
+--- acabado de sair para o inventario -- os destinos de toda saida iniciada por quem
+--- esta segurando as coisas.
+function WB_Repack.sweepCarried(character)
+    if character == nil then return end
+    reconcile(character:getInventory(), false)
+end
+
+--- Reafirma a invariante nos carrinhos e itens largados ao redor.
+---
+--- Separado de sweepCarried porque varrer o chao custa uma varredura de squares, e
+--- WB_Weight ja decidiu estrangular isso -- esta funcao e chamada de dentro do trecho
+--- estrangulado, e nao a cada mudanca de container.
+---
+--- @param radius number raio em squares
+function WB_Repack.sweepGround(character, radius)
     if character == nil then return end
 
-    -- Carrinhos primeiro: o que esta dentro deles fica reacondicionado.
-    WB_Cart.forEachIn(character:getInventory(), function(cart)
+    WB_Cart.forEachOnGround(character, radius, function(cart)
         reconcile(cart:getInventory(), true)
     end)
-    WB_Cart.forEachOnGround(character, radius or 2, function(cart)
-        reconcile(cart:getInventory(), true)
-    end)
-
-    -- Depois o resto: qualquer item marcado que esteja aqui saiu de um carrinho.
-    reconcile(character:getInventory(), false)
 
     local square = character:getSquare()
-    if square ~= nil then
-        -- O chao e um dos tres destinos possiveis de uma saida.
-        local objects = square:getWorldObjects()
-        for i = 0, objects:size() - 1 do
-            local object = objects:get(i)
-            if instanceof(object, "IsoWorldInventoryObject") then
-                local item = object:getItem()
-                if item ~= nil and item:hasModData()
-                    and item:getModData()[MARK] == true
-                    and not WB_Cart.is(item) then
-                    restore(item)
-                end
+    if square == nil then return end
+
+    -- Largar no chao e um dos destinos de saida, e ali o item nao esta em container
+    -- nenhum -- por isso a varredura de objetos de mundo, e nao de itens.
+    local objects = square:getWorldObjects()
+    for i = 0, objects:size() - 1 do
+        local object = objects:get(i)
+        if instanceof(object, "IsoWorldInventoryObject") then
+            local item = object:getItem()
+            if item ~= nil and not WB_Cart.is(item)
+                and item:hasModData() and item:getModData()[MARK] == true then
+                restore(item)
             end
         end
     end
