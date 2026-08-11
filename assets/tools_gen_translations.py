@@ -489,9 +489,9 @@ TOOLTIPS = {
         "a log is 9.<br>Load it while it sits on the ground; the game does not "
         "allow heavy items into a container you are holding.",
     "Sandbox_MNWBLightCapacity_tooltip":
-        "A second, much lower ceiling that applies only to items BELOW the heavy "
-        "threshold.<br>Without it the total capacity would allow absurd amounts of "
-        "small loot -- 200 books weigh 200, and none of it would be reduced.<br>Set "
+        "A separate, much lower ceiling for items BELOW the heavy threshold.<br>Heavy "
+        "cargo is repacked and takes a fifth of the room; light loot is not, and gets "
+        "no weight relief either. This caps how much of it you can bring along.<br>Set "
         "to 0 to remove the light limit entirely.",
     "Sandbox_MNWBHeavyThreshold_tooltip":
         "Items at or above this weight count as heavy and get the weight "
@@ -561,10 +561,10 @@ TOOLTIPS_PT = {
             "40, um tronco 9.<br>Carregue com ele no chão; o jogo não aceita item "
             "pesado num compartimento que você está segurando.",
         "Sandbox_MNWBLightCapacity_tooltip":
-            "Um segundo teto, muito mais baixo, que vale só para itens ABAIXO do "
-            "limite de peso pesado.<br>Sem ele a capacidade total permitiria uma "
-            "quantidade absurda de tralha: 200 livros pesam 200, e nada disso seria "
-            "reduzido.<br>Zero remove o limite de carga leve.",
+            "Um teto separado, bem mais baixo, para itens ABAIXO do limite de peso "
+            "pesado.<br>Carga pesada é reacondicionada e ocupa um quinto do espaço; "
+            "tralha não é, e também não recebe alívio de peso. Isto limita quanta "
+            "dela dá para levar junto.<br>Zero remove o limite de carga leve.",
         "Sandbox_MNWBHeavyThreshold_tooltip":
             "Item com este peso ou mais conta como pesado e recebe a redução.<br>Mais "
             "leve que isso não recebe nada: o carrinho é deliberadamente inútil para "

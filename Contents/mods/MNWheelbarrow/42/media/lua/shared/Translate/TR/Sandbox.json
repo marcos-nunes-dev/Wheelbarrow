@@ -9,7 +9,7 @@
     "Sandbox_MNWBCapacity": "Kapasite",
     "Sandbox_MNWBCapacity_tooltip": "How much the wheelbarrow can hold.<br>For reference: a generator is 40, a log is 9.<br>Load it while it sits on the ground; the game does not allow heavy items into a container you are holding.",
     "Sandbox_MNWBLightCapacity": "Hafif yük sınırı",
-    "Sandbox_MNWBLightCapacity_tooltip": "A second, much lower ceiling that applies only to items BELOW the heavy threshold.<br>Without it the total capacity would allow absurd amounts of small loot -- 200 books weigh 200, and none of it would be reduced.<br>Set to 0 to remove the light limit entirely.",
+    "Sandbox_MNWBLightCapacity_tooltip": "A separate, much lower ceiling for items BELOW the heavy threshold.<br>Heavy cargo is repacked and takes a fifth of the room; light loot is not, and gets no weight relief either. This caps how much of it you can bring along.<br>Set to 0 to remove the light limit entirely.",
     "Sandbox_MNWBHeavyThreshold": "Ağır eşya eşiği",
     "Sandbox_MNWBHeavyThreshold_tooltip": "Items at or above this weight count as heavy and get the weight reduction.<br>Anything lighter gets nothing at all; the wheelbarrow is deliberately useless for small loot.",
     "Sandbox_MNWBHeavyReduction": "Ağır eşya ağırlık azaltma",

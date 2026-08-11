@@ -9,7 +9,7 @@
     "Sandbox_MNWBCapacity": "Capacidade",
     "Sandbox_MNWBCapacity_tooltip": "Quanto o carrinho aguenta no total.<br>Para comparar: um gerador pesa 40, um tronco 9.<br>Carregue com ele no chão; o jogo não aceita item pesado num compartimento que você está segurando.",
     "Sandbox_MNWBLightCapacity": "Limite de carga leve",
-    "Sandbox_MNWBLightCapacity_tooltip": "Um segundo teto, muito mais baixo, que vale só para itens ABAIXO do limite de peso pesado.<br>Sem ele a capacidade total permitiria uma quantidade absurda de tralha: 200 livros pesam 200, e nada disso seria reduzido.<br>Zero remove o limite de carga leve.",
+    "Sandbox_MNWBLightCapacity_tooltip": "Um teto separado, bem mais baixo, para itens ABAIXO do limite de peso pesado.<br>Carga pesada é reacondicionada e ocupa um quinto do espaço; tralha não é, e também não recebe alívio de peso. Isto limita quanta dela dá para levar junto.<br>Zero remove o limite de carga leve.",
     "Sandbox_MNWBHeavyThreshold": "Limite de item pesado",
     "Sandbox_MNWBHeavyThreshold_tooltip": "Item com este peso ou mais conta como pesado e recebe a redução.<br>Mais leve que isso não recebe nada: o carrinho é deliberadamente inútil para tralha pequena.",
     "Sandbox_MNWBHeavyReduction": "Redução de peso de item pesado",

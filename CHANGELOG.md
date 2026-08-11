@@ -41,10 +41,19 @@ Versão maior porque a mecânica central mudou.
   **jogador**; nenhum personagem chega a 40. Nunca foram carregáveis, com ou sem
   carrinho. A página prometia cinco de cada.
 
+### Alterado
+
+- **`LightCapacity` passa de 50 para 20**, e o máximo de 600 para 50. Em 50 ela era
+  opção morta: a capacidade real também é 50, então o teto nunca podia morder. Uma
+  opção de sandbox que não faz nada é pior que não existir — ela mente para quem
+  administra servidor. Em 20 ela vira alavanca de verdade e afia o princípio: 20
+  livros pesam 23 kg, contra 22 numa mochila grande que os deixa em ~4,4.
+
 ### Não verificado
 
-- **Multiplayer para o reacondicionamento.** O peso provavelmente não sincroniza, e
-  num servidor dedicado não há jogador local para disparar a reconciliação.
+- **Multiplayer.** Nunca foi testado — nem o reacondicionamento, nem o resto. O peso
+  provavelmente não sincroniza, e num servidor dedicado não há jogador local para
+  disparar a reconciliação. A página da Workshop passa a dizer isso.
 
 ## [0.1.3] — 2026-08-11
 
