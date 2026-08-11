@@ -1,0 +1,26 @@
+module Base
+{
+/*
+ * GRID DE CALIBRACAO LATERAL -- gerado por assets/tools_gen_pose_grid.py.
+ * DESCARTAVEL: sai junto com WB_PoseLab.lua antes de publicar.
+ *
+ * Uma malha por valor de X. Todas com o mesmo giro e a mesma altura do item
+ * real; so o lateral muda, entao qualquer diferenca vista vem dele.
+ */
+    /* X = 0.16 */
+    model WB_PoseX01 { mesh = WorldItems/WB_PoseX01, texture = WorldItems/Wheelbarrow_Hand, scale = 0.00499, }
+    /* X = 0.21 */
+    model WB_PoseX02 { mesh = WorldItems/WB_PoseX02, texture = WorldItems/Wheelbarrow_Hand, scale = 0.00499, }
+    /* X = 0.26 */
+    model WB_PoseX03 { mesh = WorldItems/WB_PoseX03, texture = WorldItems/Wheelbarrow_Hand, scale = 0.00499, }
+    /* X = 0.31 */
+    model WB_PoseX04 { mesh = WorldItems/WB_PoseX04, texture = WorldItems/Wheelbarrow_Hand, scale = 0.00499, }
+    /* X = 0.36 */
+    model WB_PoseX05 { mesh = WorldItems/WB_PoseX05, texture = WorldItems/Wheelbarrow_Hand, scale = 0.00499, }
+    /* X = 0.41 */
+    model WB_PoseX06 { mesh = WorldItems/WB_PoseX06, texture = WorldItems/Wheelbarrow_Hand, scale = 0.00499, }
+    /* X = 0.46 */
+    model WB_PoseX07 { mesh = WorldItems/WB_PoseX07, texture = WorldItems/Wheelbarrow_Hand, scale = 0.00499, }
+    /* X = 0.51 */
+    model WB_PoseX08 { mesh = WorldItems/WB_PoseX08, texture = WorldItems/Wheelbarrow_Hand, scale = 0.00499, }
+}

@@ -29,6 +29,13 @@ WB_Const.HAULER_TYPES = {
     ["MNWheelbarrow.Wheelbarrow"] = true,
 }
 
+-- DESCARTAVEIS: as variantes de calibracao lateral. Entram na lista para
+-- receberem o mesmo tratamento de duas maos do item real -- sem isso a pose
+-- mostrada nao seria a que esta sendo medida. Saem com WB_PoseLab.lua.
+for i = 1, 8 do
+    WB_Const.HAULER_TYPES[string.format("MNWheelbarrow.PoseX%02d", i)] = true
+end
+
 --- Namespace das sandbox options. Precisa bater com o "page" e com o prefixo
 --- dos nomes de option em sandbox-options.txt.
 WB_Const.SANDBOX_NS = "MNWheelbarrow"

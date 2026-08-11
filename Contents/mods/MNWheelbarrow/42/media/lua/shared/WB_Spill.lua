@@ -117,10 +117,10 @@ end
 --- A conversao e a mesma que o jogo base usa em FishingRod e no forrageamento:
 --- a direcao de frente vem em radianos com zero em outro eixo, dai o + pi/2.
 ---
---- GROUND_ROTATION_OFFSET e o unico numero a calibrar: ele alinha o eixo
---- comprido da malha com a frente do personagem. Se o carrinho sair virado, o
---- conserto e so este numero.
-local GROUND_ROTATION_OFFSET = 0.0
+--- GROUND_ROTATION_OFFSET alinha o eixo comprido da malha com a frente do
+--- personagem. Comecou em zero e o carrinho saiu apontando para tras -- o eixo
+--- comprido da malha aponta na direcao oposta a que eu supus. 180 inverte.
+local GROUND_ROTATION_OFFSET = 180.0
 
 local function facingDegrees(character)
     local forward = character and character:getForwardDirection()
