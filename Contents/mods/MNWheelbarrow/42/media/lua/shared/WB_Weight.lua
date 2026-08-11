@@ -138,25 +138,15 @@ end
 
 --- Carrinhos no inventario do jogador.
 ---
---- Se o carrinho que mudou estiver NAS MAOS, pede a reconstrucao do modelo do
---- personagem. O motivo e um sintoma observado: por o conteudo no carrinho fez o
---- personagem E os veiculos ao redor sumirem da tela, sem erro nenhum no log.
---- Mudar peso de item equipado ja tinha deixado o personagem invisivel neste
---- projeto antes -- o modelo fica com estado velho e nada pede para refaze-lo.
----
---- So quando algo mudou de fato, e so com o carrinho na mao: e raro, entao nao
---- ha custo por evento.
+--- NAO pede reconstrucao do modelo aqui, e a ausencia e deliberada. Uma versao
+--- anterior chamava resetModelNextFrame sempre que o peso mudava com o carrinho
+--- na mao, como tentativa de conserto para o personagem sumir. Aquele sintoma
+--- tinha outra causa -- ver WB_Player, que trata o problema onde ele de fato
+--- esta -- e reconstruir o modelo a cada mudanca de conteudo era custo por
+--- evento sem beneficio comprovado.
 function WB_Weight.refreshPlayer(player)
     if player == nil then return end
-
-    local touched = false
-    WB_Cart.forEachIn(player:getInventory(), function(item)
-        if WB_Weight.refresh(item) then touched = true end
-    end)
-
-    if touched and WB_Cart.inHands(player) then
-        player:resetModelNextFrame()
-    end
+    WB_Cart.forEachIn(player:getInventory(), WB_Weight.refresh)
 end
 
 --- Carrinhos largados no chao ao redor do jogador, no maximo a cada
