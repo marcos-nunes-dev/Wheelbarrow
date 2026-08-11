@@ -22,6 +22,12 @@
 
   A tecnica veio do mod Apocalypse Wheelbarrows, que resolveu isso antes.
 
+  AS TRANSICOES apontam so para nos do proprio grupo, maskingright. A primeira
+  versao tambem listava os equivalentes de maskingleft, copiados daquele mod sem
+  verificar; a vanilla holdingbagright nao faz isso, e alvo de outro grupo e
+  suspeito de deixar a mascara instavel ao trocar de estado. Os dois bracos vem
+  dos OSSOS listados abaixo, nao das transicoes.
+
   m_AnimName e m_SpeedScale sao os mesmos da vanilla de propósito: Bob_Idle_Bag a
   0.48 e a base que ja estava em uso, entao a mao DIREITA deve ficar onde estava.
   Isso importa porque a pose do carrinho esta calibrada em (0.31, 0.90, 0.56)
@@ -40,13 +46,11 @@
 	</m_Conditions>
 	<m_Transitions>
 		<m_Target>idlesneakbagright</m_Target>
-		<m_Target>idlesneakbagleft</m_Target>
 		<m_blendInTime>0.35</m_blendInTime>
 		<m_blendOutTime>0.35</m_blendOutTime>
 	</m_Transitions>
 	<m_Transitions>
 		<m_Target>aimbagright</m_Target>
-		<m_Target>aimbagleft</m_Target>
 		<m_AnimName>Bob_IdleToAim_Bag</m_AnimName>
 		<m_blendInTime>0.5</m_blendInTime>
 		<m_blendOutTime>0.2</m_blendOutTime>
@@ -54,7 +58,6 @@
 	</m_Transitions>
 	<m_Transitions>
 		<m_Target>idlesneaklowbagright</m_Target>
-		<m_Target>idlesneaklowbagleft</m_Target>
 		<m_blendInTime>0.35</m_blendInTime>
 		<m_blendOutTime>0.35</m_blendOutTime>
 	</m_Transitions>

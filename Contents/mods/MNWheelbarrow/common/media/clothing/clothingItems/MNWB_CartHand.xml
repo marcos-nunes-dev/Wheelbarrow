@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<clothingItem>
+	<m_MaleModel>media\models_X\WorldItems\Wheelbarrow_Hand.fbx</m_MaleModel>
+	<m_FemaleModel>media\models_X\WorldItems\Wheelbarrow_Hand.fbx</m_FemaleModel>
+	<m_GUID>7f3a1c92-4d8e-4b21-9c60-a1b2c3d4e5f7</m_GUID>
+	<m_Static>true</m_Static>
+	<m_AllowRandomHue>false</m_AllowRandomHue>
+	<m_AllowRandomTint>false</m_AllowRandomTint>
+	<m_AttachBone>Bip01_Prop1</m_AttachBone>
+	<textureChoices>WorldItems\Wheelbarrow_Hand</textureChoices>
+</clothingItem>
