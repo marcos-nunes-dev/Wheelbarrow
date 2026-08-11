@@ -96,8 +96,11 @@ function ISWheelbarrowPutDown:stop()
     self.item:setJobDelta(0.0)
     -- O carrinho ja esta no chao desde o start; cancelar so derruba a carga.
     if WB_Sandbox.get("SpillOnCancel") then
-        WB_Spill.dump(self.item, cartSquare(self.item, self.character))
-        WB_Tipping.start(self.item)
+        local square = cartSquare(self.item, self.character)
+        WB_Spill.dump(self.item, square)
+        -- O carrinho ja esta no chao desde o start, mas dropTipped o recria: a
+        -- altura do tombo so entra na criacao do objeto de mundo.
+        WB_Tipping.dropTipped(self.character, self.item, square)
     end
     ISBaseTimedAction.stop(self)
 end

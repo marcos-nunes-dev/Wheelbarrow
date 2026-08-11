@@ -90,8 +90,9 @@ function ISWheelbarrowPickUp:spillIfEnabled()
     local square = self.worldItem and self.worldItem:getSquare()
     if square == nil then square = self.character:getSquare() end
     WB_Spill.dump(self.item, square)
-    WB_Spill.dropCart(self.character, self.item, square)
-    WB_Tipping.start(self.item)
+    -- dropTipped faz a colocacao inteira, e nao so a inclinacao: a altura do
+    -- carrinho tombado so pode ser dada na criacao do objeto de mundo.
+    WB_Tipping.dropTipped(self.character, self.item, square)
 end
 
 function ISWheelbarrowPickUp:perform()

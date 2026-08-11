@@ -191,9 +191,10 @@ function WB_Spill.dropCart(character, cart, square)
     local ox, oy = placementOffset(character, square)
     square:AddWorldInventoryItem(cart, ox, oy, 0.0)
 
-    -- Toda colocacao por este caminho e NORMAL, de pe. Quem tomba chama
-    -- WB_Tipping.start depois, e precisa ser depois: o construtor do objeto de
-    -- mundo zera as rotacoes de inclinacao.
+    -- Toda colocacao por este caminho e NORMAL, de pe -- inclusive quando o
+    -- carrinho vinha tombado, dai o reset. Quem quer o carrinho tombado usa
+    -- WB_Tipping.dropTipped, que faz a colocacao inteira por conta propria: a
+    -- altura do tombo so pode ser dada na criacao do objeto de mundo.
     WB_Tipping.reset(cart)
 
     character:resetModelNextFrame()

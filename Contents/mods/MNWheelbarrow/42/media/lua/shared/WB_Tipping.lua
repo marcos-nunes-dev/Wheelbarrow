@@ -1,52 +1,46 @@
 --[[
-    O carrinho TOMBA quando a manobra e interrompida, e se levanta ao ser pego.
+    O carrinho fica TOMBADO quando a manobra e interrompida, e se levanta ao ser
+    pego.
 
     Cancelar ja derramava a carga, mas o carrinho continuava de pe no meio dos
     itens espalhados -- o resultado nao se lia como "tombou", se lia como "os
     itens sairam sozinhos". A inclinacao e o que conta a historia.
 
     ----------------------------------------------------------------------
-    COMO O ENGINE DESENHA ITEM NO CHAO, e o que isso permite
+    NAO HA ANIMACAO DE QUEDA, e a tentativa de fazer uma fracassou por razao
+    estrutural, nao por falta de ajuste.
 
-    InventoryItem tem tres rotacoes de mundo, e o atlas de itens as le em
+    O desenho de item no chao e cacheado num ATLAS indexado pelos parametros de
+    render, inclusive as rotacoes. Cada angulo distinto vira uma entrada nova, e
+    criar a entrada aparece em tela como um PISCA. Uma queda animada e, por
+    definicao, uma sequencia de angulos distintos -- ou seja, uma sequencia de
+    piscas. Foi exatamente o que apareceu em jogo: "parece baixo fps e ele pisca
+    quando atualiza cada posicao".
+
+    Passos maiores diminuem os piscas e pioram a fluidez; passos menores fazem o
+    contrario. Nao ha ponto bom nesse eixo, porque o custo E a mudanca de angulo.
+    Entao a pose e uma so, aplicada de uma vez.
+
+    ----------------------------------------------------------------------
+    COMO O ENGINE DESENHA ITEM NO CHAO
+
+    InventoryItem tem tres rotacoes de mundo, lidas em
     WorldItemAtlas.ItemParams.init:
 
         worldXRotation  -> angle.x
-        worldZRotation  -> angle.y   (a guinada, que WB_Spill ja usa)
+        worldZRotation  -> angle.y   (a guinada, que WB_Spill usa)
         worldYRotation  -> angle.z
 
-    DUAS restricoes saem do bytecode, e as duas moldaram este arquivo:
+    Duas restricoes saem do bytecode:
 
     1. O construtor de IsoWorldInventoryObject ZERA worldXRotation e
-       worldYRotation do item. Definir a inclinacao antes de por no mundo nao
-       funciona -- tem de ser depois. (A guinada escapa porque o construtor so a
-       sorteia quando ela chega negativa.)
+       worldYRotation. A inclinacao tem de ser aplicada DEPOIS de o objeto
+       existir. (A guinada escapa porque o construtor so a sorteia quando ela
+       chega negativa.)
 
-    2. Zerar acontece a cada criacao do objeto de mundo, e recarregar o save
-       recria. Por isso o estado tombado vive no ModData do ITEM, que persiste, e
-       a rotacao e reaplicada quando necessario -- ver WB_Tipping.restore.
-
-    ----------------------------------------------------------------------
-    A QUEDA, E O QUE O ATLAS COBRA POR ELA
-
-    O desenho do item no chao e cacheado num ATLAS indexado pelos parametros,
-    inclusive a rotacao. Cada combinacao distinta de angulos tende a virar uma
-    entrada nova, entao "quantos angulos diferentes" e uma decisao de custo e nao
-    so de estetica.
-
-    Duas escolhas mantem esse total limitado e reaproveitavel:
-
-      passos fixos      dez posicoes, sempre as mesmas, em vez de interpolar por
-                        quadro
-      guinada em oito   a direcao da queda e arredondada para oito direcoes. A
-                        guinada em si e continua, e sem arredondar cada tombo
-                        geraria angulos ineditos para sempre. O erro maximo e
-                        22.5 graus na direcao da queda -- invisivel em meio
-                        segundo de movimento.
-
-    Total possivel: dez passos x oito direcoes, e cada um so nasce quando e
-    usado. A primeira versao tinha quatro passos e caia num eixo fixo do mundo;
-    era barata e parecia travada, e ainda tombava na diagonal.
+    2. Isso vale a cada criacao do objeto, e recarregar o save recria. Por isso o
+       estado tombado vive no ModData do ITEM, que persiste, e a rotacao e
+       reaplicada por WB_Tipping.restore.
 ]]
 
 local WB_Tipping = {}
@@ -55,41 +49,26 @@ local WB_Tipping = {}
 --- recarregamento, porque o objeto de mundo e recriado e o construtor a zera.
 local TIPPED_KEY = "MNWB_tipped"
 
---- Angulo final da queda e quantos passos ate la.
-local TIP_FINAL = 86
-local TIP_STEPS = 10
-local TIP_STEP_MS = 42
+--- Quanto o carrinho deita, em graus, e a que altura fica na square.
+---
+--- Ajustaveis em jogo por WB_TipLab enquanto a calibracao nao fechar. Noventa
+--- graus seria deitado exato; menos deixa o carrinho apoiado, o que costuma ler
+--- melhor do que perfeitamente plano.
+local tipAngle = 72.0
+local tipHeight = 0.0
 
 --- Fase entre a guinada do carrinho e o eixo em que ele deve tombar.
----
---- Se ele cair para a frente em vez de para o lado, somar ou subtrair 90 aqui.
 local TIP_PHASE = 0.0
 
---- Direcoes distintas usadas ao decompor a queda.
+--- Direcoes distintas usadas ao decompor a inclinacao.
 ---
---- A guinada e continua, mas os angulos de inclinacao vao para um ATLAS
---- indexado por eles: guinada continua geraria entradas novas a cada tombo, para
---- sempre. Arredondar para oito direcoes limita o total a passos x 8, e todas
---- viram cache depois do primeiro uso. O erro maximo e 22.5 graus na direcao da
---- queda, invisivel num movimento de meio segundo.
+--- Inclinar num eixo fixo do MUNDO faz a direcao da queda depender de para onde
+--- o carrinho aponta -- ele tombava na diagonal. Decompor pela guinada resolve,
+--- mas guinada e continua e cada combinacao vira entrada de atlas. Arredondar
+--- para oito direcoes limita o total e todas viram cache. O erro maximo e 22.5
+--- graus na direcao da queda, invisivel num objeto deitado.
 local TIP_DIRECTIONS = 8
 
---- Angulo do passo i, acelerando.
----
---- Quadratico e nao linear porque queda e acelerada: linear parecia o carrinho
---- sendo baixado por um cabo, e foi parte do que o Marcos leu como "nada
---- fluida". O resto era so a contagem de passos, que era quatro.
-local function stepAngle(step)
-    local t = step / TIP_STEPS
-    return TIP_FINAL * t * t
-end
-
---- Espalha a inclinacao entre os DOIS eixos horizontais, conforme a guinada.
----
---- Inclinar num eixo so do mundo faz a direcao da queda depender de para onde o
---- carrinho aponta -- foi por isso que ele tombava na diagonal. Decompondo a
---- inclinacao pela guinada, o eixo efetivo passa a ser o do proprio carrinho, e
---- ele tomba sempre para o mesmo lado em relacao a si mesmo.
 local function applyAngle(cart, degrees)
     local step = 360.0 / TIP_DIRECTIONS
     local yaw = math.floor((cart:getWorldZRotation() + TIP_PHASE) / step + 0.5) * step
@@ -98,56 +77,62 @@ local function applyAngle(cart, degrees)
     cart:setWorldYRotation(degrees * math.sin(radians))
 end
 
---- Tombos em andamento.
----
---- LISTA, e nao tabela indexada pelo item, por um motivo concreto: a primeira
---- versao usava `next(falling)` para saber se havia trabalho, e isso quebrou em
---- jogo -- o depurador de Lua parou na linha. `next` aparece UMA vez em todo o
---- Lua do jogo base, e ainda assim na forma de dois argumentos; nao vale
---- depender de um canto do sandbox que o proprio jogo nao exercita.
----
---- Uma lista resolve sem construcao exotica: o tamanho responde "ha trabalho?" e
---- o laco de tras para frente permite remover durante a iteracao sem pular
---- elementos.
-local falling = {}
-
---- @return number|nil indice do tombo em andamento deste carrinho
-local function indexOf(cart)
-    for i = 1, #falling do
-        if falling[i].cart == cart then return i end
-    end
-    return nil
-end
-
 --- @return boolean se o carrinho esta marcado como tombado
 function WB_Tipping.isTipped(cart)
     return cart ~= nil and cart:hasModData()
         and cart:getModData()[TIPPED_KEY] == true
 end
 
---- Comeca a queda. Chamar DEPOIS de o carrinho estar no chao: antes disso a
---- rotacao seria zerada pelo construtor do objeto de mundo.
-function WB_Tipping.start(cart)
-    if cart == nil or cart:getWorldItem() == nil then return end
+--- Valores atuais, para o laboratorio de calibracao mostrar.
+function WB_Tipping.getAngle() return tipAngle end
+function WB_Tipping.getHeight() return tipHeight end
+
+--- Ajusta em runtime. Existe para WB_TipLab; quando a calibracao fechar, os
+--- numeros viram os padroes acima e isto sai junto com o laboratorio.
+function WB_Tipping.setAngle(value) tipAngle = value end
+function WB_Tipping.setHeight(value) tipHeight = value end
+
+--- Poe o carrinho no chao JA TOMBADO.
+---
+--- Faz a colocacao inteira em vez de so inclinar um carrinho que ja esta la, e o
+--- motivo e a ALTURA: o deslocamento vertical so pode ser dado em
+--- AddWorldInventoryItem, na criacao do objeto. Inclinar sem poder ajustar a
+--- altura deixaria o carrinho enterrado no piso, sem conserto possivel.
+function WB_Tipping.dropTipped(character, cart, square)
+    if character == nil or cart == nil then return end
+    square = square or character:getSquare()
+    if square == nil then return end
+
+    -- Pode ja estar no chao: cancelar o LARGAR poe o carrinho la logo no inicio
+    -- da acao. Recriar mesmo assim, porque a altura so entra na criacao.
+    local worldItem = cart:getWorldItem()
+    if worldItem ~= nil then
+        local from = worldItem:getSquare()
+        if from ~= nil then
+            from:transmitRemoveItemFromSquare(worldItem)
+        end
+        worldItem:removeFromWorld()
+        worldItem:removeFromSquare()
+        worldItem:setSquare(nil)
+        cart:setWorldItem(nil)
+    end
+
+    if character:isPrimaryHandItem(cart) then character:setPrimaryHandItem(nil) end
+    if character:isSecondaryHandItem(cart) then character:setSecondaryHandItem(nil) end
+    local container = cart:getContainer()
+    if container ~= nil then container:Remove(cart) end
 
     cart:getModData()[TIPPED_KEY] = true
+    square:AddWorldInventoryItem(cart, 0.5, 0.5, tipHeight)
+    -- Sempre depois da criacao: o construtor zera as duas rotacoes de inclinacao.
+    applyAngle(cart, tipAngle)
 
-    local existing = indexOf(cart)
-    local entry = { cart = cart, step = 0, due = getTimestampMs() }
-    if existing then
-        falling[existing] = entry
-    else
-        falling[#falling + 1] = entry
-    end
+    character:resetModelNextFrame()
 end
 
---- Devolve o carrinho a posicao normal. Idempotente: chamar num carrinho que
---- nunca tombou nao custa nada.
+--- Devolve o carrinho a posicao normal. Idempotente.
 function WB_Tipping.reset(cart)
     if cart == nil then return end
-
-    local pending = indexOf(cart)
-    if pending then table.remove(falling, pending) end
     if cart:hasModData() then
         cart:getModData()[TIPPED_KEY] = nil
     end
@@ -158,47 +143,18 @@ end
 --- Reaplica a inclinacao de um carrinho que ja estava tombado.
 ---
 --- Necessario porque o construtor do objeto de mundo zera as rotacoes, e ele
---- roda de novo toda vez que o save e recarregado ou o chunk volta. Sem isto, um
---- carrinho tombado se levantaria sozinho ao recarregar o jogo.
+--- roda de novo a cada recarregamento do save ou retorno do chunk. Sem isto, um
+--- carrinho tombado se levantaria sozinho ao voltar ao jogo.
 function WB_Tipping.restore(cart)
     if not WB_Tipping.isTipped(cart) then return end
-    -- Com um tombo em andamento, quem manda na rotacao e o laco de OnTick.
-    if indexOf(cart) ~= nil then return end
 
-    -- A soma das duas componentes so e zero quando o carrinho esta em pe, entao
-    -- ela serve para detectar que a inclinacao foi perdida no recarregamento.
+    -- A soma das componentes so e zero com o carrinho em pe, entao ela detecta
+    -- que a inclinacao foi perdida.
     local tilt = math.abs(cart:getWorldXRotation())
         + math.abs(cart:getWorldYRotation())
     if tilt < 0.5 then
-        applyAngle(cart, TIP_FINAL)
+        applyAngle(cart, tipAngle)
     end
 end
-
-Events.OnTick.Add(function()
-    if #falling == 0 then return end
-
-    local now = getTimestampMs()
-    -- De tras para frente: table.remove desloca os indices seguintes, e um laco
-    -- crescente pularia o elemento logo apos cada remocao.
-    for i = #falling, 1, -1 do
-        local state = falling[i]
-        local cart = state.cart
-
-        -- O carrinho pode ter saido do chao no meio da queda, se o jogador o
-        -- pegou. Sem esta checagem a rotacao continuaria avancando num item que
-        -- ja esta na mao, e ele reapareceria torto ao ser largado.
-        if cart:getWorldItem() == nil then
-            table.remove(falling, i)
-        elseif now >= state.due then
-            state.step = state.step + 1
-            applyAngle(cart, stepAngle(state.step))
-            if state.step >= TIP_STEPS then
-                table.remove(falling, i)
-            else
-                state.due = now + TIP_STEP_MS
-            end
-        end
-    end
-end)
 
 return WB_Tipping
