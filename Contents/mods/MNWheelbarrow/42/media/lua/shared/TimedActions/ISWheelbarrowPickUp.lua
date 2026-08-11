@@ -32,6 +32,7 @@ require "TimedActions/ISBaseTimedAction"
 
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Spill = require "WB_Spill"
+local WB_Tipping = require "WB_Tipping"
 local WB_Transfer = require "WB_Transfer"
 local WB_UI = require "WB_UI"
 
@@ -90,10 +91,16 @@ function ISWheelbarrowPickUp:spillIfEnabled()
     if square == nil then square = self.character:getSquare() end
     WB_Spill.dump(self.item, square)
     WB_Spill.dropCart(self.character, self.item, square)
+    WB_Tipping.start(self.item)
 end
 
 function ISWheelbarrowPickUp:perform()
     self.item:setJobDelta(0.0)
+
+    -- Levanta antes de tudo. Se o carrinho estava tombado e fosse para a mao
+    -- assim, a inclinacao ficaria gravada no ModData e ele reapareceria torto na
+    -- proxima vez que fosse largado -- um tombo que o jogador nunca causou.
+    WB_Tipping.reset(self.item)
 
     -- A rede de WB_Placement poe no chao todo carrinho desequipado que encontre
     -- num inventario, e para equipar o carrinho precisa passar por esse estado:

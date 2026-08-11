@@ -28,6 +28,7 @@ require "TimedActions/ISBaseTimedAction"
 
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Spill = require "WB_Spill"
+local WB_Tipping = require "WB_Tipping"
 local WB_Transfer = require "WB_Transfer"
 local WB_UI = require "WB_UI"
 
@@ -96,6 +97,7 @@ function ISWheelbarrowPutDown:stop()
     -- O carrinho ja esta no chao desde o start; cancelar so derruba a carga.
     if WB_Sandbox.get("SpillOnCancel") then
         WB_Spill.dump(self.item, cartSquare(self.item, self.character))
+        WB_Tipping.start(self.item)
     end
     ISBaseTimedAction.stop(self)
 end

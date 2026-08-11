@@ -30,6 +30,7 @@
 ]]
 
 local WB_Spill = {}
+local WB_Tipping = require "WB_Tipping"
 local WB_UI = require "WB_UI"
 
 --- Mesmo teto que ISDropWorldItemAction usa para recusar um item no chao.
@@ -189,6 +190,12 @@ function WB_Spill.dropCart(character, cart, square)
 
     local ox, oy = placementOffset(character, square)
     square:AddWorldInventoryItem(cart, ox, oy, 0.0)
+
+    -- Toda colocacao por este caminho e NORMAL, de pe. Quem tomba chama
+    -- WB_Tipping.start depois, e precisa ser depois: o construtor do objeto de
+    -- mundo zera as rotacoes de inclinacao.
+    WB_Tipping.reset(cart)
+
     character:resetModelNextFrame()
     -- O compartimento do carrinho tem de sumir da barra de containers agora, e
     -- nao no proximo clique do jogador.

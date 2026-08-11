@@ -68,6 +68,7 @@
 local WB_Cart = require "WB_Cart"
 local WB_Legacy = require "WB_Legacy"
 local WB_Sandbox = require "WB_Sandbox"
+local WB_Tipping = require "WB_Tipping"
 
 local WB_Weight = {}
 
@@ -166,7 +167,14 @@ function WB_Weight.refreshNearbyGround(player, force)
     if not force and now - lastGroundScan < GROUND_SCAN_INTERVAL_MS then return end
     lastGroundScan = now
 
-    WB_Cart.forEachOnGround(player, GROUND_RADIUS, WB_Weight.refresh)
+    WB_Cart.forEachOnGround(player, GROUND_RADIUS, function(cart)
+        WB_Weight.refresh(cart)
+        -- Recarregar o save recria o objeto de mundo, e o construtor zera as
+        -- rotacoes de inclinacao -- sem isto um carrinho tombado se levantaria
+        -- sozinho ao voltar ao jogo. A marca de tombado vive no ModData, que
+        -- persiste; aqui ela vira rotacao de novo.
+        WB_Tipping.restore(cart)
+    end)
 end
 
 local function refreshLocalPlayers(force)
