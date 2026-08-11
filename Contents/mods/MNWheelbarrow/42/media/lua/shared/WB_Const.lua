@@ -25,8 +25,12 @@ local WB_Const = {}
 ---
 --- A linha `Tags = MNWheelbarrow:mnwbHauler` continua no script do item de
 --- proposito: nao custa nada e deixa outros mods detectarem o carrinho.
+--- O carrinho do mod. Nomeado porque o spawner precisa criar o item por tipo, e
+--- uma segunda copia desta string e uma divergencia esperando acontecer.
+WB_Const.CART_TYPE = "MNWheelbarrow.Wheelbarrow"
+
 WB_Const.HAULER_TYPES = {
-    ["MNWheelbarrow.Wheelbarrow"] = true,
+    [WB_Const.CART_TYPE] = true,
 }
 
 --- Namespace das sandbox options. Precisa bater com o "page" e com o prefixo

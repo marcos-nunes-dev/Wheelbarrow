@@ -15,7 +15,7 @@ option MNWheelbarrow.EnableWorldSpawn
 {type = boolean, default = true, page = MNWheelbarrow, translation = MNWBEnableWorldSpawn,}
 
 option MNWheelbarrow.SpawnChance
-{type = double, min = 0, max = 100, default = 8.0, page = MNWheelbarrow, translation = MNWBSpawnChance,}
+{type = double, min = 0, max = 100, default = 3.0, page = MNWheelbarrow, translation = MNWBSpawnChance,}
 
 option MNWheelbarrow.EnableCrafting
 {type = boolean, default = true, page = MNWheelbarrow, translation = MNWBEnableCrafting,}

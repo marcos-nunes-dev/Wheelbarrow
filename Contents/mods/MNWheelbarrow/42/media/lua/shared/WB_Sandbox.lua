@@ -23,7 +23,7 @@ local WB_Sandbox = {}
 --- carregaram, ou para uma option que ainda nao existe no save do jogador.
 local DEFAULTS = {
     EnableWorldSpawn = true,
-    SpawnChance = 8.0,
+    SpawnChance = 3.0,
     EnableCrafting = true,
     Capacity = 200,
     LightCapacity = 50,

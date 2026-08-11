@@ -524,6 +524,11 @@ ITEM_TOOLTIP = (
     "pushing it.<br>Set it on the ground to load it."
 )
 
+RECIPE_TOOLTIP = (
+    "Welds a wheelbarrow from sheet metal, pipe and a car tyre.<br>Needs a "
+    "blowtorch, welding rods and a mask, so it is not an early-game build."
+)
+
 OPTION_KEYS = (
     "Sandbox_MNWBEnableWorldSpawn", "Sandbox_MNWBSpawnChance",
     "Sandbox_MNWBEnableCrafting", "Sandbox_MNWBCapacity",
@@ -560,8 +565,15 @@ def main():
             "IGUI_MNWB_PuttingDown": text["putting_down"],
             "IGUI_MNWB_Refuse": text["refuse"],
         })
-        write(os.path.join(folder, "Tooltip.json"),
-              {"Tooltip_item_MNWheelbarrow": ITEM_TOOLTIP})
+        write(os.path.join(folder, "Tooltip.json"), {
+            "Tooltip_item_MNWheelbarrow": ITEM_TOOLTIP,
+            "Tooltip_craft_MNWBWheelbarrow": RECIPE_TOOLTIP,
+        })
+
+        # A chave do nome de uma craftRecipe E o nome dela, sem prefixo -- ver
+        # Recipes.json do jogo base, onde "Forge_Block_From_Chunk" e a chave.
+        write(os.path.join(folder, "Recipes.json"),
+              {"MakeWheelbarrow": text["wheelbarrow"]})
 
         sandbox = {"Sandbox_MNWheelbarrow": text["wheelbarrow"]}
         for key, label in zip(OPTION_KEYS, values[4:]):

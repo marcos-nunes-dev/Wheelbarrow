@@ -1,0 +1,56 @@
+/*
+ * Receita do carrinho de mao.
+ *
+ * ALVO DE EQUILIBRIO: item de meio de jogo. Nao e algo que se improvisa no
+ * primeiro dia com tabuas e pregos -- a cacamba e chapa de metal soldada, e
+ * soldar exige maçarico, vareta e mascara, que sao itens de saque especifico.
+ *
+ * MetalWelding:4 e o portao. Nivel 4 nao sai de pratica casual: pede revista ou
+ * livro mais tempo de bancada. E o mesmo patamar em que o jogo base libera
+ * construcao de estrutura de metal.
+ *
+ * A RODA veio de pneu de carro em vez de um item de roda proprio porque nao
+ * existe roda avulsa no jogo -- conferido em generated/items. Aceita os tres
+ * tipos de pneu para nao amarrar o jogador a um carro especifico.
+ *
+ * SOBRE O RESULTADO IR PARA O INVENTARIO: vai, e e isso que deve acontecer. A
+ * rede de WB_Placement poe no chao qualquer carrinho que apareca num inventario,
+ * e ela existe justamente para cobrir caminhos que nao controlamos -- craft,
+ * spawn de admin, menu de debug, outro mod. Tratar o craft como caso especial
+ * seria duplicar uma regra que ja e geral.
+ *
+ * A OPCAO EnableCrafting nao e imposta aqui, e nao pode ser: script nao le
+ * SandboxVars. Ela vive em WB_Recipe.lua, que so ENSINA a receita quando a opcao
+ * esta ligada -- por isso nao ha AutoLearn neste bloco. Sem o ensino a receita
+ * nunca aparece.
+ */
+module MNWheelbarrow
+{
+    imports { Base }
+
+    craftRecipe MakeWheelbarrow
+    {
+        time = 600,
+        timedAction = Welding,
+        category = Metalworking,
+        Tags = AnySurfaceCraft,
+        SkillRequired = MetalWelding:4,
+        xpAward = MetalWelding:50,
+        Tooltip = Tooltip_craft_MNWBWheelbarrow,
+        inputs
+        {
+            item 2 [Base.SheetMetal],
+            item 2 [Base.MetalPipe],
+            item 1 [Base.OldTire1;Base.NormalTire1;Base.ModernTire1] flags[IsExclusive],
+            item 4 [Base.Screws],
+            /* mode:keep sao ferramentas: usadas, nao consumidas. */
+            item 1 [Base.BlowTorch] mode:keep flags[Prop1;MayDegradeLight],
+            item 1 [Base.WeldingMask] mode:keep,
+            item 1 [Base.WeldingRods] flags[DontRecordInput],
+        }
+        outputs
+        {
+            item 1 [MNWheelbarrow.Wheelbarrow],
+        }
+    }
+}

@@ -229,6 +229,15 @@ end
 ]]
 local FALLBACK_RADIUS = 1
 
+--- Versao publica de `usable`, para quem coloca carrinho sem ter um personagem --
+--- hoje o spawner de mundo. Existe para nao nascer uma segunda ideia de "cabe aqui":
+--- a primeira duplicacao desse teste ja deixou carga cair debaixo de carro.
+---
+--- @return boolean se o carrinho pode ficar nesta square
+function WB_Spill.canRest(from, square)
+    return usable(from, square)
+end
+
 --- @param cart InventoryItem o proprio carrinho, ignorado na conta
 --- @return boolean se ja ha OUTRO item largado aqui
 ---
