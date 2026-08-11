@@ -10,7 +10,13 @@
     megabytes de variantes que a calibracao lateral custou.
 
       ]  [   inclinacao, 4 graus por passo
-      .  ;   altura, 0.02 por passo
+      .  ,   altura, 0.02 por passo
+
+    AS TECLAS SAO POR POSICAO FISICA, nao pelo simbolo impresso: os codigos do
+    LWJGL sao de scancode. Num teclado ABNT2, a posicao que o layout americano
+    chama de ";" e onde fica o C-cedilha, entao KEY_SEMICOLON nunca disparava --
+    era o que fazia a altura so subir. Ponto e virgula ocupam a mesma posicao nos
+    dois layouts, e por isso sao o par usado aqui.
 
     Cada tecla reaplica no carrinho tombado mais proximo. Nao ha nenhum por
     perto? Derrube um: equipe o carrinho, aperte E para largar e cancele a acao.
@@ -59,9 +65,20 @@ local function adjust(character, angleDelta, heightDelta)
     WB_Tipping.setAngle(WB_Tipping.getAngle() + angleDelta)
     WB_Tipping.setHeight(WB_Tipping.getHeight() + heightDelta)
 
+    -- GUARDA A DIRECAO. Recolocar o carrinho o reorienta para onde o PERSONAGEM
+    -- esta virado, que e o certo ao larga-lo de verdade e errado aqui: durante a
+    -- calibracao o jogador anda em volta para olhar de varios angulos, e o
+    -- carrinho girava junto a cada tecla. Impossivel julgar a pose assim.
+    local heading = target.cart:getWorldZRotation()
+
     -- Recria com os valores novos. A altura so pode ser dada na criacao, entao
     -- nao ha como ajusta-la sem repor o objeto -- ver WB_Tipping.dropTipped.
     WB_Tipping.dropTipped(character, target.cart, target.square)
+
+    target.cart:setWorldZRotation(heading)
+    -- A inclinacao e decomposta PELA guinada, entao devolver a direcao exige
+    -- refazer a inclinacao: dropTipped a calculou com a guinada do personagem.
+    WB_Tipping.reapplyTilt(target.cart)
 
     announce(character, string.format("inclinacao %.0f  altura %.2f",
         WB_Tipping.getAngle(), WB_Tipping.getHeight()))
@@ -76,7 +93,7 @@ Events.OnKeyPressed.Add(function(key)
     if key == Keyboard.KEY_RBRACKET then adjust(character, ANGLE_STEP, 0)
     elseif key == Keyboard.KEY_LBRACKET then adjust(character, -ANGLE_STEP, 0)
     elseif key == Keyboard.KEY_PERIOD then adjust(character, 0, HEIGHT_STEP)
-    elseif key == Keyboard.KEY_SEMICOLON then adjust(character, 0, -HEIGHT_STEP)
+    elseif key == Keyboard.KEY_COMMA then adjust(character, 0, -HEIGHT_STEP)
     end
 end)
 

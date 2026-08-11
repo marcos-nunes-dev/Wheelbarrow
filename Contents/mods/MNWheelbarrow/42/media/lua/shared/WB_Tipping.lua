@@ -124,6 +124,17 @@ function WB_Tipping.dropTipped(character, cart, square)
     applyAngle(cart, tipAngle)
 end
 
+--- Recalcula a inclinacao a partir da guinada ATUAL do carrinho.
+---
+--- A inclinacao e decomposta pela guinada, entao mudar uma exige refazer a
+--- outra. Existe para quem altera a direcao depois de o carrinho ja estar
+--- tombado -- hoje so o laboratorio de calibracao, que preserva a direcao entre
+--- ajustes.
+function WB_Tipping.reapplyTilt(cart)
+    if cart == nil then return end
+    applyAngle(cart, tipAngle)
+end
+
 --- Devolve o carrinho a posicao normal. Idempotente.
 function WB_Tipping.reset(cart)
     if cart == nil then return end
