@@ -101,6 +101,21 @@ escolha, e nunca deixa de ser colocado por nao achar o lugar ideal -- carrinho m
 posicionado se resolve com um `E`; carrinho nao colocado desaparece da mao do
 jogador.
 
+O mesmo teste vale para a **carga derramada**. Antes o derrame tinha o proprio
+teste, mais fraco (`isSolid` e `isSolidTrans` apenas), e o resultado era carga
+caindo em lugar que o carrinho recusaria -- debaixo de carro, ou atravessando parede
+para o comodo vizinho. Uma pergunta, uma resposta.
+
+O derrame nao usa a preferencia por square vazia: empilhar e o ponto dele, e a ordem
+de busca (centro primeiro, depois os oito vizinhos) e o que faz a pilha parecer
+"caiu daqui". Ele tem o proprio limite de peso por square, e guarda a primeira
+square valida como reserva -- se todas estiverem acima do limite, empilhar demais num
+lugar valido e melhor que deixar a carga cair onde o carrinho nao pousaria.
+
+O `false` de `isFree(false)` e carga util, nao enfeite. Lido no bytecode: com `true`
+a primeira coisa que a funcao faz e recusar square que tenha personagem em cima -- o
+que incluiria a square do proprio jogador, justamente a que mais usamos.
+
 A varredura ignora o **proprio carrinho**. `pickSquare` roda antes de o objeto de
 mundo antigo ser removido, entao um carrinho que ja esta no chao aparece na conta de
 "tralha" e se expulsaria da propria square a cada recolocacao -- e recolocar sobre

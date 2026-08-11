@@ -44,21 +44,58 @@ local OFFSETS = {
     { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 },
 }
 
+--- Onde qualquer coisa deste mod pode ser deixada no chao.
+---
+--- Vale para o carrinho E para a carga derramada, de proposito: as duas ja tiveram
+--- testes diferentes, e o resultado foi carga caindo em lugar que o carrinho
+--- recusaria. Uma pergunta, uma resposta.
+---
+--- O `false` de isFree e CARGA UTIL, nao enfeite. Lido no bytecode: com `true` a
+--- primeira coisa que a funcao faz e recusar square que tenha personagem em cima --
+--- o que incluiria a square do proprio jogador, justamente a que mais usamos. Com
+--- `false` esse teste e pulado e sobram os que interessam: solid, solidtrans,
+--- arvore, ausencia de solidfloor e escada.
+---
+--- @param from IsoGridSquare|nil de onde a coisa vem, para o teste de parede
+--- @return boolean se pode ficar aqui
+local function usable(from, square)
+    if square == nil then return false end
+    -- isFree(false) e o teste que o jogo base usa para "cabe algo nesta square"
+    -- (ver ISWorldObjectContextMenu ao pendurar cortina e ISFarmingMenu ao arar).
+    if not square:isFree(false) then return false end
+    -- E o teste que faltava: isFree nao sabe de veiculo. isVehicleIntersecting
+    -- pergunta se algum veiculo cobre esta square -- era como o carrinho acabava
+    -- debaixo de um carro.
+    if square:isVehicleIntersecting() then return false end
+    -- Nada atravessa parede. Sem isto a carga derramada pulava para dentro do
+    -- comodo vizinho.
+    if from ~= nil and from ~= square and from:isBlockedTo(square) then
+        return false
+    end
+    return true
+end
+
 --- @return IsoGridSquare|nil a primeira square com espaco para `weight`
 local function squareWithRoom(origin, weight)
     local cell = getCell()
     if cell == nil then return nil end
 
+    -- Primeira square utilizavel, guardada como reserva caso TODAS estejam acima
+    -- do limite de peso. Melhor empilhar demais numa square valida do que devolver
+    -- nil e deixar a carga cair onde o carrinho nao pousaria.
+    local fallback = nil
+
     for _, offset in ipairs(OFFSETS) do
         local sq = cell:getGridSquare(
             origin:getX() + offset[1], origin:getY() + offset[2], origin:getZ())
-        if sq ~= nil and not sq:isSolid() and not sq:isSolidTrans() then
+        if usable(origin, sq) then
             if sq:getTotalWeightOfItemsOnFloor() + weight <= SQUARE_WEIGHT_BUDGET then
                 return sq
             end
+            if fallback == nil then fallback = sq end
         end
     end
-    return nil
+    return fallback
 end
 
 --- Esvazia o carrinho no chao ao redor de `origin`.
@@ -192,22 +229,6 @@ end
 ]]
 local FALLBACK_RADIUS = 1
 
---- @return boolean se o carrinho pode ficar aqui
-local function usable(character, square)
-    if square == nil then return false end
-    -- isFree(false) e o teste que o jogo base usa para "cabe algo nesta square"
-    -- (ver ISWorldObjectContextMenu ao pendurar cortina e ISFarmingMenu ao arar).
-    if not square:isFree(false) then return false end
-    -- E o teste que faltava: isFree nao sabe de veiculo. isVehicleIntersecting
-    -- pergunta se algum veiculo cobre esta square.
-    if square:isVehicleIntersecting() then return false end
-    local from = character:getSquare()
-    if from ~= nil and from ~= square and from:isBlockedTo(square) then
-        return false
-    end
-    return true
-end
-
 --- @param cart InventoryItem o proprio carrinho, ignorado na conta
 --- @return boolean se ja ha OUTRO item largado aqui
 ---
@@ -257,14 +278,15 @@ end
 --- @return IsoGridSquare|nil onde o carrinho deve parar
 local function pickSquare(character, cart, preferred)
     local list = candidates(character, preferred)
+    local from = character:getSquare()
 
     for _, square in ipairs(list) do
-        if usable(character, square) and not hasLooseItems(square, cart) then
+        if usable(from, square) and not hasLooseItems(square, cart) then
             return square
         end
     end
     for _, square in ipairs(list) do
-        if usable(character, square) then return square end
+        if usable(from, square) then return square end
     end
 
     -- Nenhuma serve: fica onde foi pedido. Um carrinho mal posicionado se resolve
