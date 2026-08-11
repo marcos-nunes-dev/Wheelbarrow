@@ -89,6 +89,24 @@ local function reachableCart(character)
     return found
 end
 
+--[[ Tipo de container que o jogo aceita para cadaver.
+
+     canHumanCorpseFit termina em "o meu getType() esta nesta lista?" -- e a lista e
+     fixa no engine: bin, cardboardbox, crate, militarycrate, clothingdryer,
+     clothingwasher, coffin, doghouse, dumpster, fireplace, fridge, freezer, locker,
+     militarylocker, postbox, shelter, tent, wardrobe. Container que nasce de item tem
+     tipo "Container" e nunca passa.
+
+     Nao ha outra alavanca. Nao e uma lista de exclusao, nao ha caminho por peso que
+     dispense o tipo, e o teste e refeito no evento de animacao do deposito -- foi
+     por isso que a animacao rodava inteira e o corpo caia no chao.
+
+     "crate" e o analogo honesto: caixa aberta em que se despeja coisa. O tipo so e
+     lido para escolher IGUI_ContainerTitle_<tipo>, e esse caminho vale para container
+     de objeto de mundo e de corpo, nao para o que vem de item -- ali o titulo e o
+     nome do item. Conferido em ISInventoryPage. ]]
+local CORPSE_CONTAINER_TYPE = "crate"
+
 --- Da uma square ao container, se ele nao souber onde esta.
 local function anchorToSquare(container, square)
     if container == nil or container:getSquare() ~= nil then return end
@@ -128,6 +146,9 @@ local function onDropCorpse(playerNum, cart)
     local inventory = cart:getInventory()
     anchorToSquare(inventory:getOutermostContainer(), square)
     anchorToSquare(inventory, square)
+
+    -- Sem isto o deposito e recusado no meio da animacao e o cadaver cai no chao.
+    inventory:setType(CORPSE_CONTAINER_TYPE)
 
     ISTimedActionQueue.add(ISDropCorpseIntoContainer:new(character, inventory))
 end
