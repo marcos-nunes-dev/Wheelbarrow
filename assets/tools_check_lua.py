@@ -10,7 +10,8 @@ O QUE ELE NAO E: um parser de Lua. Ele nao valida expressoes nem escopo. Cobre a
 classe de erro que da para pegar contando: blocos desbalanceados, parenteses e
 chaves desbalanceados, e `ipairs` sobre tabela literal -- este ultimo porque uma
 tabela que comece com nil faz ipairs parar no indice 1, defeito que ja apareceu
-aqui e que nenhum verificador de sintaxe pegaria.
+aqui e que nenhum verificador de sintaxe pegaria. Cobre tambem `require` sem uso,
+que carrega um modulo sem que nada no arquivo o mencione.
 
 Uso:
     python tools_check_lua.py [raiz]
@@ -71,6 +72,16 @@ def check(path):
     if re.search(r'(?<![\w.:])next\s*\([^,)]*\)', code):
         problems.append("next() com um argumento -- quebrou em jogo; usar "
                         "#tabela ou um contador")
+
+    # `require` que ninguem usa. Nao e so sujeira: o require CARREGA o modulo, e
+    # um modulo com efeito colateral no topo passa a ser executado por um arquivo
+    # que nao tem mais nada a ver com ele -- dependencia invisivel que nao aparece
+    # em nenhuma leitura do codigo. Os dois casos aqui vieram de mover codigo para
+    # outro arquivo e esquecer a linha para tras.
+    for name in re.findall(r'local\s+(\w+)\s*=\s*require\b', code):
+        uses = len(re.findall(r'(?<![\w.:])' + re.escape(name) + r'\b', code))
+        if uses < 2:
+            problems.append("require sem uso: %s" % name)
 
     return problems
 

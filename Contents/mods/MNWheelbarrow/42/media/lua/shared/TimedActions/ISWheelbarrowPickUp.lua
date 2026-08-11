@@ -30,11 +30,10 @@
 
 require "TimedActions/ISBaseTimedAction"
 
+local WB_Equip = require "WB_Equip"
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Spill = require "WB_Spill"
 local WB_Tipping = require "WB_Tipping"
-local WB_Transfer = require "WB_Transfer"
-local WB_UI = require "WB_UI"
 
 ISWheelbarrowPickUp = ISBaseTimedAction:derive("ISWheelbarrowPickUp")
 
@@ -98,59 +97,11 @@ end
 function ISWheelbarrowPickUp:perform()
     self.item:setJobDelta(0.0)
 
-    -- Levanta antes de tudo. Se o carrinho estava tombado e fosse para a mao
-    -- assim, a inclinacao ficaria gravada no ModData e ele reapareceria torto na
-    -- proxima vez que fosse largado -- um tombo que o jogador nunca causou.
-    WB_Tipping.reset(self.item)
-
-    -- A rede de WB_Placement poe no chao todo carrinho desequipado que encontre
-    -- num inventario, e para equipar o carrinho precisa passar por esse estado:
-    -- AddItem vem antes de setPrimaryHandItem. Sem suspender, a rede o teleporta
-    -- para os pes do jogador no meio da acao -- que foi exatamente o sintoma
-    -- observado, "traz o carrinho ate onde estou mas nao equipa".
-    WB_Transfer.begin()
-
-    if self.worldItem ~= nil then
-        --[[ A SEQUENCIA E COPIADA DE ISGrabItemAction:transferItem, e nao
-             inventada -- a minha tinha tres passos a menos e o que faltava era
-             justamente o ultimo:
-
-                 setWorldItem(nil)
-
-             Sem ele o item continua APONTANDO para o objeto de mundo que acabou
-             de sair da square. getWorldItem() segue devolvendo algo, e tres
-             lugares leem isso como "ja esta no chao": WB_Player desequipa por
-             quadro, WB_Hands desequipa ao equipar, e WB_Spill.dropCart nao faz
-             nada. O sintoma foi o carrinho cair no inventario desequipado e
-             recusar qualquer tentativa de equipar. Uma referencia pendurada,
-             tres defeitos. ]]
-        local square = self.worldItem:getSquare()
-        if square ~= nil then
-            square:transmitRemoveItemFromSquare(self.worldItem)
-        end
-        self.worldItem:removeFromWorld()
-        self.worldItem:removeFromSquare()
-        self.worldItem:setSquare(nil)
-        self.item:setWorldItem(nil)
-    end
-
-    -- AddItem em vez do fluxo normal de transferencia de proposito: o carrinho
-    -- cheio nao passaria no teste de capacidade do inventario do jogador, e e
-    -- justamente isso que o carrinho existe para contornar. O peso continua
-    -- contando -- o alivio vem da reducao calculada em WB_Weight, nao daqui.
-    local inv = self.character:getInventory()
-    if not inv:contains(self.item) then
-        inv:AddItem(self.item)
-    end
-
-    self.character:setPrimaryHandItem(self.item)
-    self.character:setSecondaryHandItem(self.item)
-    self.character:resetModelNextFrame()
-    -- Sem isto o compartimento do carrinho so aparecia na barra de containers
-    -- depois de o jogador clicar em alguma coisa.
-    WB_UI.refreshContainers()
-
-    WB_Transfer.finish()
+    -- Toda a sequencia de equipar vive em WB_Equip, porque o estacionamento
+    -- durante acoes precisa exatamente dela. Duas copias de um trecho que
+    -- depende de ordem -- e este depende, ver o comentario de setWorldItem la --
+    -- e o convite para uma delas perder um passo.
+    WB_Equip.toHands(self.character, self.item, self.worldItem)
 
     ISBaseTimedAction.perform(self)
 end

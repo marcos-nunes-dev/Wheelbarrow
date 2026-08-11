@@ -20,6 +20,7 @@
 
 local WB_Cart = require "WB_Cart"
 local WB_Hands = require "WB_Hands"
+local WB_Parking = require "WB_Parking"
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Transfer = require "WB_Transfer"
 
@@ -111,6 +112,11 @@ Events.OnPlayerUpdate.Add(function(character)
     -- teve, e que aqui apareceria de forma ainda mais dificil de ver, por rodar
     -- em silencio a cada quadro.
     if WB_Transfer.active() then return end
+
+    -- Antes da saida por "nao tem carrinho na mao": enquanto o carrinho esta
+    -- estacionado ele legitimamente NAO esta na mao, e e justo esse o estado que
+    -- precisa ser desfeito quando a fila de acoes termina.
+    WB_Parking.restoreIfIdle(character)
 
     local ghost = ghostInHand(character)
     if ghost ~= nil then
