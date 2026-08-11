@@ -43,11 +43,22 @@ module Base
      *
      * Depende de o shader respeitar alpha, e ele respeita: medido nas texturas
      * do jogo base, ChristmasTree_Branch.png vai de alpha 0 a 255 com milhares
-     * de pixels intermediarios. A textura por isso dobrou de LARGURA -- metade
-     * esquerda o atlas original, direita a mancha -- e os UVs existentes foram
-     * comprimidos com u' = u/2. Em largura e nao em altura porque U tem a mesma
-     * orientacao em toda convencao, enquanto V pode estar invertido entre o FBX e
-     * o carregador; errar em V viraria a textura inteira de cabeca para baixo.
+     * de pixels intermediarios.
+     *
+     * A TEXTURA CONTINUA 512x512, e esse numero e medido. Personagem e veiculos
+     * sumiam da tela quando o modelo de mao usava textura com alpha, e eu culpei
+     * o canal alpha. Um teste controlado de quatro variantes -- mesma malha, so a
+     * textura mudando -- mostrou que a culpa era do TAMANHO:
+     *
+     *     512x512  RGBA opaco        funciona
+     *     512x512  RGBA translucido  funciona
+     *    1024x512  RGBA translucido  QUEBRA
+     *
+     * Entao a mancha e reservada DENTRO dos 512: os UVs do carrinho encolhem
+     * para 78% e a sombra ocupa a faixa direita. Procurar espaco livre no atlas
+     * foi tentado e nao existe -- 72.5% ocupado, maior retangulo vazio de 4x116
+     * texels. Encolher custa 20% da resolucao horizontal, imperceptivel num
+     * objeto que renderiza pequeno.
      *
      * TEXTURA SEPARADA, e isso nao e organizacao -- e isolamento, aprendido a
      * duras penas. Na primeira versao os dois modelos dividiam a textura com
@@ -57,20 +68,14 @@ module Base
      * inteiro, nao so o carrinho. O cenario, que e sprite, continuava aparecendo
      * -- foi esse recorte que apontou a causa. A alpha agora existe SO aqui.
      *
-     * O modelo de MAO NAO tem sombra, e isso esta decidido por medicao, nao por
-     * preferencia. A sombra la exigiria uma textura com alpha, e o modelo de mao
-     * faz parte do PERSONAGEM: as tres vezes em que uma textura com alpha entrou
-     * no passe de modelo do personagem, personagem e veiculos sumiram da tela --
-     * e so eles; o cenario, que e sprite, continuava. Nenhuma ocorrencia sem
-     * alpha.
+     * O modelo de MAO tem sombra propria, num plano DIFERENTE: depois da pose a
+     * malha esta no espaco do osso, onde +Z aponta para baixo, entao la o chao e
+     * um plano de Z constante e o quad varia em X e Y -- aqui a vertical e Y.
+     * Copiar o quad de um para o outro o deixaria de pe ao lado do personagem.
      *
-     * A ultima fechou o caso porque mostrou o gatilho: o personagem ficava bem
-     * ate algo forcar a RECONSTRUCAO do modelo -- transferir itens para o
-     * carrinho chama resetModelNextFrame. Com o modelo em cache nada acontecia;
-     * ao reconstruir, sumia.
-     *
-     * Ver o cabecalho de build_hand em assets/tools_build_models.py para o que
-     * uma proxima tentativa precisaria descobrir antes de tentar de novo.
+     * Ela chegou a ser revertida quando personagem e veiculos sumiam da tela e eu
+     * atribui a falha ao canal alpha. O teste controlado mostrou que era o
+     * tamanho da textura, e com 512x512 ela e segura.
      *
      * ALTURA: o mesh foi deslocado 0.380 no eixo Y (ver
      * assets/tools_fbx_shift.py) para a base ficar em Y = 0 em vez de a origem

@@ -76,18 +76,27 @@ personagem para esses nós.
 
 ---
 
-## Restrição vizinha, descoberta depois
+## Restrição vizinha, medida e resolvida
 
-Textura com **canal alpha** no modelo de mão faz o personagem e os veículos
-sumirem da tela — só eles; o cenário, que é sprite, continua. Aconteceu três
-vezes, todas com alpha presente, nenhuma sem. O gatilho é a **reconstrução** do
-modelo (`resetModelNextFrame`), não o render em si: com o modelo em cache nada
-acontece.
+Uma textura **1024x512** no modelo de mão faz o personagem e os veículos sumirem
+da tela — só eles; o cenário, que é sprite, continua. O gatilho é a
+**reconstrução** do modelo (`resetModelNextFrame`), não o render em si: com o
+modelo em cache nada acontece, o que fazia o defeito parecer intermitente.
 
-Isso matou a sombra do carrinho enquanto carregado, e vale para qualquer coisa
-que a próxima tentativa queira acrescentar ao modelo de mão. Antes de tentar de
-novo, descobrir **por quê**: se é o canal alpha, o tamanho 1024x512, ou não ser
-potência de dois nos dois lados.
+Eu cheguei a atribuir isso ao canal alpha e reverti a sombra do carrinho na mão.
+Errado — um teste controlado de quatro variantes, mesma malha e só a textura
+mudando, mostrou que **é o tamanho**:
+
+| Textura | Resultado |
+|---|---|
+| 512x512 RGBA opaco | funciona |
+| 512x512 RGBA translúcido | funciona |
+| 1024x512 RGBA translúcido | quebra |
+
+**Regra para qualquer coisa nova no modelo de mão: a textura fica em 512x512.**
+Transparência é segura; tamanho não é. Se um dia precisar de mais espaço de
+atlas, testar antes se 1024x1024 (quadrado) passa — o caso que quebrou era
+retangular, e essa variável não foi isolada.
 
 ## Restrição que qualquer solução precisa respeitar
 

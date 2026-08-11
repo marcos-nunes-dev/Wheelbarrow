@@ -3,38 +3,23 @@
 POR QUE UM CONSTRUTOR EM VEZ DE COMANDOS SOLTOS:
 
 Antes, o modelo de mao era gerado a partir do modelo de CHAO, e o de chao era
-editado no lugar. Ou seja, cada geracao partia do resultado da anterior: rodar a
-mesma ferramenta duas vezes produzia coisas diferentes, e nao havia como voltar
-ao ponto de partida sem o git. Aqui existe uma fonte -- assets/source/ -- e os
-dois modelos sao derivados dela toda vez.
+editado no lugar. Cada geracao partia do resultado da anterior: rodar a mesma
+ferramenta duas vezes produzia coisas diferentes, e nao havia como voltar ao
+ponto de partida sem o git. Aqui existe uma fonte -- assets/source/ -- e os dois
+modelos sao derivados dela toda vez.
 
 O QUE CADA UM RECEBE:
 
-    chao   sombra de contato assada na malha, e nada mais
-    mao    giro 270 0 0 e deslocamento (0.31, 0.90, 0.56), SEM sombra -- ver
-           build_hand para por que a sombra na mao foi tentada e revertida
+    chao   sombra de contato no plano do chao do MUNDO, onde a vertical e Y
+    mao    a pose (giro 270 0 0, deslocamento 0.31 0.90 0.56) mais a sombra no
+           plano do chao do OSSO DA MAO, onde a vertical e Z -- planos
+           diferentes, ver build_hand
 
-A sombra so entra no de chao porque ela e um quad deitado no plano do chao. No
-modelo de mao ele acompanharia o carrinho no ar, virando uma placa escura
-flutuando ao lado do personagem.
-
-A SOMBRA, e por que ela precisa existir na malha: o engine nao tem sombra para
-item. shadowExtents e shadowOffset existem so em script de VEICULO; item e model
-nao tem campo nenhum, e das 568 chaves de TilePropertyKey nenhuma trata sombra.
-No PZ, objeto do mundo que tem sombra tem ela PINTADA no sprite. Como o carrinho
-renderiza por modelo 3D, a unica via equivalente e um quad no chao com textura
-que desvanece nas bordas.
-
-Isso depende de o shader de item respeitar alpha, e ele respeita -- medido nas
-texturas do jogo base: ChristmasTree_Branch.png vai de alpha 0 a 255 com milhares
-de pixels intermediarios, e BowlWater.png e semitransparente. Nao e suposicao.
-
-A TEXTURA DOBRA DE LARGURA, nao de altura: a metade esquerda e a original e a
-direita recebe a sombra, e os UVs existentes sao comprimidos com u' = u / 2. Em
-LARGURA porque a orientacao de U e a mesma em toda convencao, enquanto V pode
-estar invertido entre o FBX e o carregador do jogo -- comprimir em V exigiria
-saber de que lado a textura e lida, e errar significaria a textura inteira de
-cabeca para baixo.
+A SOMBRA precisa existir na malha porque o engine nao tem sombra para item:
+shadowExtents e shadowOffset so existem em script de VEICULO, e das 568 chaves de
+TilePropertyKey nenhuma trata sombra. No PZ, objeto do mundo que tem sombra tem
+ela PINTADA no sprite; como o carrinho renderiza por modelo 3D, o equivalente e
+geometria com uma textura que desvanece nas bordas.
 
 Uso:
     python tools_build_models.py
@@ -50,24 +35,51 @@ from tools_fbx_strip_embedded import parse, size_of, write
 SOURCE = "source/Wheelbarrow_raw.fbx"
 SOURCE_TEXTURE = "source/Wheelbarrow_raw.png"
 OUT_MODELS = "../Contents/mods/MNWheelbarrow/common/media/models_X/WorldItems"
-# UMA TEXTURA POR MODELO, com o mesmo conteudo. Parece desperdicio de 300 KB e
-# nao e: as duas nascem da mesma funcao, mas ter arquivos separados permite
-# apontar o modelo de mao de volta para uma versao SEM alpha sem tocar no de
-# chao. Isso importa porque ja aconteceu de personagem e veiculos sumirem da tela
-# com alpha no passe de modelo, e a reversao precisa ser de uma linha.
-OUT_TEXTURE_HAND = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems/Wheelbarrow_Hand.png"
-OUT_TEXTURE_GROUND = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems/Wheelbarrow_Ground.png"
+
+# Uma textura por modelo, com o mesmo conteudo. Nao e desperdicio: arquivos
+# separados permitem mexer num modelo sem tocar no outro, e ja foi isso que
+# tornou uma reversao de emergencia uma linha em vez de refazer tudo.
+TEXTURES = "../Contents/mods/MNWheelbarrow/common/media/textures/WorldItems"
+OUT_TEXTURE_GROUND = os.path.join(TEXTURES, "Wheelbarrow_Ground.png")
+OUT_TEXTURE_HAND = os.path.join(TEXTURES, "Wheelbarrow_Hand.png")
 
 # Pose da mao, medida em jogo. Ver o cabecalho de models_wheelbarrow.txt.
 HAND_ROTATION = (270, 0, 0)
 HAND_OFFSET = (0.31, 0.90, 0.56)
 
+# TAMANHO DA TEXTURA: 512x512, e este numero e MEDIDO, nao escolhido.
+#
+# Personagem e veiculos sumiam da tela -- e so eles; o cenario, que e sprite,
+# continuava. Tres ocorrencias, todas com o modelo de mao usando textura com
+# alpha, o que me fez culpar o canal alpha e reverter a sombra na mao. Errado.
+#
+# Um teste controlado de quatro variantes, mesma malha e so a textura mudando,
+# deu a resposta:
+#
+#     512x512  RGBA opaco        funciona
+#     512x512  RGBA translucido  funciona
+#    1024x512  RGBA translucido  QUEBRA
+#
+# A culpa e do TAMANHO. Transparencia em 512x512 e segura, e por isso a sombra na
+# mao voltou. O gatilho da falha, quando ela acontece, e a RECONSTRUCAO do modelo
+# (resetModelNextFrame) -- com o modelo em cache nada acontece, o que fazia o
+# defeito parecer intermitente.
+TEXTURE_SIZE = 512
+
+# A faixa da sombra e reservada DENTRO dos 512, encolhendo os UVs do carrinho.
+# A alternativa -- achar espaco livre no atlas -- foi tentada e nao existe: 72.5%
+# dele esta ocupado e o maior retangulo vazio tem 4x116 texels. Encolher custa 20%
+# da resolucao horizontal, imperceptivel num objeto que renderiza pequeno.
+ATLAS_SPLIT = 0.78
+SHADOW_U0, SHADOW_U1 = 0.80, 1.0
+
 # A sombra cobre a pegada do carrinho com uma folga. Em unidades de malha.
 SHADOW_MARGIN = 0.12
-# Altura acima de y=0. Zero exato briga com o piso pelo mesmo pixel de
-# profundidade e produz cintilacao; um valor pequeno resolve sem ser visivel.
+# Distancia do plano do chao. Zero exato briga com o piso pelo mesmo pixel de
+# profundidade e produz cintilacao.
 SHADOW_LIFT = 0.004
-# Fracao do raio que fica com alpha cheio antes de a borda comecar a desmanchar.
+# Fracao do raio com alpha cheio antes de a borda desmanchar. Queda desde o
+# centro fazia a mancha parecer bem menor que o carrinho em tela.
 SHADOW_CORE = 0.55
 SHADOW_ALPHA = 170
 
@@ -90,7 +102,6 @@ def _encode(values, ptype):
 
 
 def _array_node(root, name):
-    """Primeiro no com este nome que carregue um array."""
     found = []
 
     def walk(node):
@@ -119,8 +130,7 @@ def _get(root, name):
 
 
 def _set(root, name, values, ptype):
-    node = _array_node(root, name)
-    node.props = [(ptype, _encode(values, ptype))]
+    _array_node(root, name).props = [(ptype, _encode(values, ptype))]
 
 
 def _save(src_bytes, roots, tail, dst):
@@ -134,11 +144,33 @@ def _save(src_bytes, roots, tail, dst):
     open(dst, "wb").write(b"".join(out))
 
 
+def _open_geometry(src):
+    data = open(src, "rb").read()
+    _ver, roots, tail = parse(data)
+    for candidate in roots:
+        if _array_node(candidate, b"Vertices") is not None:
+            return data, roots, tail, candidate
+    raise SystemExit("nenhuma geometria encontrada em %s" % src)
+
+
 # --------------------------------------------------------------------------
 
 
+def _shrink_u(target):
+    """Encolhe os UVs do carrinho, liberando a faixa da sombra a direita.
+
+    Acompanha a TEXTURA, nao o modelo -- distincao que ja me escapou uma vez:
+    encolhi os UVs de um modelo cuja textura nao tinha mudado, e ele passou a
+    amostrar so um pedaco da imagem inteira.
+    """
+    uv, uv_type = _get(target, b"UV")
+    for i in range(0, len(uv), 2):
+        uv[i] = uv[i] * ATLAS_SPLIT
+    _set(target, b"UV", uv, uv_type)
+
+
 def _add_quad(target, corners):
-    """Junta um quad de sombra a geometria, em DOIS poligonos de giros opostos.
+    """Junta o quad de sombra em DOIS poligonos, com giros opostos.
 
     Um quad tem uma face so. Se o sentido de giro nao casar com a convencao de
     descarte do renderizador, ele fica invisivel justamente de cima -- que e de
@@ -160,18 +192,17 @@ def _add_quad(target, corners):
     pvi.extend([base, base + 1, base + 2, ~(base + 3)])
     pvi.extend([base + 3, base + 2, base + 1, ~base])
 
-    # Normais sao ByVertice/IndexToDirect: uma por vertice novo e um indice para
-    # cada. A direcao nao importa para o resultado -- os dois giros ja garantem
-    # que a face aparece dos dois lados.
+    # Normais sao ByVertice/IndexToDirect: uma por vertice novo, e um indice para
+    # cada. A direcao nao importa -- os dois giros ja garantem os dois lados.
     for _ in range(4):
         normals.extend([0.0, 1.0, 0.0])
     start_normal = len(normals) // 3 - 4
     nidx.extend([start_normal + i for i in range(4)])
 
-    # UVs sao ByPolygonVertex/IndexToDirect: os cantos caem na metade DIREITA da
-    # textura, onde a mancha foi pintada. Oito indices, um jogo por poligono.
+    # UVs sao ByPolygonVertex/IndexToDirect: os cantos caem na faixa reservada.
     uv_base = len(uv) // 2
-    uv.extend([0.5, 0.0, 1.0, 0.0, 1.0, 1.0, 0.5, 1.0])
+    uv.extend([SHADOW_U0, 0.0, SHADOW_U1, 0.0,
+               SHADOW_U1, 1.0, SHADOW_U0, 1.0])
     uvidx.extend([uv_base + i for i in range(4)])
     uvidx.extend([uv_base + 3, uv_base + 2, uv_base + 1, uv_base])
 
@@ -183,36 +214,10 @@ def _add_quad(target, corners):
     _set(target, b"UVIndex", uvidx, uvidx_type)
 
 
-def _open_geometry(src):
-    data = open(src, "rb").read()
-    _ver, roots, tail = parse(data)
-    for candidate in roots:
-        if _array_node(candidate, b"Vertices") is not None:
-            return data, roots, tail, candidate
-    raise SystemExit("nenhuma geometria encontrada em %s" % src)
-
-
-def _halve_u(target):
-    """Comprime os UVs para a metade esquerda da textura.
-
-    Acompanha a TEXTURA, nao o modelo. Foi essa distincao que me escapou: comprimi
-    os UVs dos dois modelos quando so a textura do chao tinha dobrado, e o modelo
-    de mao passou a amostrar metade de uma textura inteira.
-    """
-    uv, uv_type = _get(target, b"UV")
-    for i in range(0, len(uv), 2):
-        uv[i] = uv[i] * 0.5
-    _set(target, b"UV", uv, uv_type)
-
-
 def build_ground(src, dst):
-    """Modelo de chao: UVs comprimidos e o quad deitado no plano do chao.
-
-    Aqui a malha ainda esta no espaco original, onde Y e a vertical e o chao e
-    Y = 0.
-    """
+    """Modelo de chao. Aqui a vertical e Y e o chao e Y = 0."""
     data, roots, tail, target = _open_geometry(src)
-    _halve_u(target)
+    _shrink_u(target)
 
     verts, _ = _get(target, b"Vertices")
     xs, zs = verts[0::3], verts[2::3]
@@ -226,93 +231,79 @@ def build_ground(src, dst):
 
 
 def build_hand(src, dst):
-    """Modelo de mao: SO o giro e o deslocamento da pose. Sem sombra.
+    """Modelo de mao: a pose, mais a sombra no plano do chao do OSSO.
 
-    A SOMBRA NA MAO FOI TENTADA E REVERTIDA, e o motivo esta medido:
-
-    Ela exige uma textura com canal alpha, e o modelo de mao faz parte do
-    PERSONAGEM. Toda vez que essa textura entrou no passe de modelo do
-    personagem, personagem e veiculos sumiram da tela -- e so eles: o cenario, que
-    e sprite, continuava. Tres ocorrencias, todas com alpha presente, nenhuma sem.
-
-    A ultima fechou o caso porque o gatilho ficou claro: o personagem ficava bem
-    ate algo forcar a RECONSTRUCAO do modelo (transferir itens para o carrinho
-    chama resetModelNextFrame). Com o modelo em cache, nada acontecia; ao
-    reconstruir, sumia. Enquanto o modelo de mao ficou sem alpha, o Marcos
-    reportou tudo funcionando.
-
-    Nao vale insistir por tentativa: a proxima ideia precisa vir de descobrir POR
-    QUE o passe de modelo rejeita essa textura -- se e o canal alpha, o tamanho
-    1024x512, ou nao ser potencia de dois nos dois lados.
-
-    A sombra no chao continua, porque aquele modelo nao e desenhado junto com o
-    personagem.
+    O PLANO DO CHAO AQUI E OUTRO. Depois da pose, a malha esta no espaco do osso
+    da mao, e nesse espaco +Z aponta para BAIXO -- medido em jogo comparando duas
+    poses que diferiam so no sinal de Z: uma flutuava na altura do ombro e a
+    outra encostava no chao. Entao o chao e um plano de Z constante e o quad varia
+    em X e Y, ao contrario do modelo de chao. Copiar o quad de um para o outro o
+    deixaria de pe ao lado do personagem.
     """
-    shift(src, dst, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
+    tmp = "source/_hand_posed.fbx"
+    shift(src, tmp, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
           HAND_ROTATION[0], HAND_ROTATION[1], HAND_ROTATION[2])
-    return 0
+
+    data, roots, tail, target = _open_geometry(tmp)
+    _shrink_u(target)
+
+    verts, _ = _get(target, b"Vertices")
+    xs, ys, zs = verts[0::3], verts[1::3], verts[2::3]
+    x0, x1 = min(xs) - SHADOW_MARGIN, max(xs) + SHADOW_MARGIN
+    y0, y1 = min(ys) - SHADOW_MARGIN, max(ys) + SHADOW_MARGIN
+    # O ponto mais BAIXO e o maior Z, porque +Z desce. E onde a roda toca o chao.
+    ground = max(zs) - SHADOW_LIFT
+
+    _add_quad(target, [(x0, y0, ground), (x1, y0, ground),
+                       (x1, y1, ground), (x0, y1, ground)])
+    _save(data, roots, tail, dst)
+    os.remove(tmp)
+    return 4
 
 
-def build_texture():
-    """Dobra a largura: original a esquerda, mancha de sombra a direita."""
+def build_texture(path):
+    """512x512 RGBA: o carrinho encolhido a esquerda, a sombra na faixa direita."""
     from PIL import Image
 
     original = Image.open(SOURCE_TEXTURE).convert("RGBA")
-    w, h = original.size
-    out = Image.new("RGBA", (w * 2, h), (0, 0, 0, 0))
-    out.paste(original, (0, 0))
+    size = TEXTURE_SIZE
+    out = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    out.paste(original.resize((int(size * ATLAS_SPLIT), size), Image.LANCZOS), (0, 0))
 
-    # Elipse com queda suave, desenhada por pixel. Um desfoque gaussiano daria
-    # borda mais macia, mas deixaria alpha residual ate a borda do quadrante, e
-    # esse residuo aparece como um retangulo fantasma no chao.
+    x0, x1 = int(size * SHADOW_U0), int(size * SHADOW_U1)
+    cx, cy = (x0 + x1) / 2.0, size / 2.0
+    rx, ry = (x1 - x0) / 2.0, size / 2.0
+
     px = out.load()
-    cx, cy = w * 1.5, h * 0.5
-    rx, ry = w * 0.46, h * 0.46
-    for y in range(h):
-        for x in range(w, w * 2):
-            nx = (x - cx) / rx
-            ny = (y - cy) / ry
-            d = math.sqrt(nx * nx + ny * ny)
+    for y in range(size):
+        for x in range(x0, x1):
+            d = math.hypot((x - cx) / rx, (y - cy) / ry)
             if d >= 1.0:
                 continue
-            # Queda suave (smoothstep ao quadrado): centro cheio, borda em zero,
-            # sem aresta visivel.
-            # Nucleo CHEIO ate SHADOW_CORE e so entao a queda. A primeira versao
-            # usava (1-d)^2 desde o centro, o que fazia a mancha valer 25% do
-            # alpha ja na metade do raio -- em tela ela parecia bem menor que o
-            # carrinho, que foi exatamente o que apareceu no teste. Sombra de
-            # contato e quase chapada, com a borda desmanchando.
             if d <= SHADOW_CORE:
                 fade = 1.0
             else:
                 fade = 1.0 - (d - SHADOW_CORE) / (1.0 - SHADOW_CORE)
                 fade = fade * fade * (3.0 - 2.0 * fade)
             px[x, y] = (0, 0, 0, int(SHADOW_ALPHA * fade))
-    out.save(OUT_TEXTURE_GROUND)
 
-    # A textura do modelo de MAO e a original, sem alpha e sem a metade extra.
-    # A do modelo de mao e a original: RGB, sem alpha, sem a metade extra. Ver
-    # build_hand para por que isso nao e escolha estetica.
-    original.convert("RGB").save(OUT_TEXTURE_HAND)
+    out.save(path)
     return out.size
 
 
 def main():
-    os.makedirs(os.path.dirname(OUT_TEXTURE_HAND), exist_ok=True)
+    os.makedirs(TEXTURES, exist_ok=True)
 
-    print("textura de chao %dx%d com alpha; a de mao segue original sem alpha"
-          % build_texture())
+    for path in (OUT_TEXTURE_GROUND, OUT_TEXTURE_HAND):
+        print("textura %dx%d RGBA -> %s" % (build_texture(path) + (path,)))
 
     ground = os.path.join(OUT_MODELS, "Wheelbarrow.fbx")
-    added = build_ground(SOURCE, ground)
-    print("chao: %d vertices de sombra -> %s" % (added, ground))
+    print("chao: %d vertices de sombra -> %s" % (build_ground(SOURCE, ground), ground))
 
     # O de mao sai da MESMA fonte, e nao do de chao: senao herdaria o quad do
     # chao, que no espaco da mao ficaria de pe ao lado do personagem.
     hand = os.path.join(OUT_MODELS, "Wheelbarrow_Hand.fbx")
-    build_hand(SOURCE, hand)
-    print("mao: pose %s %s, sem sombra -> %s" % (HAND_ROTATION, HAND_OFFSET, hand))
-
+    print("mao: %d vertices de sombra -> %s" % (build_hand(SOURCE, hand), hand))
 
 
 if __name__ == "__main__":
