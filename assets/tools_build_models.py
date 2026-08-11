@@ -11,7 +11,7 @@ modelos sao derivados dela toda vez.
 O QUE CADA UM RECEBE:
 
     chao   sombra de contato no plano do chao do MUNDO, onde a vertical e Y
-    mao    so a pose (giro 270 0 0, deslocamento 0.26 0.90 0.56). Sem sombra:
+    mao    so a pose (giro 270 0 0, deslocamento 0.36 0.90 0.56). Sem sombra:
            o osso da mao inclina ao andar e levaria o quad junto -- ver build_hand
 
 A SOMBRA precisa existir na malha porque o engine nao tem sombra para item:
@@ -44,7 +44,7 @@ OUT_TEXTURE_HAND = os.path.join(TEXTURES, "Wheelbarrow_Hand.png")
 
 # Pose da mao, medida em jogo. Ver o cabecalho de models_wheelbarrow.txt.
 HAND_ROTATION = (270, 0, 0)
-HAND_OFFSET = (0.26, 0.90, 0.56)
+HAND_OFFSET = (0.36, 0.90, 0.56)
 
 # TAMANHO DA TEXTURA: 512x512, e este numero e MEDIDO, nao escolhido.
 #

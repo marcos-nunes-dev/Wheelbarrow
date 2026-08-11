@@ -130,6 +130,37 @@ local function facingDegrees(character)
     return degrees % 360
 end
 
+--- Posicao DENTRO da square de destino, de 0 a 1 em cada eixo.
+---
+--- O centro (0.5, 0.5) deixava o carrinho longe: a square de destino e a da
+--- FRENTE do personagem, entao o centro dela fica a uma tile inteira de
+--- distancia. Encostar o carrinho na borda voltada para o personagem corta essa
+--- distancia pela metade sem mudar de square -- e mudar de square nao serve,
+--- porque na do proprio personagem o carrinho ficaria dentro dele.
+---
+--- Quando o destino E a square do personagem (a da frente estava bloqueada por
+--- parede ou movel), o deslocamento inverte: ali o carrinho precisa ser
+--- empurrado para LONGE do centro, senao nasce em cima de quem o largou.
+local EDGE_PULL = 0.4
+
+local function placementOffset(character, square)
+    local forward = character and character:getForwardDirection()
+    local here = character and character:getSquare()
+    if forward == nil or here == nil then return 0.5, 0.5 end
+
+    local sameSquare = (here:getX() == square:getX())
+        and (here:getY() == square:getY())
+    local pull = sameSquare and EDGE_PULL or -EDGE_PULL
+
+    local ox = 0.5 + forward:getX() * pull
+    local oy = 0.5 + forward:getY() * pull
+    -- O engine espera a posicao dentro da square; sair de [0,1] a poria na
+    -- vizinha, o que anularia a escolha de square feita por quem chamou.
+    if ox < 0.05 then ox = 0.05 elseif ox > 0.95 then ox = 0.95 end
+    if oy < 0.05 then oy = 0.05 elseif oy > 0.95 then oy = 0.95 end
+    return ox, oy
+end
+
 --- Tira o carrinho das maos e do inventario e o poe no chao.
 ---
 --- Mora aqui, e nao em WB_Placement, porque as timed actions tambem precisam
@@ -156,7 +187,8 @@ function WB_Spill.dropCart(character, cart, square)
     local degrees = facingDegrees(character)
     if degrees ~= nil then cart:setWorldZRotation(degrees) end
 
-    square:AddWorldInventoryItem(cart, 0.5, 0.5, 0.0)
+    local ox, oy = placementOffset(character, square)
+    square:AddWorldInventoryItem(cart, ox, oy, 0.0)
     character:resetModelNextFrame()
     -- O compartimento do carrinho tem de sumir da barra de containers agora, e
     -- nao no proximo clique do jogador.

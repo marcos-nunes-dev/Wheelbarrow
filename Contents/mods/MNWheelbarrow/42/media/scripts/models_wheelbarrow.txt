@@ -137,11 +137,12 @@ module Base
      *                  refino em tela a partir dai.
      *   Y = 0.90       frente/tras, o eixo do comprimento nesta rotacao. Tira o
      *                  carrinho de dentro do personagem.
-     *   X = 0.26       lateral. Aumentar move para a ESQUERDA: na calibracao,
-     *                  0.00 deixava o carrinho longe demais a direita e 0.40
-     *                  passava. 0.31 era o encaixe com a animacao de UM braco;
-     *                  com os dois bracos o personagem ficou descentrado em
-     *                  relacao ao carrinho, e 0.26 o traz de volta ao meio.
+     *   X = 0.36       lateral, medido num grid de oito valores de 0.16 a 0.51.
+     *                  0.31 era o encaixe com a animacao de UM braco; com os
+     *                  dois bracos o personagem ficou descentrado, e eu tentei
+     *                  corrigir a olho com 0.26 -- para o lado ERRADO. O grid
+     *                  cercou o valor atual dos dois lados justamente para nao
+     *                  repetir esse erro, e a resposta foi 0.36.
      *
      * A TRINCA CONVERGIU, e nao e so o melhor de uma amostra. Cada valor foi o
      * melhor em DUAS passadas com intervalos de lados opostos:
