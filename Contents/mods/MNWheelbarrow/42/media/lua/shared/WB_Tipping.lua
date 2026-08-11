@@ -27,15 +27,26 @@
        a rotacao e reaplicada quando necessario -- ver WB_Tipping.restore.
 
     ----------------------------------------------------------------------
-    POR QUE A QUEDA E EM PASSOS FIXOS
+    A QUEDA, E O QUE O ATLAS COBRA POR ELA
 
-    O desenho do item no chao e cacheado num ATLAS, indexado pelos parametros --
-    inclusive a rotacao. Cada angulo distinto tende a virar uma entrada nova.
+    O desenho do item no chao e cacheado num ATLAS indexado pelos parametros,
+    inclusive a rotacao. Cada combinacao distinta de angulos tende a virar uma
+    entrada nova, entao "quantos angulos diferentes" e uma decisao de custo e nao
+    so de estetica.
 
-    Uma queda suave, interpolada por quadro, geraria dezenas de entradas por
-    tombo. Com passos FIXOS sao quatro entradas no total, reaproveitadas em todo
-    tombo seguinte. A diferenca visual entre quatro passos e trinta, num
-    movimento de um terco de segundo, e pequena; a diferenca de custo nao e.
+    Duas escolhas mantem esse total limitado e reaproveitavel:
+
+      passos fixos      dez posicoes, sempre as mesmas, em vez de interpolar por
+                        quadro
+      guinada em oito   a direcao da queda e arredondada para oito direcoes. A
+                        guinada em si e continua, e sem arredondar cada tombo
+                        geraria angulos ineditos para sempre. O erro maximo e
+                        22.5 graus na direcao da queda -- invisivel em meio
+                        segundo de movimento.
+
+    Total possivel: dez passos x oito direcoes, e cada um so nasce quando e
+    usado. A primeira versao tinha quatro passos e caia num eixo fixo do mundo;
+    era barata e parecia travada, e ainda tombava na diagonal.
 ]]
 
 local WB_Tipping = {}
@@ -44,24 +55,47 @@ local WB_Tipping = {}
 --- recarregamento, porque o objeto de mundo e recriado e o construtor a zera.
 local TIPPED_KEY = "MNWB_tipped"
 
---- Angulos da queda, em graus. Fixos de proposito -- ver o cabecalho.
-local TIP_ANGLES = { 24, 48, 70, 86 }
-local TIP_STEP_MS = 70
+--- Angulo final da queda e quantos passos ate la.
+local TIP_FINAL = 86
+local TIP_STEPS = 10
+local TIP_STEP_MS = 42
 
---- Qual eixo derruba o carrinho DE LADO.
+--- Fase entre a guinada do carrinho e o eixo em que ele deve tombar.
 ---
---- angle.x e angle.z sao os dois eixos horizontais; qual deles e "de lado"
---- depende de como a guinada e composta antes deles, o que o bytecode nao diz de
---- forma legivel. Se o carrinho tombar para a frente em vez de para o lado, a
---- correcao e trocar por "y" aqui -- e so isso.
-local TIP_AXIS = "x"
+--- Se ele cair para a frente em vez de para o lado, somar ou subtrair 90 aqui.
+local TIP_PHASE = 0.0
 
+--- Direcoes distintas usadas ao decompor a queda.
+---
+--- A guinada e continua, mas os angulos de inclinacao vao para um ATLAS
+--- indexado por eles: guinada continua geraria entradas novas a cada tombo, para
+--- sempre. Arredondar para oito direcoes limita o total a passos x 8, e todas
+--- viram cache depois do primeiro uso. O erro maximo e 22.5 graus na direcao da
+--- queda, invisivel num movimento de meio segundo.
+local TIP_DIRECTIONS = 8
+
+--- Angulo do passo i, acelerando.
+---
+--- Quadratico e nao linear porque queda e acelerada: linear parecia o carrinho
+--- sendo baixado por um cabo, e foi parte do que o Marcos leu como "nada
+--- fluida". O resto era so a contagem de passos, que era quatro.
+local function stepAngle(step)
+    local t = step / TIP_STEPS
+    return TIP_FINAL * t * t
+end
+
+--- Espalha a inclinacao entre os DOIS eixos horizontais, conforme a guinada.
+---
+--- Inclinar num eixo so do mundo faz a direcao da queda depender de para onde o
+--- carrinho aponta -- foi por isso que ele tombava na diagonal. Decompondo a
+--- inclinacao pela guinada, o eixo efetivo passa a ser o do proprio carrinho, e
+--- ele tomba sempre para o mesmo lado em relacao a si mesmo.
 local function applyAngle(cart, degrees)
-    if TIP_AXIS == "x" then
-        cart:setWorldXRotation(degrees)
-    else
-        cart:setWorldYRotation(degrees)
-    end
+    local step = 360.0 / TIP_DIRECTIONS
+    local yaw = math.floor((cart:getWorldZRotation() + TIP_PHASE) / step + 0.5) * step
+    local radians = math.rad(yaw)
+    cart:setWorldXRotation(degrees * math.cos(radians))
+    cart:setWorldYRotation(degrees * math.sin(radians))
 end
 
 --- Tombos em andamento.
@@ -131,11 +165,12 @@ function WB_Tipping.restore(cart)
     -- Com um tombo em andamento, quem manda na rotacao e o laco de OnTick.
     if indexOf(cart) ~= nil then return end
 
-    local final = TIP_ANGLES[#TIP_ANGLES]
-    local current = (TIP_AXIS == "x") and cart:getWorldXRotation()
-        or cart:getWorldYRotation()
-    if math.abs(current - final) > 0.5 then
-        applyAngle(cart, final)
+    -- A soma das duas componentes so e zero quando o carrinho esta em pe, entao
+    -- ela serve para detectar que a inclinacao foi perdida no recarregamento.
+    local tilt = math.abs(cart:getWorldXRotation())
+        + math.abs(cart:getWorldYRotation())
+    if tilt < 0.5 then
+        applyAngle(cart, TIP_FINAL)
     end
 end
 
@@ -156,8 +191,8 @@ Events.OnTick.Add(function()
             table.remove(falling, i)
         elseif now >= state.due then
             state.step = state.step + 1
-            applyAngle(cart, TIP_ANGLES[state.step])
-            if state.step >= #TIP_ANGLES then
+            applyAngle(cart, stepAngle(state.step))
+            if state.step >= TIP_STEPS then
                 table.remove(falling, i)
             else
                 state.due = now + TIP_STEP_MS
