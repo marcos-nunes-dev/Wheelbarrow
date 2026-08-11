@@ -16,6 +16,14 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
   A opção respeita a sandbox `AllowCorpses` e não aparece se o carrinho estiver
   cheio.
 
+  Fazer isso funcionar exigiu três coisas que o jogo não faz sozinho para um
+  compartimento que vem de item: dar uma square ao container de fora (o `"floor"`
+  da square, que `getWorldPosition` consulta antes de qualquer outro), declarar o
+  tipo do compartimento como `crate` (a lista de tipos que aceitam cadáver é fixa
+  no engine e é conferida de novo no evento de animação do depósito), e usar o
+  próprio texto do jogo para o menu — o que deixou a opção traduzida em mais
+  idiomas do que os 23 que geramos.
+
 ## [0.1.2] — 2026-08-11
 
 ### Corrigido
