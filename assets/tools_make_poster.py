@@ -1,57 +1,55 @@
-"""Gera preview.png e poster.png a partir de um quadro da gravacao em jogo.
+"""Gera preview.png e poster.png a partir da capa.
 
-POR QUE UM QUADRO DE JOGO E NAO UM RENDER: o icone do item ja e renderizado do FBX
-(tools_render_icon.py), e para um icone isso e o certo -- fundo limpo, nenhuma
-distracao. Para a pagina da Workshop e o contrario: o jogador quer ver a coisa
-FUNCIONANDO, com personagem, chao e escala reais. Um render do modelo sozinho nao
-responde "como isso fica no meu jogo".
+DUAS RESOLUCOES, E NAO E ESCOLHA:
 
-POR QUE A GRAVACAO VIVE EM assets/source: sem ela nao ha como regerar as imagens, e
-o uploader da Workshop sobrescreve coisas. Mesma razao pela qual o FBX de origem esta
-versionado -- o repo tem de conseguir reconstruir tudo o que publica.
+  preview.png  256x256 EXATO. O jogo recusa qualquer outra dimensao -- ver
+               UI_WorkshopError_PreviewDimensions, "must be exactly 256x256 pixels".
+               Tambem tem de ficar abaixo de 1000KB.
 
-O QUADRO E O ENQUADRAMENTO foram escolhidos olhando: quadro 12 e o de passada mais
-aberta, que le como "andando" numa imagem estatica, e o recorte e o unico dos tres
-testados que nao corta a roda.
+  poster.png   sem regra de dimensao. Ele aparece na lista de mods do jogo, e os mods
+               instalados usam de 256x256 a 1129x1129. Em 512 o texto da capa
+               sobrevive; em 256 o subtitulo comeca a virar borrao.
+
+A CAPA E ARTE, e nao um render nem um quadro de jogo. Antes daqui o preview era um
+quadro da gravacao, que mostrava o mod funcionando mas nao dizia o nome dele. Uma capa
+com o nome nos dois idiomas resolve as duas coisas na miniatura da Workshop, que e onde
+a decisao de clicar acontece.
+
+LANCZOS e nao NEAREST: a reducao e grande (1254 -> 256) e o texto e o que mais sofre.
+NEAREST preservaria a aparencia de pixel art e destruiria as letras.
 
 Uso:
     python tools_make_poster.py
 """
-import io
 import os
 
 from PIL import Image
 
-#: Gravacao em jogo, na propria arvore do repo.
-SOURCE = os.path.join("source", "andando.gif")
-
-#: Quadro escolhido: passada aberta, cacamba visivel, roda inteira.
-FRAME = 12
-
-#: Recorte quadrado no espaco do GIF (426x240). Centrado no conjunto
-#: personagem + carrinho, com folga para a roda nao encostar na borda.
-CROP = (146, 46, 302, 202)
-
-#: 256x256 e o que o jogo impoe para o preview da Workshop, e e tambem o tamanho
-#: mais comum de poster nos mods instalados -- 13 dos 23 conferidos.
-SIZE = (256, 256)
+SOURCE = os.path.join("source", "capa.png")
 
 TARGETS = (
     # preview da pagina da Workshop, ao lado de workshop.txt
-    os.path.join("..", "preview.png"),
+    (os.path.join("..", "preview.png"), 256),
     # poster da lista de mods, ao lado de mod.info
-    os.path.join("..", "Contents", "mods", "MNWheelbarrow", "42", "poster.png"),
+    (os.path.join("..", "Contents", "mods", "MNWheelbarrow", "42", "poster.png"), 512),
 )
+
+#: Limite da Steam para o preview.
+MAX_BYTES = 1000 * 1024
 
 
 def main():
-    source = Image.open(SOURCE)
-    source.seek(FRAME)
-    image = source.convert("RGB").crop(CROP).resize(SIZE, Image.LANCZOS)
+    source = Image.open(SOURCE).convert("RGB")
+    if source.size[0] != source.size[1]:
+        raise SystemExit("a capa precisa ser quadrada; esta %dx%d" % source.size)
 
-    for target in TARGETS:
-        image.save(target)
-        print("%s %dx%d" % (target, image.size[0], image.size[1]))
+    for target, size in TARGETS:
+        source.resize((size, size), Image.LANCZOS).save(target)
+        written = os.path.getsize(target)
+        if written > MAX_BYTES:
+            raise SystemExit("%s ficou com %d bytes, acima do limite de %d"
+                             % (target, written, MAX_BYTES))
+        print("%s %dx%d  %d bytes" % (target, size, size, written))
 
 
 if __name__ == "__main__":
