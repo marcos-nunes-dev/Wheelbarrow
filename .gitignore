@@ -13,3 +13,8 @@ desktop.ini
 
 # Saida temporaria de exportacao de modelo
 /assets/tmp/
+
+# Bytecode do Python. As ferramentas de assets importam umas as outras, entao rodar
+# qualquer uma gera cache -- sete arquivos deles estavam versionados.
+__pycache__/
+*.pyc
