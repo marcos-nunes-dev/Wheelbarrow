@@ -100,6 +100,27 @@ module Base
     }
 
     /*
+     * Modelo do carrinho TOMBADO.
+     *
+     * A malha e a do chao SEM o quad de sombra, e a razao e que sombra assada na
+     * geometria inclina junto com o objeto: no carrinho deitado ela virava uma
+     * mancha de contato de pe no ar. Recalcular nao e opcao -- e um quad, nao um
+     * efeito.
+     *
+     * A troca acontece em runtime, por InventoryItem.setWorldStaticModel: de pe
+     * o carrinho usa MNWheelbarrow_Ground, tombado usa este. Assim a sombra nao
+     * se perde no estado comum e nao atrapalha no estado temporario.
+     *
+     * Compartilha a textura do modelo de chao; a faixa da sombra fica sem uso.
+     */
+    model MNWheelbarrow_Tipped
+    {
+        mesh = WorldItems/Wheelbarrow_Tipped,
+        texture = WorldItems/Wheelbarrow_Ground,
+        scale = 0.00499,
+    }
+
+    /*
      * Modelo do carrinho SEGURADO NAS MAOS.
      *
      * A transformacao esta ASSADA NA MALHA. Os dois modelos sao gerados por

@@ -10,7 +10,9 @@ modelos sao derivados dela toda vez.
 
 O QUE CADA UM RECEBE:
 
-    chao   sombra de contato no plano do chao do MUNDO, onde a vertical e Y
+    chao      sombra de contato no plano do chao do MUNDO, onde a vertical e Y
+    tombado   igual ao de chao, sem a sombra -- ela inclinaria junto e viraria
+              uma mancha de contato de pe no ar
     mao    so a pose (giro 270 0 0, deslocamento 0.36 0.90 0.56). Sem sombra:
            o osso da mao inclina ao andar e levaria o quad junto -- ver build_hand
 
@@ -252,6 +254,27 @@ def build_ground(src, dst):
     return 4
 
 
+def build_tipped(src, dst):
+    """Modelo do carrinho TOMBADO: igual ao de chao, porem SEM o quad de sombra.
+
+    A sombra e geometria assada na malha, entao ela inclina junto com o carrinho
+    e deixa de fazer sentido: uma mancha de contato de pe no ar. Nao da para
+    recalcular -- e um quad, nao um efeito.
+
+    A saida e trocar o MODELO. InventoryItem.setWorldStaticModel aceita a troca
+    em runtime, entao o carrinho usa o modelo com sombra enquanto esta de pe e
+    este enquanto esta tombado. Assim a sombra nao se perde no estado comum, que
+    e o de pe, e nao atrapalha no estado tombado, que e temporario.
+
+    Os UVs sao encolhidos igual ao de chao: os dois compartilham a textura, e a
+    faixa da sombra simplesmente fica sem uso aqui.
+    """
+    data, roots, tail, target = _open_geometry(src)
+    _shrink_u(target)
+    _save(data, roots, tail, dst)
+    return 0
+
+
 def build_hand(src, dst):
     """Modelo de mao: SO a pose. Sem sombra, e isso e geometria, nao preferencia.
 
@@ -329,6 +352,10 @@ def main():
 
     # O de mao sai da MESMA fonte, e nao do de chao: senao herdaria o quad do
     # chao, que no espaco da mao ficaria de pe ao lado do personagem.
+    tipped = os.path.join(OUT_MODELS, "Wheelbarrow_Tipped.fbx")
+    build_tipped(SOURCE, tipped)
+    print("tombado: sem sombra -> %s" % tipped)
+
     hand = os.path.join(OUT_MODELS, "Wheelbarrow_Hand.fbx")
     build_hand(SOURCE, hand)
     print("mao: pose %s %s, sem sombra -> %s" % (HAND_ROTATION, HAND_OFFSET, hand))

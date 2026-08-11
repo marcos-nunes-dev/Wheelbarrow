@@ -30,7 +30,6 @@
 ]]
 
 local WB_Spill = {}
-local WB_Tipping = require "WB_Tipping"
 local WB_UI = require "WB_UI"
 
 --- Mesmo teto que ISDropWorldItemAction usa para recusar um item no chao.
@@ -162,20 +161,36 @@ local function placementOffset(character, square)
     return ox, oy
 end
 
---- Tira o carrinho das maos e do inventario e o poe no chao.
+--- Coloca o carrinho no chao: a UNICA funcao que faz isso.
 ---
---- Mora aqui, e nao em WB_Placement, porque as timed actions tambem precisam
---- dele -- e elas vivem em shared/, enquanto WB_Placement e de cliente. Um
---- require de shared/ para client/ seria codigo morto num servidor dedicado.
+--- POR QUE UMA SO: quando o tombamento ganhou caminho proprio, ele montou a
+--- propria colocacao e ESQUECEU de definir a direcao. O carrinho tombado passou
+--- a apontar para qualquer lado enquanto o de pe apontava certo -- exatamente o
+--- tipo de divergencia que duas copias produzem. Agora as duas passam por aqui e
+--- o que difere fica nos parametros.
 ---
+--- Mora em shared/ porque as timed actions tambem precisam dela, e elas rodam no
+--- servidor dedicado -- um require de shared/ para client/ seria codigo morto la.
+---
+--- @param height number deslocamento vertical na square. So pode ser dado na
+---        CRIACAO do objeto de mundo; nao ha como ajustar depois.
 --- @return boolean se o carrinho foi de fato para o chao
-function WB_Spill.dropCart(character, cart, square)
+function WB_Spill.placeOnGround(character, cart, square, height)
     if character == nil or cart == nil then return false end
     square = square or character:getSquare()
     if square == nil then return false end
 
-    -- Ja esta no chao: nada a fazer, e mexer criaria um segundo objeto.
-    if cart:getWorldItem() ~= nil then return false end
+    -- Ja no chao: remover antes de recriar. Necessario para a altura, que so
+    -- entra na criacao, e obrigatorio para nao deixar dois objetos do mesmo item.
+    local worldItem = cart:getWorldItem()
+    if worldItem ~= nil then
+        local from = worldItem:getSquare()
+        if from ~= nil then from:transmitRemoveItemFromSquare(worldItem) end
+        worldItem:removeFromWorld()
+        worldItem:removeFromSquare()
+        worldItem:setSquare(nil)
+        cart:setWorldItem(nil)
+    end
 
     if character:isPrimaryHandItem(cart) then character:setPrimaryHandItem(nil) end
     if character:isSecondaryHandItem(cart) then character:setSecondaryHandItem(nil) end
@@ -189,18 +204,48 @@ function WB_Spill.dropCart(character, cart, square)
     if degrees ~= nil then cart:setWorldZRotation(degrees) end
 
     local ox, oy = placementOffset(character, square)
-    square:AddWorldInventoryItem(cart, ox, oy, 0.0)
-
-    -- Toda colocacao por este caminho e NORMAL, de pe -- inclusive quando o
-    -- carrinho vinha tombado, dai o reset. Quem quer o carrinho tombado usa
-    -- WB_Tipping.dropTipped, que faz a colocacao inteira por conta propria: a
-    -- altura do tombo so pode ser dada na criacao do objeto de mundo.
-    WB_Tipping.reset(cart)
+    square:AddWorldInventoryItem(cart, ox, oy, height or 0.0)
 
     character:resetModelNextFrame()
     -- O compartimento do carrinho tem de sumir da barra de containers agora, e
     -- nao no proximo clique do jogador.
     WB_UI.refreshContainers()
+    return true
+end
+
+--- Ja esta no chao E de pe?
+---
+--- Pergunta pela ROTACAO do proprio item, e nao a WB_Tipping, de proposito:
+--- WB_Tipping precisa deste arquivo para colocar o carrinho no chao, e um
+--- require de volta fecharia um ciclo -- em Lua, ciclo de require devolve tabela
+--- incompleta, e o sintoma seria um campo nil em runtime, longe da causa.
+---
+--- A rotacao responde a mesma pergunta de forma mais direta, porque e o estado
+--- real e nao uma marca sobre ele.
+local function uprightOnGround(cart)
+    return cart:getWorldItem() ~= nil
+        and math.abs(cart:getWorldXRotation()) < 0.5
+        and math.abs(cart:getWorldYRotation()) < 0.5
+end
+
+--- Coloca o carrinho no chao DE PE. E o caminho normal.
+---
+--- Endireita o que estiver tombado: quem quer o carrinho tombado usa
+--- WB_Tipping.dropTipped.
+function WB_Spill.dropCart(character, cart, square)
+    if cart == nil then return false end
+    -- Ja no chao e de pe: nada a fazer. Sem esta saida, largar um carrinho que
+    -- ja esta la o recriaria a toa.
+    if uprightOnGround(cart) then return false end
+
+    if not WB_Spill.placeOnGround(character, cart, square, 0.0) then
+        return false
+    end
+
+    if cart:hasModData() then cart:getModData()["MNWB_tipped"] = nil end
+    cart:setWorldStaticModel("MNWheelbarrow_Ground")
+    cart:setWorldXRotation(0.0)
+    cart:setWorldYRotation(0.0)
     return true
 end
 

@@ -43,19 +43,26 @@
        reaplicada por WB_Tipping.restore.
 ]]
 
+local WB_Spill = require "WB_Spill"
+
 local WB_Tipping = {}
 
 --- Marca no ModData do item. Precisa persistir: a rotacao nao sobrevive ao
 --- recarregamento, porque o objeto de mundo e recriado e o construtor a zera.
 local TIPPED_KEY = "MNWB_tipped"
 
+--- Modelos de mundo, trocados em runtime por setWorldStaticModel. O de pe
+--- tem o quad de sombra; o tombado nao.
+local UPRIGHT_MODEL = "MNWheelbarrow_Ground"
+local TIPPED_MODEL = "MNWheelbarrow_Tipped"
+
 --- Quanto o carrinho deita, em graus, e a que altura fica na square.
 ---
 --- Ajustaveis em jogo por WB_TipLab enquanto a calibracao nao fechar. Noventa
 --- graus seria deitado exato; menos deixa o carrinho apoiado, o que costuma ler
 --- melhor do que perfeitamente plano.
-local tipAngle = 72.0
-local tipHeight = 0.0
+local tipAngle = 308.0
+local tipHeight = 0.10
 
 --- Fase entre a guinada do carrinho e o eixo em que ele deve tombar.
 local TIP_PHASE = 0.0
@@ -100,34 +107,21 @@ function WB_Tipping.setHeight(value) tipHeight = value end
 --- altura deixaria o carrinho enterrado no piso, sem conserto possivel.
 function WB_Tipping.dropTipped(character, cart, square)
     if character == nil or cart == nil then return end
-    square = square or character:getSquare()
-    if square == nil then return end
-
-    -- Pode ja estar no chao: cancelar o LARGAR poe o carrinho la logo no inicio
-    -- da acao. Recriar mesmo assim, porque a altura so entra na criacao.
-    local worldItem = cart:getWorldItem()
-    if worldItem ~= nil then
-        local from = worldItem:getSquare()
-        if from ~= nil then
-            from:transmitRemoveItemFromSquare(worldItem)
-        end
-        worldItem:removeFromWorld()
-        worldItem:removeFromSquare()
-        worldItem:setSquare(nil)
-        cart:setWorldItem(nil)
-    end
-
-    if character:isPrimaryHandItem(cart) then character:setPrimaryHandItem(nil) end
-    if character:isSecondaryHandItem(cart) then character:setSecondaryHandItem(nil) end
-    local container = cart:getContainer()
-    if container ~= nil then container:Remove(cart) end
 
     cart:getModData()[TIPPED_KEY] = true
-    square:AddWorldInventoryItem(cart, 0.5, 0.5, tipHeight)
+    -- Modelo SEM o quad de sombra: assada na malha, ela inclinaria junto e
+    -- viraria uma mancha de contato de pe no ar.
+    cart:setWorldStaticModel(TIPPED_MODEL)
+
+    -- A colocacao e de WB_Spill, e nao feita aqui. Quando este arquivo montava a
+    -- propria, ele esqueceu de definir a DIRECAO, e o carrinho tombado apontava
+    -- para qualquer lado enquanto o de pe apontava certo.
+    if not WB_Spill.placeOnGround(character, cart, square, tipHeight) then
+        return
+    end
+
     -- Sempre depois da criacao: o construtor zera as duas rotacoes de inclinacao.
     applyAngle(cart, tipAngle)
-
-    character:resetModelNextFrame()
 end
 
 --- Devolve o carrinho a posicao normal. Idempotente.
@@ -136,6 +130,7 @@ function WB_Tipping.reset(cart)
     if cart:hasModData() then
         cart:getModData()[TIPPED_KEY] = nil
     end
+    cart:setWorldStaticModel(UPRIGHT_MODEL)
     cart:setWorldXRotation(0.0)
     cart:setWorldYRotation(0.0)
 end
@@ -147,6 +142,9 @@ end
 --- carrinho tombado se levantaria sozinho ao voltar ao jogo.
 function WB_Tipping.restore(cart)
     if not WB_Tipping.isTipped(cart) then return end
+
+    -- O modelo tambem nao sobrevive ao recarregamento: e estado de runtime.
+    cart:setWorldStaticModel(TIPPED_MODEL)
 
     -- A soma das componentes so e zero com o carrinho em pe, entao ela detecta
     -- que a inclinacao foi perdida.
