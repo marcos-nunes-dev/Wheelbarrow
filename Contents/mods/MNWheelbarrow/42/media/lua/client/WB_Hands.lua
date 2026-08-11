@@ -51,8 +51,10 @@ function WB_Hands.release(character, item)
     if character:isPrimaryHandItem(item) then character:setPrimaryHandItem(nil) end
     if character:isSecondaryHandItem(item) then character:setSecondaryHandItem(nil) end
     repairing = false
-    -- Sem isto o personagem pode ficar invisivel: o modelo so e reconstruido
-    -- quando alguem pede.
+    -- O modelo do personagem so e reconstruido quando alguem pede, e mexer nas
+    -- maos por Lua nao pede. Sem isto o carrinho continua desenhado numa mao que
+    -- nao o tem mais. E o que toda acao do jogo base faz depois de trocar o que
+    -- esta na mao.
     character:resetModelNextFrame()
     WB_UI.refreshContainers()
 end

@@ -7,7 +7,7 @@
     desperdicio, e pior: espalha por dois arquivos a ordem em que as correcoes
     acontecem, que passa a depender da ordem de carregamento do Lua.
 
-    Aqui a condicao e avaliada uma vez e as duas regras derivam dela.
+    Aqui a condicao e avaliada uma vez e as regras derivam dela.
 
     O QUE ESTE ARQUIVO NAO FAZ, de proposito:
 
@@ -16,6 +16,8 @@
         nisso, e e assim que deve continuar.
       - nao recalcula peso nem capacidade. Isso e por evento em WB_Weight, e nao
         por quadro.
+      - NAO mexe no alpha de render do jogador. Ja mexeu, e era conserto de um
+        defeito que nao existia -- ver docs/personagem-invisivel.md.
 ]]
 
 local WB_Cart = require "WB_Cart"
@@ -25,65 +27,6 @@ local WB_Sandbox = require "WB_Sandbox"
 local WB_Transfer = require "WB_Transfer"
 
 local WB_Player = {}
-
---[[
-    VIGIA DE INVISIBILIDADE.
-
-    O personagem sumia da tela deixando so a sombra, e nada aparecia no log. A
-    causa nao e nossa: e um defeito conhecido da B42 em que o engine forca o
-    ALPHA DE RENDER do jogador a zero e o reafirma a cada quadro. Existe mod
-    dedicado so a isso (PlayerModelReloadUtil), e o proprio autor registra que o
-    gatilho exato e desconhecido, tendo capturado o estado travado "em campo
-    aberto, sem nada acima".
-
-    Isso reabilita tres coisas que eu tinha atribuido a outras causas neste
-    projeto: o encolhimento de peso, a mudanca de conteudo com o carrinho na mao,
-    e em parte a textura. Nenhuma delas explicava o sumico sem erro no log; alpha
-    preso em zero explica.
-
-    O QUE FAZEMOS AQUI E TRATAR O SINTOMA, e vale ser claro sobre isso: nao sei a
-    causa raiz, ninguem sabe. Se o alpha ficar preto por tempo suficiente para
-    nao ser uma transicao, devolvemos a 1.
-
-    POR QUE COM ATRASO, e nao no primeiro quadro: alpha e usado tambem em
-    transicoes legitimas, e reafirmar 1 a cada quadro atropelaria qualquer
-    desvanecimento do jogo. Um estado TRAVADO dura; uma transicao passa. Meio
-    segundo separa os dois.
-
-    POR QUE SO COM O CARRINHO NA MAO: o defeito e do jogo base e acontece sem
-    mod nenhum. Consertar o jogo inteiro nao e papel deste mod, e um mod que
-    mexe no render do jogador o tempo todo e um mod que briga com outros. Aqui
-    cobrimos a nossa superficie.
-]]
-local INVISIBLE_ALPHA = 0.05
-local STUCK_MS = 500
-
-local invisibleSince = nil
-
-local function watchVisibility(character)
-    local playerNum = character:getPlayerNum()
-    if playerNum == nil or playerNum < 0 then return end
-
-    if character:getAlpha(playerNum) > INVISIBLE_ALPHA then
-        invisibleSince = nil
-        return
-    end
-
-    local now = getTimestampMs()
-    if invisibleSince == nil then
-        invisibleSince = now
-        return
-    end
-    if now - invisibleSince < STUCK_MS then return end
-
-    invisibleSince = nil
-    -- setAlphaAndTarget e nao setAlpha: so o valor atual seria desfeito na
-    -- proxima passada do engine, que e justamente quem esta segurando o zero.
-    character:setAlphaAndTarget(playerNum, 1.0)
-    if getDebug() then
-        print("[Wheelbarrow][ALPHA] personagem estava invisivel; alpha restaurado")
-    end
-end
 
 --- O carrinho continua na mao mas ja esta no chao?
 ---
@@ -125,8 +68,6 @@ Events.OnPlayerUpdate.Add(function(character)
     end
 
     if not WB_Cart.inHands(character) then return end
-
-    watchVisibility(character)
 
     if WB_Sandbox.get("BlockRunning") then
         -- RunSpeedModifier no script so ESCALA a velocidade; nao existe campo
