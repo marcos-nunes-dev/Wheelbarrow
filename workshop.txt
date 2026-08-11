@@ -83,5 +83,5 @@ description=[h2]Também[/h2]
 description=[b]12 opções de Sandbox[/b] ajustam todo o balanceamento; em multiplayer o servidor decide. [b]23 idiomas.[/b] [b]Nenhum outro mod é necessário.[/b] Build 42.
 description=
 description=Remover o mod de um save que tem carrinhos no mundo pode gerar erro no carregamento — é assim que o jogo lida com itens cuja definição sumiu. Esvazie e destrua eles antes.
-tags=Build 42;Items;Multiplayer;Realistic;QoL
+tags=Build 42;Items;Misc;Multiplayer;Realistic;Vehicles;QoL
 visibility=public
