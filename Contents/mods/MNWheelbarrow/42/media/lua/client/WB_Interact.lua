@@ -88,8 +88,21 @@ function WB_Interact.blocks(action, character)
 end
 
 Events.OnGameStart.Add(function()
-    for action, handler in pairs(ContextualActionHandlers) do
+    -- Colhe os nomes ANTES de trocar qualquer campo. Mutar a tabela durante o
+    -- proprio pairs e comportamento que Lua nao garante, e a primeira versao deste
+    -- arquivo fazia isso -- ela nao bloqueou nada em jogo, e esta e a suspeita mais
+    -- concreta do porque.
+    local names = {}
+    for action in pairs(ContextualActionHandlers) do
+        names[#names + 1] = action
+    end
+
+    for _, action in ipairs(names) do
+        local handler = ContextualActionHandlers[action]
         ContextualActionHandlers[action] = function(name, character, ...)
+            if getDebug() then
+                print("[Wheelbarrow][CONTEXTO] " .. tostring(name))
+            end
             if character ~= nil and instanceof(character, "IsoPlayer") then
                 if WB_Interact.blocks(name, character) then
                     -- NAO marca como reivindicado: recusamos, entao a tecla fica
@@ -103,6 +116,11 @@ Events.OnGameStart.Add(function()
             end
             return handler(name, character, ...)
         end
+    end
+
+    if getDebug() then
+        print("[Wheelbarrow][CONTEXTO] " .. #names
+            .. " acoes contextuais interceptadas")
     end
 
     --[[ O carrinho tambem nao entra em veiculo.

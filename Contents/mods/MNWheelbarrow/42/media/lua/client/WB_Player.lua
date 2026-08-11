@@ -28,6 +28,9 @@ local WB_Transfer = require "WB_Transfer"
 
 local WB_Player = {}
 
+--- Se fomos NOS que ligamos o bloqueio de auto-vault. Ver o uso mais abaixo.
+local vaultBlocked = false
+
 --- O carrinho continua na mao mas ja esta no chao?
 ---
 --- E o carrinho-fantasma: o modelo segue renderizado numa mao que nao tem mais o
@@ -67,7 +70,27 @@ Events.OnPlayerUpdate.Add(function(character)
         return
     end
 
-    if not WB_Cart.inHands(character) then return end
+    local carrying = WB_Cart.inHands(character)
+
+    --[[ AUTO-VAULT: portao baixo e pulado em vez de aberto.
+
+         doContextDoor e doContextThumpableDoor consultam isIgnoreAutoVault antes de
+         decidir entre pular por cima e abrir -- conferido no bytecode de IsoPlayer,
+         que sao os DOIS unicos lugares da classe que leem a flag. Com o carrinho na
+         mao, pular esta fora de questao, entao ligamos a flag e o portao volta a ser
+         aberto.
+
+         Guardamos se fomos NOS que ligamos para nao desligar a flag de outro mod
+         que a tenha ligado por conta propria. ]]
+    if carrying and not vaultBlocked then
+        character:setIgnoreAutoVault(true)
+        vaultBlocked = true
+    elseif not carrying and vaultBlocked then
+        character:setIgnoreAutoVault(false)
+        vaultBlocked = false
+    end
+
+    if not carrying then return end
 
     if WB_Sandbox.get("BlockRunning") then
         -- RunSpeedModifier no script so ESCALA a velocidade; nao existe campo

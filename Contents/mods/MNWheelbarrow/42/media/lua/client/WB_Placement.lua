@@ -196,6 +196,21 @@ end
 --- uma porta, um portao ou um veiculo por perto.
 local function onInteract(character)
     if character == nil or character:isDead() then return end
+
+    --[[ PORTA OU PORTAO NA FRENTE: a tecla e do jogo, nao nossa.
+
+         getContextDoorOrWindowOrWindowFrame e a PROPRIA pergunta que o engine faz
+         ao decidir o que a tecla de interagir vai fazer -- ela cobre porta, portao
+         (IsoThumpable com isDoor), janela e vao de janela. Usar a funcao do engine
+         em vez de varrer a square por conta propria e o que impede a nossa ideia de
+         "tem uma porta aqui" de divergir da dele.
+
+         Isto nao depende do gancho de acoes contextuais, e e de proposito: a
+         primeira tentativa de resolver este defeito dependia dele e nao funcionou
+         em jogo. ]]
+    if character:getContextDoorOrWindowOrWindowFrame(character:getDir()) ~= nil then
+        return
+    end
     -- Nao atropela outra acao em andamento: a tecla de interagir e compartilhada
     -- com o resto do jogo.
     if ISTimedActionQueue.isPlayerDoingAction(character) then return end
