@@ -71,11 +71,30 @@
     depender de quem disparou.
 
     ======================================================================
+    O PESO ALTERADO NAO VAI PARA O SAVE, e isso e a maior garantia daqui
+
+    setActualWeight escreve no campo `actualWeight`, e ele NAO e serializado -- o
+    save/load de InventoryItem so toca `customWeight`. Conferido no bytecode.
+
+    Consequencia: qualquer item que escape leve volta ao peso do script no proximo
+    carregamento, sozinho, sem varredura nenhuma. Corrupcao permanente de peso e
+    impossivel por construcao, e a janela do pior caso e uma sessao.
+
+    Isso tambem significa que ao carregar um save o conteudo do carrinho volta ao peso
+    cheio por um instante, e a varredura o reacondiciona -- por isso ela roda em
+    OnGameStart e OnCreatePlayer, e nao so em mudanca de container.
+
+    ======================================================================
     LIMITE CONHECIDO
 
-    Item que saia para um container distante, sem jogador por perto, e nunca mais se
-    aproxime de um, continua leve. A marca garante que ele se conserta na primeira vez
-    que voltar a uma regiao varrida. Nao e zero; e limitado e auto-curavel.
+    Item que saia para um container distante, sem jogador por perto, continua leve ate
+    voltar a uma regiao varrida OU o save ser recarregado -- o que vier primeiro.
+
+    MULTIPLAYER NAO ESTA VERIFICADO. O peso nao e serializado, entao provavelmente nao
+    e sincronizado: cada cliente reacondicionaria localmente. Mas as varreduras aqui
+    partem do jogador local, e num servidor dedicado nao ha jogador local -- o servidor
+    veria os pesos cheios. Se ele revalidar transferencias, a capacidade divergiria.
+    Nao afirme suporte a MP para este mecanismo sem testar num servidor.
 ]]
 
 local WB_Cart = require "WB_Cart"

@@ -6,6 +6,46 @@ versão**. Toda mudança de `modversion` em `mod.info` tem uma entrada aqui.
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.2.0] — 2026-08-11
+
+Versão maior porque a mecânica central mudou.
+
+### Corrigido
+
+- **A capacidade nunca foi 200.** `ItemContainer.getCapacity()` termina em
+  `min(capacity, 50)` para todo compartimento que pertence a um item — o teto é
+  imposto na **leitura**, não na escrita. O `setCapacity(200)` gravava 200 e a
+  leitura devolvia 50, e é a leitura que o jogo usa. Cabiam 5 troncos, não 22.
+
+### Adicionado
+
+- **O carrinho reacondiciona a carga.** Item pesado dentro dele ocupa um quinto do
+  espaço e volta ao peso real ao sair. É o que permite passar do teto de 50 sem
+  substituir classe do jogo — o caminho que os outros mods usam e que trava numa
+  versão exata.
+
+  Números medidos em jogo: **23 troncos**, 21 botijões, 8 cadáveres, **2
+  geradores** — o alvo original do projeto.
+
+  A regra é uma invariante reafirmada sobre uma região, não uma lista de ganchos
+  por saída: item marcado dentro de um carrinho pesa `script × fator`, fora pesa
+  `script`. Não há caminho de saída para furar, porque não existe caminho a
+  enumerar.
+
+  O peso alterado **não vai para o save** — `actualWeight` não é serializado.
+  Qualquer item que escape leve volta ao normal no próximo carregamento.
+
+### Removido da promessa
+
+- **Geladeira e cama de casal.** Pesam 40, e apanhar móvel exige a capacidade do
+  **jogador**; nenhum personagem chega a 40. Nunca foram carregáveis, com ou sem
+  carrinho. A página prometia cinco de cada.
+
+### Não verificado
+
+- **Multiplayer para o reacondicionamento.** O peso provavelmente não sincroniza, e
+  num servidor dedicado não há jogador local para disparar a reconciliação.
+
 ## [0.1.3] — 2026-08-11
 
 ### Adicionado
