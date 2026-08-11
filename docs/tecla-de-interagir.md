@@ -74,3 +74,42 @@ Veiculo nao passa pelo despachante contextual, entao tem gancho proprio em
 `ISVehicleMenu.onEnter` e `onEnter2`, os dois funis por onde todo caminho de
 entrada passa. Recusar em `ISEnterVehicle:isValid()` seria mais fundo e mais
 silencioso: a acao falharia sem dizer por que.
+
+## Onde o carrinho para
+
+O primeiro teste real disto foi recusar a entrada num carro: o carrinho era largado
+na square do jogador, e ao lado de um veiculo essa square esta **debaixo** dele. O
+carrinho desaparecia sob a carroceria.
+
+`WB_Spill.pickSquare` passou a tratar a square pedida como **preferencia**. Ela
+continua sendo a primeira escolha, porque carrega intencao -- "na frente do
+personagem" ao largar de proposito -- e so e trocada quando nao serve:
+
+| Recusa | Teste |
+|---|---|
+| veiculo em cima | `square:isVehicleIntersecting()` |
+| parede, movel, sem piso | `square:isFree(false)` |
+| parede entre o jogador e a square | `from:isBlockedTo(square)` |
+
+`isFree(false)` e o teste que o jogo base usa para "cabe algo nesta square" -- ver
+`ISWorldObjectContextMenu` ao pendurar cortina e `ISFarmingMenu` ao arar. Ele **nao
+sabe de veiculo**, e era exatamente o furo do defeito.
+
+Duas passadas, e a ordem importa: primeiro uma square livre **e sem itens**, depois
+qualquer uma livre. Assim o carrinho evita pousar sobre coisa alheia quando ha
+escolha, e nunca deixa de ser colocado por nao achar o lugar ideal -- carrinho mal
+posicionado se resolve com um `E`; carrinho nao colocado desaparece da mao do
+jogador.
+
+A varredura ignora o **proprio carrinho**. `pickSquare` roda antes de o objeto de
+mundo antigo ser removido, entao um carrinho que ja esta no chao aparece na conta de
+"tralha" e se expulsaria da propria square a cada recolocacao -- e recolocar sobre
+si mesmo e o caso normal ao tombar.
+
+## O que ficou de fora
+
+Abrir porta e portao com o `E` **continua largando o carrinho**. A consulta a
+`getContextDoorOrWindowOrWindowFrame(getDir())` nao devolveu nada em jogo, e a causa
+nao foi investigada porque o clique do mouse abre porta e portao sem largar o
+carrinho -- aceito como suficiente pelo Marcos. Se voltar a incomodar, o print de
+`[Wheelbarrow][CONTEXTO]` diz se a porta chega ao Lua como acao contextual.

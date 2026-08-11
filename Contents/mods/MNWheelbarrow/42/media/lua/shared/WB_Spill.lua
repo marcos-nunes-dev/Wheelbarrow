@@ -175,9 +175,109 @@ end
 --- @param height number deslocamento vertical na square. So pode ser dado na
 ---        CRIACAO do objeto de mundo; nao ha como ajustar depois.
 --- @return boolean se o carrinho foi de fato para o chao
+--[[ ESCOLHA DA SQUARE onde o carrinho para.
+
+     O DEFEITO QUE ISTO CONSERTA: recusar a entrada num carro largava o carrinho na
+     square do jogador, que ao lado de um veiculo esta DEBAIXO dele. O carrinho
+     desaparecia sob a carroceria.
+
+     A square pedida pelo chamador continua sendo a primeira escolha -- ela carrega
+     intencao, como "na frente do personagem" ao largar de proposito. Ela so e
+     trocada quando nao serve.
+
+     Duas passadas, e a ordem importa: primeiro procuramos uma square livre E SEM
+     itens, depois aceitamos qualquer uma livre. Assim o carrinho evita pousar em
+     cima de coisa alheia quando ha escolha, e nunca deixa de ser colocado por nao
+     achar o lugar ideal -- perder o carrinho seria muito pior que empilha-lo.
+]]
+local FALLBACK_RADIUS = 1
+
+--- @return boolean se o carrinho pode ficar aqui
+local function usable(character, square)
+    if square == nil then return false end
+    -- isFree(false) e o teste que o jogo base usa para "cabe algo nesta square"
+    -- (ver ISWorldObjectContextMenu ao pendurar cortina e ISFarmingMenu ao arar).
+    if not square:isFree(false) then return false end
+    -- E o teste que faltava: isFree nao sabe de veiculo. isVehicleIntersecting
+    -- pergunta se algum veiculo cobre esta square.
+    if square:isVehicleIntersecting() then return false end
+    local from = character:getSquare()
+    if from ~= nil and from ~= square and from:isBlockedTo(square) then
+        return false
+    end
+    return true
+end
+
+--- @param cart InventoryItem o proprio carrinho, ignorado na conta
+--- @return boolean se ja ha OUTRO item largado aqui
+---
+--- Ignorar o proprio carrinho nao e detalhe: pickSquare roda ANTES de o objeto de
+--- mundo antigo ser removido, entao um carrinho que ja esta no chao aparece nesta
+--- varredura. Sem a excecao ele se expulsaria da propria square a cada recolocacao
+--- -- e recolocar sobre si mesmo e o caso normal ao tombar.
+local function hasLooseItems(square, cart)
+    local objects = square:getWorldObjects()
+    for i = 0, objects:size() - 1 do
+        local obj = objects:get(i)
+        if instanceof(obj, "IsoWorldInventoryObject") and obj:getItem() ~= cart then
+            return true
+        end
+    end
+    return false
+end
+
+--- @return table lista de squares candidatas, em ordem de preferencia
+local function candidates(character, preferred)
+    local list = {}
+    -- Nunca insere nil: um furo no meio faria ipairs parar antes do fim, defeito
+    -- que este projeto ja teve e que o verificador de Lua vigia.
+    if preferred ~= nil then list[#list + 1] = preferred end
+
+    local from = character:getSquare()
+    if from == nil then return list end
+    if from ~= preferred then list[#list + 1] = from end
+
+    local cell = getCell()
+    if cell == nil then return list end
+
+    local x, y, z = from:getX(), from:getY(), from:getZ()
+    for dx = -FALLBACK_RADIUS, FALLBACK_RADIUS do
+        for dy = -FALLBACK_RADIUS, FALLBACK_RADIUS do
+            if dx ~= 0 or dy ~= 0 then
+                local square = cell:getGridSquare(x + dx, y + dy, z)
+                if square ~= nil and square ~= preferred then
+                    list[#list + 1] = square
+                end
+            end
+        end
+    end
+    return list
+end
+
+--- @return IsoGridSquare|nil onde o carrinho deve parar
+local function pickSquare(character, cart, preferred)
+    local list = candidates(character, preferred)
+
+    for _, square in ipairs(list) do
+        if usable(character, square) and not hasLooseItems(square, cart) then
+            return square
+        end
+    end
+    for _, square in ipairs(list) do
+        if usable(character, square) then return square end
+    end
+
+    -- Nenhuma serve: fica onde foi pedido. Um carrinho mal posicionado se resolve
+    -- com um E; um carrinho nao colocado some da mao do jogador.
+    return preferred or character:getSquare()
+end
+
 function WB_Spill.placeOnGround(character, cart, square, height)
     if character == nil or cart == nil then return false end
-    square = square or character:getSquare()
+    -- A square pedida e uma PREFERENCIA. pickSquare a troca se ela estiver ocupada
+    -- -- por veiculo, parede ou tralha -- e este e o unico lugar do mod que decide
+    -- onde o carrinho para, entao a regra vale para largar, tombar e estacionar.
+    square = pickSquare(character, cart, square)
     if square == nil then return false end
 
     -- Ja no chao: remover antes de recriar. Necessario para a altura, que so
