@@ -56,9 +56,42 @@ ENGINE_KEYS = {
 }
 
 
+#: Onde procurar as traducoes do jogo. Chave que o jogo ja fornece nao precisa ser
+#: fornecida por nos -- reusa-la e de graca e cobre mais idiomas do que os nossos 23.
+GAME_TRANSLATE = (
+    r"C:/Program Files (x86)/Steam/steamapps/common/ProjectZomboid/media/lua/shared"
+    r"/Translate/EN",
+    r"D:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/shared/Translate/EN",
+)
+
+
 def read_json(path):
     with io.open(path, encoding="utf-8") as fh:
         return json.load(fh)
+
+
+def vanilla_keys():
+    """Chaves que o jogo base ja define. Vazio se o jogo nao for encontrado.
+
+    Existe porque o mod REUSA texto do jogo: a opcao de largar cadaver no carrinho
+    usa IGUI_Option_DropCorpseIntoContainerName, que ja vem traduzida em todos os
+    idiomas que o jogo suporta. Sem esta funcao o verificador acusaria a chave como
+    ausente e a resposta certa seria duplica-la em 23 arquivos -- ou seja, ele
+    empurraria para o lado errado.
+    """
+    for folder in GAME_TRANSLATE:
+        if not os.path.isdir(folder):
+            continue
+        keys = set()
+        for name in sorted(os.listdir(folder)):
+            if not name.endswith(".json"):
+                continue
+            try:
+                keys |= set(read_json(os.path.join(folder, name)))
+            except ValueError:
+                continue
+        return keys
+    return set()
 
 
 def provided(root, language):
@@ -135,7 +168,15 @@ def main(root):
         referenced.add("Sandbox_" + option + "_tooltip")
     referenced |= ENGINE_KEYS
 
+    vanilla = vanilla_keys()
+    if not vanilla:
+        print("  (traducoes do jogo nao encontradas; chave reusada nao sera "
+              "distinguida de chave faltando)")
+
     for missing in sorted(referenced - set(reference)):
+        if missing in vanilla:
+            print("  reusa do jogo: %s" % missing)
+            continue
         problems.append("usada no mod e ausente no %s: %s" % (REFERENCE, missing))
     for orphan in sorted(set(reference) - referenced):
         problems.append("fornecida e nunca usada: %s (de %s)"

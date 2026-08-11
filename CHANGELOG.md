@@ -6,6 +6,16 @@ versão**. Toda mudança de `modversion` em `mod.info` tem uma entrada aqui.
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.1.3] — 2026-08-11
+
+### Adicionado
+
+- **Cadáver no carrinho, de verdade.** A página prometia e o jogo não deixava. Com
+  um cadáver arrastado, o clique direito passa a oferecer *"Drop Corpse Into
+  Carrinho de mão"* quando há um carrinho no chão a até 2 squares e com espaço.
+  A opção respeita a sandbox `AllowCorpses` e não aparece se o carrinho estiver
+  cheio.
+
 ## [0.1.2] — 2026-08-11
 
 ### Corrigido
