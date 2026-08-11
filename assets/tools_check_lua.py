@@ -30,14 +30,61 @@ UNTILS = re.compile(r'\buntil\b')
 
 
 def strip_noise(source):
-    """Remove comentarios e strings, que podem conter palavras-chave soltas."""
-    out = source
-    out = re.sub(r'--\[\[.*?\]\]', ' ', out, flags=re.S)
-    out = re.sub(r'--[^\n]*', ' ', out)
-    out = re.sub(r'\[\[.*?\]\]', ' " " ', out, flags=re.S)
-    out = re.sub(r'"(?:\\.|[^"\\])*"', ' " " ', out)
-    out = re.sub(r"'(?:\\.|[^'\\])*'", " ' ' ", out)
-    return out
+    """Remove comentarios e strings, que podem conter palavras-chave soltas.
+
+    VARREDURA, E NAO REGEX, e a razao e um defeito que este arquivo teve:
+
+    a versao anterior removia comentarios de linha ANTES das strings. Uma string
+    contendo `--` -- e este projeto escreve `--` como travessao o tempo todo --
+    tinha o proprio miolo removido como se fosse comentario, sobrava uma aspa
+    orfa, e o removedor de strings emparelhava essa aspa com outra 30 linhas
+    adiante, engolindo o codigo entre as duas. O resultado foram DOIS problemas
+    inventados num arquivo correto: blocos desbalanceados e um require "sem uso"
+    cujo uso tinha sido comido.
+
+    Inverter a ordem nao resolve: aspa dentro de comentario quebraria do outro
+    lado. Comentario e string so se distinguem lendo da esquerda para a direita,
+    uma vez, sabendo em que estado se esta. E o que esta funcao faz.
+    """
+    out = []
+    i, n = 0, len(source)
+
+    while i < n:
+        two = source[i:i + 2]
+
+        if two == "--":
+            if source[i + 2:i + 4] == "[[":            # comentario de bloco
+                end = source.find("]]", i + 4)
+                i = n if end < 0 else end + 2
+            else:                                       # comentario de linha
+                end = source.find("\n", i)
+                i = n if end < 0 else end
+            out.append(" ")
+            continue
+
+        if two == "[[":                                 # string longa
+            end = source.find("]]", i + 2)
+            i = n if end < 0 else end + 2
+            out.append(' " " ')
+            continue
+
+        if source[i] in '"\'':                          # string comum
+            quote = source[i]
+            i += 1
+            while i < n and source[i] != quote:
+                # Uma string nao atravessa linha em Lua; parar na quebra evita
+                # que uma aspa desbalanceada engula o resto do arquivo.
+                if source[i] == "\n":
+                    break
+                i += 2 if source[i] == "\\" else 1
+            i += 1
+            out.append(' " " ')
+            continue
+
+        out.append(source[i])
+        i += 1
+
+    return "".join(out)
 
 
 def check(path):

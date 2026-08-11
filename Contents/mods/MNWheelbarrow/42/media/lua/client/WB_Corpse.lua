@@ -51,6 +51,12 @@ local WB_Sandbox = require "WB_Sandbox"
 
 local WB_Corpse = {}
 
+--- Diagnostico. Cada saida antecipada diz o motivo, porque "a opcao nao aparece"
+--- tem cinco causas possiveis e nenhuma delas deixa rastro sozinha.
+local function trace(reason)
+    if getDebug() then print("[Wheelbarrow][CADAVER] " .. reason) end
+end
+
 --- Distancia, em squares, para o carrinho aparecer no menu.
 ---
 --- Dois porque e o alcance com que o jogador enxerga o carrinho como "aquele ali",
@@ -63,8 +69,9 @@ local CORPSE_WEIGHT = 20
 
 --- @return InventoryItem|nil carrinho no chao ao alcance, com espaco
 local function reachableCart(character)
-    local found = nil
+    local found, seen = nil, 0
     WB_Cart.forEachOnGround(character, REACH, function(cart)
+        seen = seen + 1
         if found ~= nil then return end
         local inventory = cart:getInventory()
         if inventory == nil then return end
@@ -75,6 +82,10 @@ local function reachableCart(character)
         end
         found = cart
     end)
+    if found == nil then
+        trace(string.format("nenhum carrinho utilizavel em %d square(s); vistos: %d",
+            REACH, seen))
+    end
     return found
 end
 
@@ -98,21 +109,39 @@ end
 
 function WB_Corpse.onFillWorldObjectContextMenu(playerNum, context, _worldObjects)
     local character = getSpecificPlayer(playerNum)
-    if character == nil or not character:isDraggingCorpse() then return end
+    if character == nil then return end
+
+    if not character:isDraggingCorpse() then
+        -- isDraggingCorpse exige TRES coisas, medidas no bytecode: estar agarrando,
+        -- o alvo ser IsoZombie, e isReanimatedForGrappleOnly. Cadaver arrastado e
+        -- representado como zumbi reanimado so para o agarre.
+        if character:isGrappling() then
+            trace("agarrando, mas isDraggingCorpse e falso -- alvo nao e cadaver")
+        end
+        return
+    end
 
     -- O portao da sandbox vive AQUI, e nao so em WB_AcceptItem: nao ficou
     -- estabelecido que throwGrappledIntoInventory consulte AcceptItemFunction, e
     -- uma opcao que nao deveria existir e pior do que uma que falha -- ela promete.
-    if WB_Sandbox.get("AllowCorpses") ~= true then return end
+    if WB_Sandbox.get("AllowCorpses") ~= true then
+        trace("AllowCorpses esta desligada na sandbox deste save")
+        return
+    end
 
     local cart = reachableCart(character)
     if cart == nil then return end
 
+    trace("opcao adicionada para " .. tostring(cart:getName()))
     context:addOptionOnTop(
         getText("IGUI_Option_DropCorpseIntoContainerName") .. cart:getName(),
         playerNum, onDropCorpse, cart)
 end
 
 Events.OnFillWorldObjectContextMenu.Add(WB_Corpse.onFillWorldObjectContextMenu)
+
+-- Prova de vida do arquivo. Lua novo so passa a existir depois de reiniciar o jogo,
+-- e sem esta linha "a opcao nao aparece" e indistinguivel de "o arquivo nem carregou".
+trace("WB_Corpse carregado")
 
 return WB_Corpse
