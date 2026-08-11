@@ -16,8 +16,15 @@ you push it, and it slows you down.
 Picking it up and setting it down is a timed action. Interrupt it and the
 wheelbarrow tips over, dumping everything on the ground.
 
-Everything above is tunable in the Sandbox options — including whether the tip
-over happens at all.
+The wheelbarrow is **never in your inventory**. It is always either on the
+ground or in your hands, like a vehicle — `E` picks it up and sets it down. It
+also stops you climbing fences, going through windows and getting into cars.
+
+Find one lying around construction sites, warehouses, garages and tool stores,
+or weld your own at `MetalWelding` level 4.
+
+Everything above is tunable in the Sandbox options — 12 of them, including
+whether the tip over happens at all.
 
 ## Requirements
 
@@ -31,8 +38,12 @@ decides for everyone.
 
 ## Languages
 
-English (default) and Brazilian Portuguese. The game falls back to English for
-any language not shipped here.
+23 languages. Short labels are translated in all of them; the long tooltips are
+in English and Portuguese only.
+
+Chinese, Japanese, Korean, Thai, Vietnamese and Afrikaans **have not been
+reviewed by a native speaker** yet. The game falls back to English for any
+language not shipped here.
 
 ## ⚠️ Removing the mod
 
@@ -80,8 +91,15 @@ deixa mais lento.
 Pegar e largar é uma ação com animação. Interrompa e o carrinho tomba,
 derrubando tudo no chão.
 
-Tudo isso é ajustável nas opções de Sandbox — inclusive se o tombamento
-acontece ou não.
+O carrinho **nunca fica no inventário**. Ele está sempre no chão ou nas mãos,
+como um veículo — `E` pega e larga. Ele também impede escalar cerca, passar por
+janela e entrar em carro.
+
+Ache um largado em obras, galpões, garagens e lojas de ferramentas, ou solde o
+seu com `MetalWelding` nível 4.
+
+Tudo isso é ajustável nas opções de Sandbox — 12 delas, inclusive se o
+tombamento acontece ou não.
 
 ### Requisitos
 
