@@ -21,6 +21,7 @@
 ]]
 
 local WB_Const = require "WB_Const"
+local WB_Repack = require "WB_Repack"
 local WB_Sandbox = require "WB_Sandbox"
 
 local CORPSES = {
@@ -35,7 +36,9 @@ local function lightWeightInside(container, threshold)
     local total = 0.0
     local items = container:getItems()
     for i = 0, items:size() - 1 do
-        local w = items:get(i):getActualWeight()
+        -- Peso REAL: dentro do carrinho os itens estao reacondicionados, e somar o
+        -- peso comprimido faria o teto de carga leve deixar entrar cinco vezes mais.
+        local w = WB_Repack.realWeight(items:get(i))
         if w < threshold then total = total + w end
     end
     return total
@@ -67,7 +70,9 @@ function MNWheelbarrow.AcceptItem(container, item)
     -- TETO DE CARGA LEVE. O limite de capacidade continua valendo para o total;
     -- este e um segundo teto, so para o que nao conta como pesado.
     local threshold = WB_Sandbox.get("HeavyThreshold")
-    local weight = item:getActualWeight()
+    -- O item que esta ENTRANDO ainda nao foi reacondicionado, mas realWeight cobre os
+    -- dois casos e deixa a regra insensivel a ordem.
+    local weight = WB_Repack.realWeight(item)
     if weight < threshold then
         local budget = WB_Sandbox.get("LightCapacity")
         if budget > 0

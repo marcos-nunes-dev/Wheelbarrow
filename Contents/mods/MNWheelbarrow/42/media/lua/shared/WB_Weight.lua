@@ -67,6 +67,7 @@
 
 local WB_Cart = require "WB_Cart"
 local WB_Legacy = require "WB_Legacy"
+local WB_Repack = require "WB_Repack"
 local WB_Sandbox = require "WB_Sandbox"
 local WB_Tipping = require "WB_Tipping"
 
@@ -98,10 +99,20 @@ function WB_Weight.refresh(item)
     local threshold = WB_Sandbox.get("HeavyThreshold")
     local reduction = WB_Sandbox.get("HeavyReduction") / 100.0
 
+    --[[ PESO REAL, e nao o que o item pesa agora.
+
+         O carrinho reacondiciona a carga: um tronco de 9 pesa 1.8 dentro dele, para
+         caber no teto de 50 que o engine impoe (ver WB_Repack). Classificar por
+         getActualWeight faria esse tronco cair como carga LEVE, abaixo do limite de
+         8, e perder a reducao -- ou seja, o mecanismo que faz caber destruiria o
+         mecanismo que faz ficar leve.
+
+         A conta de reducao tambem usa o peso real, senao ela aliviaria 95% de um
+         numero que ja veio comprimido e o resultado nao seria o prometido. ]]
     local heavy, light = 0.0, 0.0
     local contents = inv:getItems()
     for i = 0, contents:size() - 1 do
-        local w = contents:get(i):getActualWeight()
+        local w = WB_Repack.realWeight(contents:get(i))
         if w >= threshold then
             heavy = heavy + w
         else
@@ -171,6 +182,14 @@ local function refreshLocalPlayers(force)
     for i = 0, getNumActivePlayers() - 1 do
         local player = getSpecificPlayer(i)
         if player ~= nil then
+            --[[ A reconciliacao vem ANTES do calculo de peso, e a ordem importa.
+
+                 WB_Repack.sweep decide quem esta reacondicionado; WB_Weight.refresh
+                 le esses pesos para calcular a reducao. Na ordem inversa, a reducao
+                 seria calculada sobre um estado que a varredura ainda ia mudar, e o
+                 painel mostraria o valor de um quadro atras a cada transferencia. ]]
+            WB_Repack.sweep(player, GROUND_RADIUS)
+
             WB_Weight.refreshPlayer(player)
             WB_Weight.refreshNearbyGround(player, force)
         end

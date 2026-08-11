@@ -3,21 +3,24 @@
 
     HISTORICO -- por que isto existe e nao deve ser removido tao cedo:
 
-    Uma versao anterior contornava o teto de capacidade de 50 do engine
-    reduzindo o peso REAL dos itens dentro do carrinho, via setActualWeight().
-    A ideia funcionava na aritmetica e a cadeia de contabilizacao foi conferida
-    no bytecode. Na pratica ela quebrou o jogo de um jeito que so aparece em
-    tela: o modelo do personagem sumia, restando so a sombra, sem nenhum erro
-    no console.
+    Uma versao anterior contornava o teto de capacidade de 50 reduzindo o peso
+    real dos itens dentro do carrinho, com uma marca chamada MNWB_origWeight.
+    Ela foi abandonada, e a explicacao registrada aqui estava ERRADA nos dois
+    pontos que a sustentavam. Fica registrado porque o erro custou o recurso:
 
-    A causa: em B42 itens pesados -- gerador, cadaver -- sao carregados com uma
-    animacao propria, e o jogo decide essa animacao PELO PESO do item. Como
-    esses itens obrigatoriamente passam pela mao do personagem para entrar ou
-    sair do carrinho, alterar o peso deles acontecia sempre com o item na mao,
-    deixando a maquina de estados de animacao inconsistente.
+      O SINTOMA era o personagem sumir deixando so a sombra. Isso foi provado
+      depois como sendo a tecla F3, que em modo debug e ToggleModelsEnabled e
+      colide com a tecla de velocidade do tempo. Nao tinha relacao com peso --
+      ver docs/personagem-invisivel.md.
 
-    Ou seja: a tecnica era perigosa exatamente com os itens para os quais ela
-    tinha sido criada. Foi abandonada.
+      O MECANISMO alegado era "o jogo escolhe a animacao de carregar pelo PESO
+      do item". Nao escolhe. isForceDropHeavyItem testa isHumanCorpse, tipo
+      "Generator", a tag HEAVY_ITEM, "Animal" e "CorpseAnimal". Peso nao aparece
+      em nenhum ramo. Conferido no bytecode de InventoryItem.
+
+    A tecnica voltou, refeita com invariante e valor derivado do script, em
+    WB_Repack.lua. Este arquivo continua existindo pela razao abaixo, que segue
+    valendo: a marca ANTIGA e outra, e saves daquela epoca ainda a carregam.
 
     Este arquivo existe porque saves criados com aquela versao tem itens com o
     peso alterado gravado. Sem esta restauracao, um gerador de 40 ficaria
