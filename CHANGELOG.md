@@ -6,6 +6,20 @@ versão**. Toda mudança de `modversion` em `mod.info` tem uma entrada aqui.
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.1.2] — 2026-08-11
+
+### Corrigido
+
+- **O jogo travava ao andar pelo mapa.** O gerador de carrinhos no mundo criava o
+  item com `InventoryItemFactory.CreateItem`. A classe existe no engine, mas o Lua
+  do jogo não a chama em lugar nenhum — aparece uma vez, dentro de um comentário —
+  e `CreateItem` tem dez sobrecargas genéricas que o Lua do Project Zomboid não
+  resolve. Agora usa a sobrecarga de `AddWorldInventoryItem` que recebe o nome do
+  tipo, que é o caminho que o próprio jogo usa.
+- A direção sorteada do carrinho abandonado **não se perdeu**: o construtor de
+  `IsoWorldInventoryObject` já sorteia a rotação de um item recém-criado. O código
+  que quebrou fazia à mão o que o engine já dava de graça.
+
 ## [0.1.1] — 2026-08-11
 
 ### Corrigido

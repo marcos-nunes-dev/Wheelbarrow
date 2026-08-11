@@ -113,19 +113,24 @@ end
 local function place(square)
     if not WB_Spill.canRest(nil, square) then return false end
 
-    -- Cria o item PRIMEIRO para poder girar antes de ele entrar no mundo. A versao
-    -- de AddWorldInventoryItem que recebe um nome de tipo criaria e posicionaria
-    -- num passo so, e ai seria tarde: depois de entrar no mundo o engine ja
-    -- resolveu o angulo, e mudar o valor nao reposiciona o que ja existe. E a mesma
-    -- regra que WB_Spill.placeOnGround respeita, e ela custou uma rodada de teste.
-    local cart = InventoryItemFactory.CreateItem(WB_Const.CART_TYPE)
+    --[[ A sobrecarga que recebe o NOME DO TIPO cria e posiciona num passo.
+
+         A versao anterior criava o item por InventoryItemFactory.CreateItem para
+         girar antes de por no mundo, e QUEBROU o jogo ao andar pelo mapa: essa
+         classe nao e chamada de Lua em lugar nenhum do jogo base -- aparece uma
+         vez, dentro de um comentario -- e CreateItem tem dez sobrecargas
+         genericas que o Lua do PZ nao resolve.
+
+         E nao era preciso. A direcao sorteada que eu queria o engine ja da de
+         graca: o construtor de IsoWorldInventoryObject sorteia worldZRotation
+         quando ela chega negativa, que e o estado de um item recem-criado.
+         Conferido no bytecode -- ele le worldZRotation e chama Rand.Next.
+
+         A regra de "girar antes de entrar no mundo" continua valendo em
+         WB_Spill.placeOnGround, onde o carrinho JA EXISTE e tem uma direcao
+         especifica a preservar. Aqui nao ha o que preservar. ]]
+    local cart = square:AddWorldInventoryItem(WB_Const.CART_TYPE, 0.5, 0.5, 0.0)
     if cart == nil then return false end
-
-    -- Direcao sorteada: carrinho abandonado nao tem por que estar alinhado com
-    -- nada. Sem isto todos nasceriam apontando para o mesmo lado.
-    cart:setWorldZRotation(ZombRand(360))
-
-    if square:AddWorldInventoryItem(cart, 0.5, 0.5, 0.0) == nil then return false end
     if getDebug() then
         print(string.format("[Wheelbarrow][SPAWN] carrinho em %d,%d,%d",
             square:getX(), square:getY(), square:getZ()))

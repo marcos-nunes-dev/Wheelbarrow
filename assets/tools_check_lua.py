@@ -16,6 +16,7 @@ que carrega um modulo sem que nada no arquivo o mencione.
 Uso:
     python tools_check_lua.py [raiz]
 """
+import io
 import os
 import re
 import sys
@@ -86,6 +87,74 @@ def check(path):
     return problems
 
 
+#: Onde procurar o Lua do jogo. A checagem de API desconhecida so roda se achar.
+GAME_LUA = (
+    r"C:/Program Files (x86)/Steam/steamapps/common/ProjectZomboid/media/lua",
+    r"D:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua",
+)
+
+#: Globais nossos, que naturalmente nao aparecem no Lua do jogo.
+OURS = {"MNWheelbarrow"}
+
+
+def strip_all(path):
+    return strip_noise(io.open(path, encoding="utf-8", errors="replace").read())
+
+
+def game_lua():
+    """Todo o Lua do jogo concatenado, sem comentarios. Vazio se nao achar."""
+    for root in GAME_LUA:
+        if not os.path.isdir(root):
+            continue
+        chunks = []
+        for dirpath, _dirs, files in os.walk(root):
+            for name in files:
+                if name.endswith(".lua"):
+                    chunks.append(strip_all(os.path.join(dirpath, name)))
+        return "\n".join(chunks)
+    return ""
+
+
+def check_unknown_apis(root):
+    """Globais que o nosso Lua chama e o jogo base nunca chama.
+
+    POR QUE: as duas ultimas falhas em jogo vieram de eu presumir que uma API
+    funciona. A pior foi InventoryItemFactory.CreateItem -- a classe existe no
+    engine, mas o Lua do jogo nao a chama em lugar nenhum (aparece uma vez, dentro
+    de um comentario), e CreateItem tem dez sobrecargas genericas que o Lua do PZ
+    nao resolve. O jogo travava ao andar pelo mapa.
+
+    A heuristica e simples e vale pelo que implica: se o proprio jogo nunca chama
+    aquilo de Lua, voce esta em terreno nao exercitado. Nao prova que quebra --
+    prova que ninguem testou por voce.
+    """
+    game = game_lua()
+    if not game:
+        print("  (Lua do jogo nao encontrado; checagem de API desconhecida pulada)")
+        return []
+
+    modules, used = set(), {}
+    for dirpath, _dirs, files in os.walk(root):
+        if "Translate" in dirpath:
+            continue
+        for name in sorted(files):
+            if not name.endswith(".lua"):
+                continue
+            modules.add(name[:-4])
+            code = strip_all(os.path.join(dirpath, name))
+            for call in re.findall(r"(?<![\w.:])([A-Z]\w+)\s*[.:]\s*\w+\s*\(", code):
+                used.setdefault(call, set()).add(name)
+
+    problems = []
+    for name in sorted(used):
+        if name in modules or name in OURS:
+            continue
+        if not re.search(r"(?<![\w.:])%s\s*[.:]" % re.escape(name), game):
+            problems.append("%s: o Lua do jogo nunca chama %s -- API nao exercitada"
+                            % (", ".join(sorted(used[name])), name))
+    return problems
+
+
 def main(root):
     total, checked = 0, 0
     for dirpath, _dirs, files in os.walk(root):
@@ -97,6 +166,11 @@ def main(root):
             for problem in check(path):
                 total += 1
                 print("%s: %s" % (os.path.relpath(path, root), problem))
+
+    for problem in check_unknown_apis(root):
+        total += 1
+        print(problem)
+
     print("%d arquivos Lua verificados, %d problemas" % (checked, total))
     return 1 if total else 0
 
