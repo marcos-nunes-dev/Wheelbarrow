@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Registro dos clothing items do mod.
+
+  SEM ISTO O CLOTHING ITEM NAO EXISTE para o jogo. O arquivo XML em
+  clothing/clothingItems pode estar perfeito e o modelo simplesmente nao
+  renderiza, sem erro no log ; foi exatamente o que aconteceu com o TestBone na
+  primeira tentativa. O jogo base tem o proprio fileGuidTable.xml e os mods
+  acrescentam os seus.
+
+  O GUID e so uma chave: o mod de referencia usa
+  "sfwheelbarrow0-hydrocraft-spec-0000-000000000001", que nao e hexadecimal nem
+  formato de GUID. Precisa apenas ser unico.
+
+  O caminho e o de RUNTIME, ou seja a partir de media/, e nao o do repositorio.
+-->
+<fileGuidTable>
+	<files>
+		<path>media/clothing/clothingItems/MNWB_CartHand.xml</path>
+		<guid>mnwheelbarrow-cart-hand-0000-000000000001</guid>
+	</files>
+</fileGuidTable>
