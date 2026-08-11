@@ -27,6 +27,9 @@ option MNWheelbarrow.EnableCrafting
 option MNWheelbarrow.Capacity
 {type = integer, min = 20, max = 600, default = 200, page = MNWheelbarrow, translation = MNWBCapacity,}
 
+option MNWheelbarrow.LightCapacity
+{type = integer, min = 0, max = 600, default = 50, page = MNWheelbarrow, translation = MNWBLightCapacity,}
+
 option MNWheelbarrow.HeavyThreshold
 {type = double, min = 0.5, max = 50, default = 8.0, page = MNWheelbarrow, translation = MNWBHeavyThreshold,}
 

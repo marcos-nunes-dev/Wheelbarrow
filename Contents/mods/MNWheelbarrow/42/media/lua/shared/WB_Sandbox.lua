@@ -26,6 +26,7 @@ local DEFAULTS = {
     SpawnChance = 8.0,
     EnableCrafting = true,
     Capacity = 200,
+    LightCapacity = 50,
     HeavyThreshold = 8.0,
     HeavyReduction = 95,
     ActionDuration = 80,
