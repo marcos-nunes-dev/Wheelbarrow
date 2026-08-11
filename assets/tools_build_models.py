@@ -11,9 +11,8 @@ modelos sao derivados dela toda vez.
 O QUE CADA UM RECEBE:
 
     chao   sombra de contato no plano do chao do MUNDO, onde a vertical e Y
-    mao    a pose (giro 270 0 0, deslocamento 0.31 0.90 0.56) mais a sombra no
-           plano do chao do OSSO DA MAO, onde a vertical e Z -- planos
-           diferentes, ver build_hand
+    mao    so a pose (giro 270 0 0, deslocamento 0.31 0.90 0.56). Sem sombra:
+           o osso da mao inclina ao andar e levaria o quad junto -- ver build_hand
 
 A SOMBRA precisa existir na malha porque o engine nao tem sombra para item:
 shadowExtents e shadowOffset so existem em script de VEICULO, e das 568 chaves de
@@ -254,34 +253,37 @@ def build_ground(src, dst):
 
 
 def build_hand(src, dst):
-    """Modelo de mao: a pose, mais a sombra no plano do chao do OSSO.
+    """Modelo de mao: SO a pose. Sem sombra, e isso e geometria, nao preferencia.
 
-    O PLANO DO CHAO AQUI E OUTRO. Depois da pose, a malha esta no espaco do osso
-    da mao, e nesse espaco +Z aponta para BAIXO -- medido em jogo comparando duas
-    poses que diferiam so no sinal de Z: uma flutuava na altura do ombro e a
-    outra encostava no chao. Entao o chao e um plano de Z constante e o quad varia
-    em X e Y, ao contrario do modelo de chao. Copiar o quad de um para o outro o
-    deixaria de pe ao lado do personagem.
+    A sombra na mao foi implementada e removida, e o motivo esta na animacao de
+    dois bracos: enquanto o personagem ANDA, o osso da mao inclina, e um quad
+    assado na malha inclina junto. Ele deixa de ser um plano no chao -- metade
+    afunda no piso, metade fica de pe. Parado ficava perfeito; andando, nao.
+
+    Nao ha ajuste que resolva. Altura menor faz flutuar parado; quad menor so
+    diminui o artefato. Um plano rigido nao pode permanecer paralelo ao chao
+    quando o osso que o carrega gira, e a inclinacao e justamente o que faz a
+    pose de empurrar parecer certa. Os dois recursos sao incompativeis e a
+    animacao vale mais.
+
+    A unica saida real seria prender a sombra a um osso que nao incline -- um
+    segundo modelo via clothing item com m_AttachBone na raiz. Fica registrado
+    como ideia, nao como pendencia: e bastante maquinario para uma sombra que so
+    aparece enquanto o carrinho esta sendo carregado.
+
+    Sem quad, o modelo tambem nao precisa da faixa de atlas: os UVs ficam
+    inteiros e ele usa a textura original, sem alpha e em resolucao cheia.
     """
-    tmp = "source/_hand_posed.fbx"
-    shift(src, tmp, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
+    shift(src, dst, HAND_OFFSET[0], HAND_OFFSET[1], HAND_OFFSET[2],
           HAND_ROTATION[0], HAND_ROTATION[1], HAND_ROTATION[2])
+    return 0
 
-    data, roots, tail, target = _open_geometry(tmp)
-    _shrink_u(target)
 
-    verts, _ = _get(target, b"Vertices")
-    xs, ys, zs = verts[0::3], verts[1::3], verts[2::3]
-    x0, x1 = min(xs) - SHADOW_MARGIN, max(xs) + SHADOW_MARGIN
-    y0, y1 = min(ys) - SHADOW_MARGIN, max(ys) + SHADOW_MARGIN
-    # O ponto mais BAIXO e o maior Z, porque +Z desce. E onde a roda toca o chao.
-    ground = max(zs) - SHADOW_LIFT
+def build_hand_texture(path):
+    """A original, sem alpha e sem faixa: o modelo de mao nao tem sombra."""
+    from PIL import Image
 
-    _add_quad(target, [(x0, y0, ground), (x1, y0, ground),
-                       (x1, y1, ground), (x0, y1, ground)])
-    _save(data, roots, tail, dst)
-    os.remove(tmp)
-    return 4
+    Image.open(SOURCE_TEXTURE).convert("RGB").save(path)
 
 
 def build_texture(path):
@@ -317,8 +319,10 @@ def build_texture(path):
 def main():
     os.makedirs(TEXTURES, exist_ok=True)
 
-    for path in (OUT_TEXTURE_GROUND, OUT_TEXTURE_HAND):
-        print("textura %dx%d RGBA -> %s" % (build_texture(path) + (path,)))
+    print("textura de chao %dx%d RGBA -> %s"
+          % (build_texture(OUT_TEXTURE_GROUND) + (OUT_TEXTURE_GROUND,)))
+    build_hand_texture(OUT_TEXTURE_HAND)
+    print("textura de mao original, sem faixa de sombra -> %s" % OUT_TEXTURE_HAND)
 
     ground = os.path.join(OUT_MODELS, "Wheelbarrow.fbx")
     print("chao: %d vertices de sombra -> %s" % (build_ground(SOURCE, ground), ground))
@@ -326,7 +330,8 @@ def main():
     # O de mao sai da MESMA fonte, e nao do de chao: senao herdaria o quad do
     # chao, que no espaco da mao ficaria de pe ao lado do personagem.
     hand = os.path.join(OUT_MODELS, "Wheelbarrow_Hand.fbx")
-    print("mao: %d vertices de sombra -> %s" % (build_hand(SOURCE, hand), hand))
+    build_hand(SOURCE, hand)
+    print("mao: pose %s %s, sem sombra -> %s" % (HAND_ROTATION, HAND_OFFSET, hand))
 
 
 if __name__ == "__main__":
